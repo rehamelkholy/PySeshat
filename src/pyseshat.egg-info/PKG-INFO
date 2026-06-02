@@ -1,0 +1,18 @@
+Metadata-Version: 2.4
+Name: pyseshat
+Version: 0.1.0
+Summary: Python framework for binary star orbit determination and stellar modeling
+Author-email: Reham El-Kholy <relkholy@sci.cu.edu.eg>
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: astropy
+Requires-Dist: matplotlib
+Requires-Dist: pandas
+Requires-Dist: emcee
+Requires-Dist: corner
+Requires-Dist: numba
+Requires-Dist: astroquery
+Dynamic: license-file

@@ -1,0 +1,27 @@
+{
+  "system": "FIN 379",
+  "source": "ORBIT example dataset",
+  "file": "FIN379.inp",
+  "orbit_type": "combined_visual_sb2",
+  "supported": true,
+
+  "initial_parameters": {
+    "P": 6.6900,
+    "T0": 2008.8443,
+    "e": 0.4988,
+    "a": 0.1003,
+    "Omega": 183.9,
+    "omega": 191.0,
+    "i": 42.0,
+    "K1": 7.43,
+    "K2": 8.05,
+    "V0": -0.51
+  },
+
+  "notes": [
+    "Primary benchmark combined visual+RV system",
+    "Mixed modality deterministic validation",
+    "Includes SOAR and WDS measurements",
+    "Supports visual and RV regression testing"
+  ]
+}

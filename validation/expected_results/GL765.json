@@ -1,0 +1,27 @@
+{
+  "system": "GL 765.2",
+  "source": "ORBIT example dataset",
+  "file": "GL765.inp",
+  "orbit_type": "combined_visual_sb2",
+  "supported": true,
+
+  "initial_parameters": {
+    "P": 11.72,
+    "T0": 1993.27,
+    "e": 0.238,
+    "a": 0.217,
+    "Omega": 107.8,
+    "omega": 76.7,
+    "i": 82.1,
+    "K1": 7.82,
+    "K2": 7.52,
+    "V0": -4.12
+  },
+
+  "notes": [
+    "Combined visual and spectroscopic binary",
+    "Contains JD-based RV observations",
+    "Critical benchmark for mixed time normalization",
+    "Used for validating RV convention handling"
+  ]
+}
