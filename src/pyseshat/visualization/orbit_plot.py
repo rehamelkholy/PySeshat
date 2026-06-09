@@ -40,6 +40,7 @@ def plot_visual_orbit(
     ax.scatter(
         X_obs,
         Y_obs,
+        s=40,
         label="Observations"
     )
 

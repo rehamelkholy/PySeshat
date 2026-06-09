@@ -248,6 +248,10 @@ def combined_fit_summary(
             1
         )
 
+        rms = np.sqrt(
+            chi2_total / n_visual
+        )
+
         return {
 
             "chi2_visual": chi2_visual,
@@ -256,7 +260,9 @@ def combined_fit_summary(
 
             "reduced_chi2": (
                 chi2_total / dof
-            )
+            ),
+
+            "rms": rms
         }
 
     # ------------------------------------------------------

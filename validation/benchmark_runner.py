@@ -18,6 +18,10 @@ from pyseshat.analysis.statistics import (
     combined_fit_summary
 )
 
+from metrics import (
+    parameter_relative_error
+)
+
 
 # ==========================================================
 # Benchmark execution
@@ -94,6 +98,8 @@ def run_benchmark(
 
     fitted = fit_result.elements
 
+    expected_elements = expected["initial_parameters"]
+
     # ------------------------------------------------------
     # Residual diagnostics
     # ------------------------------------------------------
@@ -136,13 +142,61 @@ def run_benchmark(
             )
         )
 
+    parameter_errors = {}
+
+    for name in expected_elements:
+
+        expected_value = (
+            expected_elements[name]
+        )
+
+        fitted_value = getattr(
+            fitted,
+            name
+        )
+
+        rel_error = (
+            parameter_relative_error(
+                name,
+                expected_value,
+                fitted_value
+            )
+        )
+
+        parameter_errors[name] = {
+
+            "expected": float(
+                expected_value
+            ),
+
+            "fitted": float(
+                fitted_value
+            ),
+
+            "relative_error": float(
+                rel_error
+            )
+        }
+
     return {
 
-        "expected": expected,
+        "system": system_name,
 
-        "parsed": parsed,
+        "statistics": stats,
 
-        "fit_result": fit_result,
+        "parameter_errors": parameter_errors,
 
-        "statistics": stats
+        "fitted_elements": {
+            name: float(
+                getattr(fitted, name)
+            )
+            for name in expected_elements
+        },
+
+        "optimizer_success": fit_result.optimizer_result.success,
+        
+        "optimizer_message":
+        str(
+            fit_result.optimizer_result.message
+        ),
     }

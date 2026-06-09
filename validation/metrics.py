@@ -4,7 +4,11 @@ import numpy as np
 # ==========================================================
 # Angular difference
 # ==========================================================
-
+# NOTE:
+# This metric does not account for
+# visual-binary node degeneracies.
+# Large angular differences may
+# correspond to equivalent orbits.
 def angular_difference(a, b):
     """
     Minimum angular separation in degrees.
@@ -44,6 +48,9 @@ def parameter_relative_error(
             ) / 180.0
         )
 
+    if expected == 0:
+        return np.nan
+    
     return abs(
         fitted - expected
     ) / abs(expected)
