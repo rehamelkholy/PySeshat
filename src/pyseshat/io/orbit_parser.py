@@ -2,6 +2,11 @@ import numpy as np
 
 from pyseshat.orbit.orbital_elements import OrbitalElements
 
+from pyseshat.io.coordinates import (
+    parse_ra,
+    parse_dec
+)
+
 # ==========================================================
 # Time conversion utilities
 # ==========================================================
@@ -146,11 +151,31 @@ def parse_orbit_file(filename):
             continue
 
         if line.startswith("R.A.:"):
-            metadata["ra"] = line.split(":", 1)[1].strip()
+
+            ra_string = (
+                line.split(":", 1)[1].strip()
+            )
+
+            metadata["ra"] = ra_string
+
+            metadata["ra_deg"] = (
+                parse_ra(ra_string)
+            )
+
             continue
 
         if line.startswith("Dec.:"):
-            metadata["dec"] = line.split(":", 1)[1].strip()
+
+            dec_string = (
+                line.split(":", 1)[1].strip()
+            )
+
+            metadata["dec"] = dec_string
+
+            metadata["dec_deg"] = (
+                parse_dec(dec_string)
+            )
+
             continue
 
         # --------------------------------------------------
