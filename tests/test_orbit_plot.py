@@ -8,7 +8,6 @@ from pyseshat.io.orbit_parser import (
 )
 
 from pyseshat.orbit.orbit_model import (
-    compute_visual_orbit,
     sample_visual_orbit
 )
 
@@ -18,7 +17,8 @@ from pyseshat.inference.optimizer import (
 
 from pyseshat.visualization.orbit_plot import (
     plot_visual_orbit,
-    plot_residuals
+    plot_residuals,
+    plot_rv_orbit
 )
 
 # ==========================================================
@@ -153,9 +153,33 @@ for filepath in benchmark_files:
     )
 
     # ------------------------------------------------------
+    # RV orbit plot
+    # ------------------------------------------------------
+    fig3, ax3 = plot_rv_orbit(
+
+        parsed["rv_data"],
+
+        parsed["elements"],
+
+        title=f"{filepath.stem} RV Orbit",
+
+        phase=True,
+
+        show=True
+    )
+
+    print()
+
+    print(
+        "RV plot generated."
+    )
+
+    # ------------------------------------------------------
     # Cleanup
     # ------------------------------------------------------
 
     plt.close(fig1)
 
     plt.close(fig2)
+
+    plt.close(fig3)

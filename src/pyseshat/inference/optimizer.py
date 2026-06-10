@@ -17,6 +17,10 @@ from pyseshat.inference.covariance import (
     parameter_uncertainties
 )
 
+from pyseshat.analysis.statistics import (
+    combined_fit_summary
+)
+
 from pyseshat.orbit.orbital_elements import OrbitalElements
 
 # ==========================================================
