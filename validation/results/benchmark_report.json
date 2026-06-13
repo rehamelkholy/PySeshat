@@ -1,65 +1,65 @@
 {
   "FIN379": {
     "optimizer_success": true,
-    "optimizer_message": "Both `ftol` and `xtol` termination conditions are satisfied.",
+    "optimizer_message": "`ftol` termination condition is satisfied.",
     "statistics": {
-      "chi2_visual": 57.16487124284945,
-      "chi2_rv1": 16.59291853706681,
-      "chi2_rv2": 54.90685827080367,
-      "chi2_total": 128.66464805071993,
-      "reduced_chi2": 2.6258091438922437,
-      "rms": 1.4767385505303137
+      "chi2_visual": 29.261803861944486,
+      "chi2_rv1": 24.4149128393545,
+      "chi2_rv2": 26.387404953324133,
+      "chi2_total": 80.06412165462312,
+      "reduced_chi2": 1.63396166642088,
+      "rms": 1.1649115893900734
     },
     "parameter_errors": {
       "P": {
         "expected": 6.69,
-        "fitted": 6.708464650359163,
-        "relative_error": 0.002760037422894287
+        "fitted": 6.689827414606518,
+        "relative_error": 2.5797517710342922e-05
       },
       "T0": {
         "expected": 2008.8443,
-        "fitted": 2008.8528473917265,
-        "relative_error": 4.254880145042462e-06
+        "fitted": 2008.844942355324,
+        "relative_error": 3.1976361935531507e-07
       },
       "e": {
         "expected": 0.4988,
-        "fitted": 0.5027522103534205,
-        "relative_error": 0.007923436955534335
+        "fitted": 0.49926105661080245,
+        "relative_error": 0.000924331617486816
       },
       "a": {
         "expected": 0.1003,
-        "fitted": 0.09939764550157351,
-        "relative_error": 0.008996555318309956
+        "fitted": 0.10014054018788214,
+        "relative_error": 0.0015898286352727792
       },
       "Omega": {
         "expected": 183.9,
-        "fitted": 359.99999999999994,
-        "relative_error": 0.9783333333333329
+        "fitted": 3.6915215677041964,
+        "relative_error": 0.0011582135127544764
       },
       "omega": {
         "expected": 191.0,
-        "fitted": 14.491282636291805,
-        "relative_error": 0.9806039853539344
+        "fitted": 11.272060109048999,
+        "relative_error": 0.0015114450502721865
       },
       "i": {
         "expected": 42.0,
-        "fitted": 42.51786520237326,
-        "relative_error": 0.012330123866029956
+        "fitted": 41.9104367971673,
+        "relative_error": 0.0021324572103023818
       },
       "K1": {
         "expected": 7.43,
-        "fitted": 7.398707581028911,
-        "relative_error": 0.004211631086283794
+        "fitted": 7.429298787689505,
+        "relative_error": 9.437581567897754e-05
       },
       "K2": {
         "expected": 8.05,
-        "fitted": 8.018115761386703,
-        "relative_error": 0.003960774983018361
+        "fitted": 8.05001292915926,
+        "relative_error": 1.6061067403299224e-06
       },
       "V0": {
         "expected": -0.51,
-        "fitted": -0.5131671771813416,
-        "relative_error": 0.006210151335963979
+        "fitted": -0.5120941281221162,
+        "relative_error": 0.004106133572776821
       }
     }
   },
@@ -67,63 +67,63 @@
     "optimizer_success": true,
     "optimizer_message": "`ftol` termination condition is satisfied.",
     "statistics": {
-      "chi2_visual": 281.47442169758614,
-      "chi2_rv1": 43.62924412587405,
-      "chi2_rv2": 56.82968748058628,
-      "chi2_total": 381.9333533040465,
-      "reduced_chi2": 3.819333533040465,
-      "rms": 1.863362925914635
+      "chi2_visual": 7.0327933171253045,
+      "chi2_rv1": 41.771821618385154,
+      "chi2_rv2": 55.699848219020026,
+      "chi2_total": 104.50446315453048,
+      "reduced_chi2": 1.0450446315453048,
+      "rms": 0.974700248349253
     },
     "parameter_errors": {
       "P": {
         "expected": 11.72,
-        "fitted": 11.64738907981449,
-        "relative_error": 0.006195471005589672
+        "fitted": 11.728468845433904,
+        "relative_error": 0.0007225977332681764
       },
       "T0": {
         "expected": 1993.27,
-        "fitted": 1993.4319905133343,
-        "relative_error": 8.126872592991963e-05
+        "fitted": 1993.2064695261297,
+        "relative_error": 3.187248785678162e-05
       },
       "e": {
         "expected": 0.238,
-        "fitted": 0.2470492982983341,
-        "relative_error": 0.038022261757706385
+        "fitted": 0.2488662582291858,
+        "relative_error": 0.04565654718145294
       },
       "a": {
         "expected": 0.217,
-        "fitted": 0.07379871814971771,
-        "relative_error": 0.6599137412455406
+        "fitted": 0.2135386565859193,
+        "relative_error": 0.015950891309127614
       },
       "Omega": {
         "expected": 107.8,
-        "fitted": 3.8293048201311904e-27,
-        "relative_error": 0.5988888888888889
+        "fitted": 289.04473885246136,
+        "relative_error": 0.006915215847007517
       },
       "omega": {
         "expected": 76.7,
-        "fitted": 258.3998736158166,
-        "relative_error": 0.9905562576899077
+        "fitted": 251.82594741379626,
+        "relative_error": 0.027078069923354063
       },
       "i": {
         "expected": 82.1,
-        "fitted": 69.89548064272786,
-        "relative_error": 0.14865431616653024
+        "fitted": 81.83616366391226,
+        "relative_error": 0.0032135972726886107
       },
       "K1": {
         "expected": 7.82,
-        "fitted": 7.933451410633039,
-        "relative_error": 0.01450785302212776
+        "fitted": 7.941822020315163,
+        "relative_error": 0.015578263467412118
       },
       "K2": {
         "expected": 7.52,
-        "fitted": 7.693790251002021,
-        "relative_error": 0.023110405718353894
+        "fitted": 7.6955298433013555,
+        "relative_error": 0.023341734481563285
       },
       "V0": {
         "expected": -4.12,
-        "fitted": -4.1082522929008025,
-        "relative_error": 0.0028513852182518425
+        "fitted": -4.124767283910644,
+        "relative_error": 0.0011571077453018512
       }
     }
   },

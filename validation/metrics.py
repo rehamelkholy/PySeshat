@@ -2,13 +2,9 @@ import numpy as np
 
 
 # ==========================================================
-# Angular difference
+# Wrapped angular difference
 # ==========================================================
-# NOTE:
-# This metric does not account for
-# visual-binary node degeneracies.
-# Large angular differences may
-# correspond to equivalent orbits.
+
 def angular_difference(a, b):
     """
     Minimum angular separation in degrees.
@@ -20,6 +16,49 @@ def angular_difference(a, b):
         diff -= 360.0
 
     return abs(diff)
+
+
+# ==========================================================
+# Node-aware angular difference
+# ==========================================================
+
+def node_aware_angular_difference(
+    expected,
+    fitted
+):
+    """
+    Angular difference allowing for
+    visual-binary node ambiguity.
+
+    The following are treated as
+    equivalent:
+
+        angle
+
+    and
+
+        angle + 180 deg
+
+    Returns
+    -------
+    float
+    """
+
+    d1 = angular_difference(
+        expected,
+        fitted
+    )
+
+    d2 = angular_difference(
+        expected,
+        fitted + 180.0
+    )
+
+    return min(
+        d1,
+        d2
+    )
+
 
 # ==========================================================
 # Relative parameter error
@@ -42,15 +81,16 @@ def parameter_relative_error(
     if parameter in angular_parameters:
 
         return (
-            angular_difference(
+            node_aware_angular_difference(
                 expected,
                 fitted
             ) / 180.0
         )
 
     if expected == 0:
+
         return np.nan
-    
+
     return abs(
         fitted - expected
     ) / abs(expected)

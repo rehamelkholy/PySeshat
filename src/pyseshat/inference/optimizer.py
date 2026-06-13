@@ -2,6 +2,10 @@ import numpy as np
 
 from scipy.optimize import least_squares
 
+from pyseshat.inference.node_disambiguation import (
+    node_flip
+)
+
 from pyseshat.inference.likelihood import (
     visual_xy_residuals,
     combined_residuals,
@@ -81,11 +85,159 @@ def build_parameter_bounds(
 
     return lower, upper
 
+def _chi2_from_fit(
+    fit_result
+):
+    """
+    Compute chi-square from a FitResult.
+    """
+
+    return np.sum(
+        fit_result.residuals**2
+    )
+
 # ==========================================================
 # Visual orbit fitting
 # ==========================================================
 
 def fit_visual_orbit(
+    elements,
+    t,
+    X_obs,
+    Y_obs,
+    sx,
+    sy,
+    rv_data=None,
+    method="trf",
+    loss="linear",
+    f_scale=1.0,
+    bounds=None,
+    node_disambiguation=True,
+    node_rtol=0.01
+):
+    """
+    Public orbit-fitting interface.
+
+    Automatically resolves visual-binary
+    node ambiguity when RV data are present.
+    """
+
+    # --------------------------------------------------
+    # Visual-only systems
+    # --------------------------------------------------
+
+    if (
+        rv_data is None
+        or len(rv_data) == 0
+        or not node_disambiguation
+    ):
+
+        return _fit_single_solution(
+            elements,
+            t,
+            X_obs,
+            Y_obs,
+            sx,
+            sy,
+            rv_data=rv_data,
+            method=method,
+            loss=loss,
+            f_scale=f_scale,
+            bounds=bounds
+        )
+
+    # --------------------------------------------------
+    # Original node assignment
+    # --------------------------------------------------
+
+    fit_original = _fit_single_solution(
+        elements,
+        t,
+        X_obs,
+        Y_obs,
+        sx,
+        sy,
+        rv_data=rv_data,
+        method=method,
+        loss=loss,
+        f_scale=f_scale,
+        bounds=bounds
+    )
+
+    # --------------------------------------------------
+    # Flipped node assignment
+    # --------------------------------------------------
+
+    flipped = node_flip(
+        elements
+    )
+
+    fit_flipped = _fit_single_solution(
+        flipped,
+        t,
+        X_obs,
+        Y_obs,
+        sx,
+        sy,
+        rv_data=rv_data,
+        method=method,
+        loss=loss,
+        f_scale=f_scale,
+        bounds=bounds
+    )
+
+    # --------------------------------------------------
+    # Compare final chi-square
+    # --------------------------------------------------
+
+    chi2_original = _chi2_from_fit(
+        fit_original
+    )
+
+    chi2_flipped = _chi2_from_fit(
+        fit_flipped
+    )
+
+    # --------------------------------------------------
+    # Nearly equivalent solutions
+    # --------------------------------------------------
+
+    relative_difference = (
+        abs(
+            chi2_original
+            -
+            chi2_flipped
+        )
+        /
+        min(
+            chi2_original,
+            chi2_flipped
+        )
+    )
+
+    if (
+        relative_difference
+        <
+        node_rtol
+    ):
+
+        return fit_original
+
+    # --------------------------------------------------
+    # Choose lower chi-square
+    # --------------------------------------------------
+
+    if (
+        chi2_original
+        <
+        chi2_flipped
+    ):
+
+        return fit_original
+
+    return fit_flipped
+
+def _fit_single_solution(
     elements: OrbitalElements,
     t,
     X_obs,
