@@ -165,6 +165,16 @@ class OrbitalElements:
 
         self.i = np.clip(self.i, 0.0, 180.0)
     
+    def copy(self):
+        """
+        Return deep copy of orbital elements.
+        """
+
+        return OrbitalElements.from_array(
+            self.to_array(),
+            fit_flags=self.fit_flags.copy()
+        )
+
     # ======================================================
     # Convention transforms
     # ======================================================

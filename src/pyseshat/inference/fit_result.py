@@ -5,42 +5,16 @@ from pyseshat.orbit.orbital_elements import (
     OrbitalElements
 )
 
+from pyseshat.inference.base_fit_result import (
+    BaseFitResult
+)
+
 
 @dataclass
-class FitResult:
+class FitResult(BaseFitResult):
     """
     Container for orbit-fitting results.
     """
-
-    # ------------------------------------------------------
-    # Physical orbit
-    # ------------------------------------------------------
-
-    elements: OrbitalElements
-
-    # ------------------------------------------------------
-    # Optimizer backend result
-    # ------------------------------------------------------
-
-    optimizer_result: object
-
-    # ------------------------------------------------------
-    # Residual vectors
-    # ------------------------------------------------------
-
-    residuals: np.ndarray
-
-    # ------------------------------------------------------
-    # Covariance matrix
-    # ------------------------------------------------------
-
-    covariance: np.ndarray | None = None
-
-    # ------------------------------------------------------
-    # Parameter uncertainties
-    # ------------------------------------------------------
-
-    uncertainties: dict | None = None
 
     # ------------------------------------------------------
     # Fit statistics

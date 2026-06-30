@@ -2,6 +2,9 @@ import numpy as np
 
 from scipy.optimize import least_squares
 
+from pyseshat.inference.optimizer_engine import (
+    run_least_squares
+)
 from pyseshat.inference.node_disambiguation import (
     node_flip
 )
@@ -251,44 +254,18 @@ def _fit_single_solution(
     bounds=None
 ):
     """
-    Fit visual binary orbit using weighted least squares.
-
-    Parameters
-    ----------
-    elements : OrbitalElements
-        Initial orbital elements
-
-    t : ndarray
-        Observation epochs
-
-    X_obs, Y_obs : ndarray
-        Observed Cartesian coordinates
-
-    sx, sy : ndarray
-        Coordinate uncertainties
-
-    method : str
-        SciPy least_squares method
-
-    loss : str
-        Robust loss function
-
-    Returns
-    -------
-    fitted_elements : OrbitalElements
-
-    result : OptimizeResult
-        Raw SciPy optimization result
+    Fit a single binary-orbit solution using the
+    generic optimization engine.
     """
 
     # ------------------------------------------------------
-    # Initial fitted parameter vector
+    # Initial parameter vector
     # ------------------------------------------------------
 
     p0 = elements.fitted_parameters()
 
     # ------------------------------------------------------
-    # Default bounds
+    # Bounds
     # ------------------------------------------------------
 
     if bounds is None:
@@ -298,7 +275,7 @@ def _fit_single_solution(
         )
 
     # ------------------------------------------------------
-    # Residual function selection
+    # Residual function
     # ------------------------------------------------------
 
     if (
@@ -306,7 +283,9 @@ def _fit_single_solution(
         or len(rv_data) == 0
     ):
 
-        residual_function = visual_xy_residuals
+        residual_function = (
+            visual_xy_residuals
+        )
 
         residual_args = (
             elements,
@@ -319,7 +298,9 @@ def _fit_single_solution(
 
     else:
 
-        residual_function = combined_residuals
+        residual_function = (
+            combined_residuals
+        )
 
         residual_args = (
             elements,
@@ -332,67 +313,33 @@ def _fit_single_solution(
         )
 
     # ------------------------------------------------------
-    # Optimization
+    # Generic optimization
     # ------------------------------------------------------
 
-    result = least_squares(
-        residual_function,
-        p0,
-        args=residual_args,
+    return run_least_squares(
+
+        initial_parameters=p0,
+
+        residual_function=residual_function,
+
+        residual_args=residual_args,
+
+        solution_builder=lambda p: update_elements(
+            elements,
+            p
+        ),
+
+        parameter_names=(
+            elements.fitted_parameter_names()
+        ),
+
+        fit_result_class=FitResult,
+
         method=method,
+
         loss=loss,
+
         f_scale=f_scale,
+
         bounds=bounds
     )
-
-    # ------------------------------------------------------
-    # Reconstruct fitted orbital elements
-    # ------------------------------------------------------
-
-    fitted_elements = update_elements(
-        elements,
-        result.x
-    )
-
-    # ------------------------------------------------------
-    # Final residuals
-    # ------------------------------------------------------
-
-    residuals = residual_function(
-        result.x,
-        *residual_args
-    )
-
-    # ------------------------------------------------------
-    # Covariance matrix
-    # ------------------------------------------------------
-
-    covariance = estimate_covariance(
-        result,
-        residuals
-    )
-
-    # ------------------------------------------------------
-    # Parameter uncertainties
-    # ------------------------------------------------------
-
-    uncertainties = (
-        parameter_uncertainties(
-            covariance,
-            fitted_elements.fitted_parameter_names()
-        )
-    )
-
-    # ------------------------------------------------------
-    # Construct FitResult
-    # ------------------------------------------------------
-
-    fit_result = FitResult(
-        elements=fitted_elements,
-        optimizer_result=result,
-        residuals=residuals,
-        covariance=covariance,
-        uncertainties=uncertainties
-    )
-
-    return fit_result

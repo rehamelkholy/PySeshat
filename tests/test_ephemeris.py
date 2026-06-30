@@ -5,7 +5,7 @@ from pyseshat.io.orbit_parser import (
     parse_orbit_file
 )
 
-from pyseshat.analysis.ephemeris import (
+from pyseshat.ephemeris.ephemeris import (
     generate_visual_ephemeris,
     visual_ephemeris_table,
     generate_rv_ephemeris,
