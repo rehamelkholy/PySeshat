@@ -310,9 +310,30 @@ def reduced_chi_square(
         rv_data=rv_data
     )
 
-    n_obs = 2 * len(t)
+    # ------------------------------------------------------
+    # Number of data points
+    # ------------------------------------------------------
 
-    n_fit = np.sum(elements.fitted_mask())
+    n_visual = 2 * len(t)
+
+    n_rv = 0
+
+    if (
+        rv_data is not None
+        and len(rv_data) > 0
+    ):
+
+        n_rv = len(rv_data)
+
+    n_obs = n_visual + n_rv
+
+    # ------------------------------------------------------
+    # Number of fitted parameters
+    # ------------------------------------------------------
+
+    n_fit = np.sum(
+        elements.fitted_mask()
+    )
 
     dof = n_obs - n_fit
 
