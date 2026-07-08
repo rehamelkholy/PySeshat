@@ -460,6 +460,10 @@ def _sample_single_solution(
             "autocorrelation_time"
         ],
 
+        n_walkers=n_walkers,
+
+        n_steps=n_steps,
+
         burn_in=burn_in,
 
         thin=thin
