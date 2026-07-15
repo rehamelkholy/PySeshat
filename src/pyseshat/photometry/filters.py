@@ -349,3 +349,156 @@ class PhotometricPassband:
             right=0.0
 
         )
+    
+def load_passband(
+    filename,
+    name=""
+):
+    """
+    Load a photometric passband from a two-column
+    ASCII text file.
+
+    Parameters
+    ----------
+    filename : str or path-like
+        Path to the passband transmission file.
+
+        The file must contain two whitespace-separated
+        numeric columns:
+
+            wavelength    throughput
+
+        Wavelengths must be expressed in Angstrom and
+        throughput must be dimensionless.
+
+    name : str, default=""
+        Descriptive passband name.
+
+    Returns
+    -------
+    PhotometricPassband
+        Validated photometric passband.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the passband file does not exist.
+
+    ValueError
+        If the file cannot be interpreted as a
+        two-column numeric table.
+
+    Notes
+    -----
+    Blank lines and lines beginning with ``#`` are
+    ignored by NumPy's text loader.
+    """
+
+    # ======================================================
+    # Normalize and validate path
+    # ======================================================
+
+    from pathlib import Path
+
+
+    path = Path(
+
+        filename
+
+    )
+
+
+    if not path.is_file():
+
+        raise FileNotFoundError(
+
+            "Passband file does not exist: "
+
+            f"{path}"
+
+        )
+
+    # ======================================================
+    # Load numeric table
+    # ======================================================
+
+    try:
+
+        data = np.loadtxt(
+
+            path,
+
+            dtype=float,
+
+            comments="#",
+
+            ndmin=2
+
+        )
+
+    except ValueError as error:
+
+        raise ValueError(
+
+            "Passband file must contain a valid "
+            "two-column numeric table: "
+
+            f"{path}"
+
+        ) from error
+
+    # ======================================================
+    # Validate table structure
+    # ======================================================
+
+    if (
+
+        data.ndim != 2
+
+        or
+
+        data.shape[1] != 2
+
+    ):
+
+        raise ValueError(
+
+            "Passband file must contain exactly "
+            "two columns: wavelength and throughput."
+
+        )
+
+    if data.shape[0] < 2:
+
+        raise ValueError(
+
+            "Passband file must contain at least "
+            "two wavelength samples."
+
+        )
+
+    # ======================================================
+    # Construct validated passband
+    # ======================================================
+
+    return PhotometricPassband(
+
+        wavelength=data[
+
+            :,
+
+            0
+
+        ],
+
+        throughput=data[
+
+            :,
+
+            1
+
+        ],
+
+        name=name
+
+    )

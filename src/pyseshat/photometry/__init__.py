@@ -1,5 +1,6 @@
 from pyseshat.photometry.filters import (
-    PhotometricPassband
+    PhotometricPassband,
+    load_passband
 )
 
 from pyseshat.photometry.synthetic import (
@@ -10,6 +11,8 @@ from pyseshat.photometry.synthetic import (
 __all__ = [
 
     "PhotometricPassband",
+
+    "load_passband",
 
     "synthetic_band_flux"
 
