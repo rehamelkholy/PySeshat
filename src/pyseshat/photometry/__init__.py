@@ -22,6 +22,11 @@ from pyseshat.photometry.residuals import (
     photometric_residual
 )
 
+from pyseshat.photometry.model import (
+    binary_photometric_chi_square,
+    synthetic_binary_magnitudes
+)
+
 
 __all__ = [
 
@@ -41,6 +46,10 @@ __all__ = [
 
     "photometric_chi_square",
 
-    "photometric_residual"
+    "photometric_residual",
+
+    "binary_photometric_chi_square",
+
+    "synthetic_binary_magnitudes"
 
 ]
