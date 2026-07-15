@@ -8,10 +8,19 @@ from pyseshat.photometry.synthetic import (
     synthetic_band_flux
 )
 
+from pyseshat.photometry.extinction import (
+    apply_extinction,
+    ccm89_optical_extinction
+)
+
 
 __all__ = [
 
     "PhotometricPassband",
+
+    "apply_extinction",
+
+    "ccm89_optical_extinction",
 
     "load_passband",
 
