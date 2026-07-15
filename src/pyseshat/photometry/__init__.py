@@ -13,8 +13,19 @@ from pyseshat.photometry.extinction import (
     ccm89_optical_extinction
 )
 
+from pyseshat.photometry.observations import (
+    PhotometricMeasurement
+)
+
+from pyseshat.photometry.residuals import (
+    photometric_chi_square,
+    photometric_residual
+)
+
 
 __all__ = [
+
+    "PhotometricMeasurement",
 
     "PhotometricPassband",
 
@@ -27,5 +38,9 @@ __all__ = [
     "pogson_magnitude",
 
     "synthetic_band_flux",
+
+    "photometric_chi_square",
+
+    "photometric_residual"
 
 ]
