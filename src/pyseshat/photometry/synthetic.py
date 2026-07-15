@@ -384,3 +384,176 @@ def synthetic_band_flux(
         band_flux
 
     )
+
+def pogson_magnitude(
+    flux,
+    zero_point
+):
+    """
+    Convert a positive photometric flux to a
+    Pogson magnitude.
+
+    Parameters
+    ----------
+    flux : float or array_like
+        Photometric flux.
+
+    zero_point : float
+        Zero-magnitude reference flux expressed in
+        the same physical units as ``flux``.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Pogson magnitude calculated as
+
+            m = -2.5 log10(flux / zero_point).
+
+        A scalar input produces a Python float.
+        An array input produces a NumPy array.
+
+    Raises
+    ------
+    ValueError
+        If flux or zero_point contains a non-finite
+        or non-positive value.
+
+    Notes
+    -----
+    The input flux and zero point must represent the
+    same photometric quantity and use identical units.
+
+    For the SVO Generic/Johnson.V Vega calibration,
+
+        zero_point = 3.5833e-9
+
+    when flux is expressed in
+
+        erg s^-1 cm^-2 Angstrom^-1.
+    """
+
+    # ======================================================
+    # Normalize inputs
+    # ======================================================
+
+    flux_array = np.asarray(
+
+        flux,
+
+        dtype=float
+
+    )
+
+
+    zero_point_array = np.asarray(
+
+        zero_point,
+
+        dtype=float
+
+    )
+
+
+    # ======================================================
+    # Validate flux
+    # ======================================================
+
+    if not np.all(
+
+        np.isfinite(
+            flux_array
+        )
+
+    ):
+
+        raise ValueError(
+
+            "flux must contain only finite values."
+
+        )
+
+
+    if np.any(
+
+        flux_array <= 0.0
+
+    ):
+
+        raise ValueError(
+
+            "flux must contain only positive values."
+
+        )
+
+
+    # ======================================================
+    # Validate zero point
+    # ======================================================
+
+    if not np.all(
+
+        np.isfinite(
+            zero_point_array
+        )
+
+    ):
+
+        raise ValueError(
+
+            "zero_point must contain only "
+            "finite values."
+
+        )
+
+
+    if np.any(
+
+        zero_point_array <= 0.0
+
+    ):
+
+        raise ValueError(
+
+            "zero_point must contain only "
+            "positive values."
+
+        )
+
+
+    # ======================================================
+    # Calculate Pogson magnitude
+    # ======================================================
+
+    magnitude = (
+
+        -2.5
+
+        *
+
+        np.log10(
+
+            flux_array
+
+            /
+
+            zero_point_array
+
+        )
+
+    )
+
+
+    # ======================================================
+    # Preserve scalar return behavior
+    # ======================================================
+
+    if magnitude.ndim == 0:
+
+        return float(
+
+            magnitude
+
+        )
+
+
+    return magnitude

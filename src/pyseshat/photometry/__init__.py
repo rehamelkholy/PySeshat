@@ -4,6 +4,7 @@ from pyseshat.photometry.filters import (
 )
 
 from pyseshat.photometry.synthetic import (
+    pogson_magnitude,
     synthetic_band_flux
 )
 
@@ -14,6 +15,8 @@ __all__ = [
 
     "load_passband",
 
-    "synthetic_band_flux"
+    "pogson_magnitude",
+
+    "synthetic_band_flux",
 
 ]
