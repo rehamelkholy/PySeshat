@@ -239,6 +239,55 @@ def synthetic_binary_magnitudes(
 
 
     # ======================================================
+    # Validate color excess
+    # ======================================================
+
+    try:
+
+        ebv = float(
+
+            ebv
+
+        )
+
+
+    except (
+
+        TypeError,
+
+        ValueError
+
+    ) as error:
+
+        raise TypeError(
+
+            "ebv must be a real number."
+
+        ) from error
+
+
+    if not np.isfinite(
+
+        ebv
+
+    ):
+
+        raise ValueError(
+
+            "ebv must be finite."
+
+        )
+
+
+    if ebv < 0.0:
+
+        raise ValueError(
+
+            "ebv must not be negative."
+
+        )
+
+    # ======================================================
     # Interpolate component atmospheres
     # ======================================================
 
@@ -310,59 +359,7 @@ def synthetic_binary_magnitudes(
 
 
     # ======================================================
-    # Validate the optical CCM89 domain
-    # ======================================================
-
-    minimum_optical_wavelength = (
-
-        10000.0
-
-        /
-
-        3.3
-
-    )
-
-
-    maximum_optical_wavelength = (
-
-        10000.0
-
-        /
-
-        1.1
-
-    )
-
-
-    if (
-
-        minimum_required_wavelength
-
-        <=
-
-        minimum_optical_wavelength
-
-        or
-
-        maximum_required_wavelength
-
-        >
-
-        maximum_optical_wavelength
-
-    ):
-
-        raise ValueError(
-
-            "All passbands must lie inside the "
-            "implemented optical CCM89 domain."
-
-        )
-
-
-    # ======================================================
-    # Restrict SED to required optical interval
+    # Restrict SED to the required wavelength interval
     # ======================================================
 
     wavelength_mask = (
@@ -417,31 +414,99 @@ def synthetic_binary_magnitudes(
 
 
     # ======================================================
-    # Calculate and apply optical extinction
+    # Apply extinction when requested
     # ======================================================
 
-    extinction_curve = (
+    if ebv == 0.0:
 
-        ccm89_optical_extinction(
+        extincted_flux = model_flux.copy()
 
-            wavelength=model_wavelength,
 
-            ebv=ebv,
+    else:
 
-            rv=rv
+        # ==================================================
+        # Validate the optical CCM89 domain
+        # ==================================================
+
+        minimum_optical_wavelength = (
+
+            10000.0
+
+            /
+
+            3.3
 
         )
 
-    )
+
+        maximum_optical_wavelength = (
+
+            10000.0
+
+            /
+
+            1.1
+
+        )
 
 
-    extincted_flux = apply_extinction(
+        if (
 
-        flux=model_flux,
+            minimum_required_wavelength
 
-        extinction=extinction_curve
+            <=
 
-    )
+            minimum_optical_wavelength
+
+            or
+
+            maximum_required_wavelength
+
+            >
+
+            maximum_optical_wavelength
+
+        ):
+
+            raise ValueError(
+
+                "All passbands must lie inside the "
+                "implemented optical CCM89 domain "
+                "when E(B-V) is greater than zero."
+
+            )
+
+
+        # ==================================================
+        # Calculate optical CCM89 extinction
+        # ==================================================
+
+        extinction_curve = (
+
+            ccm89_optical_extinction(
+
+                wavelength=model_wavelength,
+
+                ebv=ebv,
+
+                rv=rv
+
+            )
+
+        )
+
+
+        # ==================================================
+        # Apply extinction to the model SED
+        # ==================================================
+
+        extincted_flux = apply_extinction(
+
+            flux=model_flux,
+
+            extinction=extinction_curve
+
+        )
 
 
     # ======================================================

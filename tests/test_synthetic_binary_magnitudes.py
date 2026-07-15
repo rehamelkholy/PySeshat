@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 
 from pyseshat.photometry.filters import (
+    PhotometricPassband,
     load_passband
 )
 
@@ -381,5 +382,373 @@ print(
         )
 
     )
+
+)
+
+# ==========================================================
+# Construct a zero-extinction near-infrared test passband
+# ==========================================================
+
+near_infrared_passband = PhotometricPassband(
+
+    name="Test J",
+
+    wavelength=np.array([
+
+        10000.0,
+
+        11000.0,
+
+        12000.0,
+
+        13000.0,
+
+        14000.0
+
+    ]),
+
+    throughput=np.array([
+
+        0.0,
+
+        0.5,
+
+        1.0,
+
+        0.5,
+
+        0.0
+
+    ])
+
+)
+
+
+# ==========================================================
+# Evaluate outside the optical CCM89 domain
+# ==========================================================
+
+zero_extinction_magnitudes = (
+
+    synthetic_binary_magnitudes(
+
+        atmosphere_grid=grid,
+
+        passbands={
+
+            "Test J": (
+
+                near_infrared_passband
+
+            )
+
+        },
+
+        zero_points={
+
+            "Test J": 1.0e-9
+
+        },
+
+        primary_temperature=6125.0,
+
+        secondary_temperature=5875.0,
+
+        primary_logg=4.25,
+
+        secondary_logg=4.50,
+
+        metallicity=0.0,
+
+        primary_radius=1.20,
+
+        secondary_radius=0.90,
+
+        distance=25.0,
+
+        ebv=0.0,
+
+        rv=3.10
+
+    )
+
+)
+
+
+# ==========================================================
+# Validate the zero-extinction bypass
+# ==========================================================
+
+assert set(
+
+    zero_extinction_magnitudes
+
+) == {
+
+    "Test J"
+
+}
+
+
+assert isinstance(
+
+    zero_extinction_magnitudes[
+
+        "Test J"
+
+    ],
+
+    float
+
+)
+
+
+assert np.isfinite(
+
+    zero_extinction_magnitudes[
+
+        "Test J"
+
+    ]
+
+)
+
+
+# ==========================================================
+# Confirm that nonzero extinction remains restricted
+# ==========================================================
+
+nonzero_extinction_rejected = False
+
+
+try:
+
+    synthetic_binary_magnitudes(
+
+        atmosphere_grid=grid,
+
+        passbands={
+
+            "Test J": (
+
+                near_infrared_passband
+
+            )
+
+        },
+
+        zero_points={
+
+            "Test J": 1.0e-9
+
+        },
+
+        primary_temperature=6125.0,
+
+        secondary_temperature=5875.0,
+
+        primary_logg=4.25,
+
+        secondary_logg=4.50,
+
+        metallicity=0.0,
+
+        primary_radius=1.20,
+
+        secondary_radius=0.90,
+
+        distance=25.0,
+
+        ebv=0.20,
+
+        rv=3.10
+
+    )
+
+
+except ValueError:
+
+    nonzero_extinction_rejected = True
+
+
+assert nonzero_extinction_rejected
+
+
+# ==========================================================
+# Report zero-extinction bypass results
+# ==========================================================
+
+print()
+
+print(
+
+    "ZERO-EXTINCTION CCM89 BYPASS"
+
+)
+
+print(
+
+    "=" * 70
+
+)
+
+
+print(
+
+    "Passband"
+
+)
+
+print(
+
+    near_infrared_passband.name
+
+)
+
+
+print()
+
+print(
+
+    "Passband wavelength range"
+
+)
+
+print(
+
+    near_infrared_passband.minimum_wavelength,
+
+    near_infrared_passband.maximum_wavelength
+
+)
+
+
+print()
+
+print(
+
+    "Synthetic magnitude"
+
+)
+
+print(
+
+    zero_extinction_magnitudes[
+
+        "Test J"
+
+    ]
+
+)
+
+
+print()
+
+print(
+
+    "Magnitude is finite"
+
+)
+
+print(
+
+    np.isfinite(
+
+        zero_extinction_magnitudes[
+
+            "Test J"
+
+        ]
+
+    )
+
+)
+
+
+print()
+
+print(
+
+    "Nonzero extinction outside optical domain rejected"
+
+)
+
+print(
+
+    nonzero_extinction_rejected
+
+)
+
+# ==========================================================
+# Validate rejection of negative color excess
+# ==========================================================
+
+negative_ebv_rejected = False
+
+
+try:
+
+    synthetic_binary_magnitudes(
+
+        atmosphere_grid=grid,
+
+        passbands={
+
+            "Test J": (
+
+                near_infrared_passband
+
+            )
+
+        },
+
+        zero_points={
+
+            "Test J": 1.0e-9
+
+        },
+
+        primary_temperature=6125.0,
+
+        secondary_temperature=5875.0,
+
+        primary_logg=4.25,
+
+        secondary_logg=4.50,
+
+        metallicity=0.0,
+
+        primary_radius=1.20,
+
+        secondary_radius=0.90,
+
+        distance=25.0,
+
+        ebv=-0.10,
+
+        rv=3.10
+
+    )
+
+
+except ValueError:
+
+    negative_ebv_rejected = True
+
+
+assert negative_ebv_rejected
+
+
+print()
+
+print(
+
+    "Negative E(B-V) rejected"
+
+)
+
+print(
+
+    negative_ebv_rejected
 
 )
