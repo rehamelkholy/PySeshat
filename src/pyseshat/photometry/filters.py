@@ -22,7 +22,9 @@ class PhotometricPassband:
     Notes
     -----
     Throughput values must be finite, non-negative,
-    and no greater than unity.
+    and need not be normalized;
+    any constant scaling is removed during synthetic-photometry
+    integration.
     """
 
     wavelength: np.ndarray
@@ -207,13 +209,13 @@ class PhotometricPassband:
 
         if np.any(
 
-            self.throughput > 1.0
+            self.throughput < 0.0
 
         ):
 
             raise ValueError(
 
-                "throughput must not exceed unity."
+                "throughput must be non-negative."
 
             )
 
