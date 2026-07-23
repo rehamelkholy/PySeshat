@@ -232,3 +232,78 @@ def log_prior(
     )
 
     return logp
+
+# ==========================================================
+# Default photometric prior
+# ==========================================================
+
+def log_photometric_prior(
+    parameters
+):
+    """
+    Default Bayesian prior for unresolved-binary photometric
+    inference.
+
+    Parameters
+    ----------
+    parameters : PhotometricParameters
+
+    Returns
+    -------
+    float
+        Sum of the log-priors for all photometric parameters.
+    """
+
+    logp = 0.0
+
+    # ------------------------------------------------------
+    # Primary effective temperature
+    # ------------------------------------------------------
+
+    logp += log_uniform_prior(
+        parameters.primary_temperature,
+        2500.0,
+        50000.0
+    )
+
+    # ------------------------------------------------------
+    # Secondary effective temperature
+    # ------------------------------------------------------
+
+    logp += log_uniform_prior(
+        parameters.secondary_temperature,
+        2500.0,
+        50000.0
+    )
+
+    # ------------------------------------------------------
+    # Primary radius
+    # ------------------------------------------------------
+
+    logp += log_jeffreys_prior(
+        parameters.primary_radius,
+        0.01,
+        100.0
+    )
+
+    # ------------------------------------------------------
+    # Secondary radius
+    # ------------------------------------------------------
+
+    logp += log_jeffreys_prior(
+        parameters.secondary_radius,
+        0.01,
+        100.0
+    )
+
+    # ------------------------------------------------------
+    # Reddening
+    # ------------------------------------------------------
+
+    logp += log_uniform_prior(
+        parameters.ebv,
+        0.0,
+        10.0
+    )
+
+    return logp
