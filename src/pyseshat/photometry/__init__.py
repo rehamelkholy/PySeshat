@@ -27,12 +27,18 @@ from pyseshat.photometry.model import (
     synthetic_binary_magnitudes
 )
 
+from pyseshat.photometry.parameters import (
+    PhotometricParameters,
+    update_parameters
+)
 
 __all__ = [
 
     "PhotometricMeasurement",
 
     "PhotometricPassband",
+
+    "PhotometricParameters",
 
     "apply_extinction",
 
@@ -50,6 +56,8 @@ __all__ = [
 
     "binary_photometric_chi_square",
 
-    "synthetic_binary_magnitudes"
+    "synthetic_binary_magnitudes",
+
+    "update_parameters",
 
 ]
