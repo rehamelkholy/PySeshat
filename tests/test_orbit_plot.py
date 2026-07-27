@@ -1,185 +1,114 @@
-from pathlib import Path
+import matplotlib
+matplotlib.use("Agg")
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 
-from pyseshat.io.orbit_parser import (
-    parse_orbit_file
-)
-
-from pyseshat.orbit.orbit_model import (
-    sample_visual_orbit
-)
-
-from pyseshat.inference.optimizer import (
-    fit_visual_orbit
-)
-
+from pyseshat.orbit.orbital_elements import OrbitalElements
 from pyseshat.visualization.orbit_plot import (
     plot_visual_orbit,
     plot_residuals,
-    plot_rv_orbit
+    plot_rv_orbit,
 )
 
-# ==========================================================
-# Benchmark datasets
-# ==========================================================
 
-ROOT = Path("validation/benchmark_systems")
+def test_plot_visual_orbit():
 
-benchmark_files = [
+    x = np.linspace(-1.0, 1.0, 20)
+    y = np.sin(x)
 
-    ROOT / "FIN379" / "FIN379.inp",
+    orbit = {
+        "X": x,
+        "Y": y,
+    }
 
-    ROOT / "GL765" / "GL765.inp",
-
-    ROOT / "ZetaAqr" / "ZetaAqr.in2"
-]
-
-# ==========================================================
-# Run tests
-# ==========================================================
-
-for filepath in benchmark_files:
-
-    print()
-
-    print("=" * 60)
-
-    print(filepath.name)
-
-    print("=" * 60)
-
-    parsed = parse_orbit_file(
-        str(filepath)
-    )
-
-    elements = parsed["elements"]
-
-    visual_data = parsed["visual_data"]
-
-    rv_data = parsed["rv_data"]
-
-    # ------------------------------------------------------
-    # Cartesian conversion
-    # ------------------------------------------------------
-
-    t = visual_data[:,0]
-
-    theta = np.deg2rad(
-        visual_data[:,1]
-    )
-
-    rho = visual_data[:,2]
-
-    sigma = visual_data[:,3]
-
-    X = rho * np.cos(theta)
-
-    Y = rho * np.sin(theta)
-
-    sx = sigma
-
-    sy = sigma
-
-    # ------------------------------------------------------
-    # Fit
-    # ------------------------------------------------------
-
-    fit_result = fit_visual_orbit(
-        elements,
-        t,
-        X,
-        Y,
-        sx,
-        sy,
-        rv_data=rv_data
-    )
-
-    fitted = fit_result.elements
-
-    residuals = fit_result.residuals
-
-    # ------------------------------------------------------
-    # Smooth orbit
-    # ------------------------------------------------------
-
-    orbit = sample_visual_orbit(
-        fitted,
-        n_points=1000
-    )
-
-    # ------------------------------------------------------
-    # Orbit plot
-    # ------------------------------------------------------
-
-    fig1, ax1 = plot_visual_orbit(
-        X,
-        Y,
+    fig, ax = plot_visual_orbit(
+        x,
+        y,
         orbit,
-        title=filepath.stem,
-        show=True
+        show=False,
     )
 
-    print()
+    assert fig is not None
+    assert ax is not None
+    assert ax.get_xlabel() == "X (arcsec)"
+    assert ax.get_ylabel() == "Y (arcsec)"
 
-    print("Orbit plot generated.")
+    plt.close(fig)
 
-    print(
-        f"Axes aspect: "
-        f"{ax1.get_aspect()}"
-    )
 
-    # ------------------------------------------------------
-    # Residual plots
-    # ------------------------------------------------------
+def test_plot_residuals():
 
-    visual_residuals = residuals[:2*len(t)]
+    t = np.arange(10.0)
 
-    fig2, axes = plot_residuals(
+    residuals = np.zeros(20)
+
+    fig, axes = plot_residuals(
         t,
-        visual_residuals,
-        title=f"{filepath.stem} Residuals",
-        show=True
+        residuals,
+        show=False,
     )
 
-    print()
+    assert fig is not None
+    assert len(axes) == 2
 
-    print("Residual plot generated.")
+    plt.close(fig)
 
-    print(
-        f"Residual panels: "
-        f"{len(axes)}"
+
+def test_plot_rv_orbit():
+
+    elements = OrbitalElements(
+        P=10.0,
+        T0=0.0,
+        e=0.2,
+        a=1.0,
+        Omega=30.0,
+        omega=60.0,
+        i=70.0,
+        K1=20.0,
+        K2=30.0,
+        V0=0.0,
     )
 
-    # ------------------------------------------------------
-    # RV orbit plot
-    # ------------------------------------------------------
-    fig3, ax3 = plot_rv_orbit(
+    rv = np.array([
+        [0.0, 20.0, 1.0, 0],
+        [2.5, -30.0, 1.0, 1],
+        [5.0, -20.0, 1.0, 0],
+        [7.5, 30.0, 1.0, 1],
+    ])
 
-        parsed["rv_data"],
-
-        parsed["elements"],
-
-        title=f"{filepath.stem} RV Orbit",
-
-        phase=True,
-
-        show=True
+    fig, ax = plot_rv_orbit(
+        rv,
+        elements,
+        show=False,
     )
 
-    print()
+    assert fig is not None
+    assert ax is not None
 
-    print(
-        "RV plot generated."
+    plt.close(fig)
+
+
+def test_plot_rv_orbit_empty():
+
+    elements = OrbitalElements(
+        P=10.0,
+        T0=0.0,
+        e=0.2,
+        a=1.0,
+        Omega=30.0,
+        omega=60.0,
+        i=70.0,
+        K1=20.0,
+        K2=30.0,
+        V0=0.0,
     )
 
-    # ------------------------------------------------------
-    # Cleanup
-    # ------------------------------------------------------
+    with pytest.raises(ValueError):
 
-    plt.close(fig1)
-
-    plt.close(fig2)
-
-    plt.close(fig3)
+        plot_rv_orbit(
+            np.empty((0, 4)),
+            elements,
+            show=False,
+        )
