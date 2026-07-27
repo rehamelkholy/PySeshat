@@ -1,45 +1,55 @@
+import numpy as np
+
 from pyseshat.experiments.monte_carlo import (
-    MonteCarloExperiment
+    MonteCarloExperiment,
+)
+from pyseshat.experiments.experiment_runner import (
+    ExperimentRunner,
 )
 
 
-def dummy_fit():
+class DummyElements:
 
-    return None
+    def fitted_parameters(self):
+        return np.array([1.0, 2.0])
+
+    def fitted_parameter_names(self):
+        return ["A", "B"]
 
 
-mc = MonteCarloExperiment(
+class DummyFit:
 
-    fit_function=dummy_fit,
+    def __init__(self):
+        self.success = True
+        self.elements = DummyElements()
 
-    n_trials=50
-)
 
-print()
+def test_experiment_runner():
 
-print("TRIALS")
-print("=" * 60)
+    observations = np.array([10.0, 20.0])
 
-print(mc.n_trials)
+    def perturb(obs):
+        return obs + 1.0
 
-print()
+    def trial_function(obs):
 
-print("FIT FUNCTION")
-print("=" * 60)
+        assert np.all(obs > observations)
 
-print(mc.fit_function.__name__)
+        return DummyFit()
 
-print()
+    experiment = MonteCarloExperiment(
+        observations=observations,
+        perturb=perturb,
+        trial_function=trial_function,
+    )
 
-print("RUN")
-print("=" * 60)
+    runner = ExperimentRunner(
+        experiment,
+        n_trials=5,
+    )
 
-try:
+    result = runner.run()
 
-    mc.run()
-
-except NotImplementedError as e:
-
-    print(type(e).__name__)
-
-    print(e)
+    assert result.n_trials == 5
+    assert result.successful_fits == 5
+    assert result.samples.shape == (5, 2)

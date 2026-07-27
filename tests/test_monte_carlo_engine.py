@@ -1,5 +1,6 @@
 import numpy as np
 
+from pyseshat.experiments.experiment_runner import ExperimentRunner
 from pyseshat.experiments.monte_carlo import (
     MonteCarloExperiment
 )
@@ -53,12 +54,15 @@ mc = MonteCarloExperiment(
 
     perturb=perturb,
 
-    trial=trial,
-
-    n_trials=5
+    trial_function=trial
 )
 
-result = mc.run()
+runner = ExperimentRunner(
+    experiment=mc,
+    n_trials=5,
+)
+
+result = runner.run()
 
 print()
 

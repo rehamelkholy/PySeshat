@@ -75,7 +75,8 @@ result = MCMCResult(
 
     autocorrelation_time=None,
 
-    effective_sample_size=None,
+    n_walkers=20,
+    n_steps=500,
 
     burn_in=100,
 
