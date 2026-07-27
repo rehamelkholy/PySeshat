@@ -1,69 +1,71 @@
 import numpy as np
 
+from pyseshat.experiments.observation_set import (
+    VisualObservationSet,
+)
 from pyseshat.experiments.synthetic import (
     perturb_values,
-    perturb_xy
+    perturb_xy,
 )
 
-rng = np.random.default_rng(42)
 
-values = np.ones(10)
+def test_perturb_values():
 
-sigma = 0.1
+    rng = np.random.default_rng(42)
 
-perturbed = perturb_values(
-    values,
-    sigma,
-    rng=rng
-)
+    values = np.ones(10)
 
-print()
+    perturbed = perturb_values(
+        values,
+        0.1,
+        rng=rng,
+    )
 
-print("VALUES")
-print("=" * 60)
+    assert perturbed.shape == values.shape
 
-print(perturbed)
+    assert not np.allclose(
+        perturbed,
+        values,
+    )
 
-print()
 
-print("MEAN DIFFERENCE")
-print("=" * 60)
+def test_perturb_xy():
 
-print(np.mean(perturbed - values))
+    observations = VisualObservationSet(
+        epoch=np.arange(5.0),
+        x=np.zeros(5),
+        y=np.zeros(5),
+        sigma_x=np.full(5, 0.01),
+        sigma_y=np.full(5, 0.02),
+    )
 
-print()
+    result = perturb_xy(
+        observations,
+        rng=np.random.default_rng(1),
+    )
 
-print("STD OF DIFFERENCE")
-print("=" * 60)
+    assert isinstance(
+        result,
+        VisualObservationSet,
+    )
 
-print(np.std(perturbed - values))
+    assert result.x.shape == (5,)
+    assert result.y.shape == (5,)
 
-print()
+    assert np.any(result.x != observations.x)
+    assert np.any(result.y != observations.y)
 
-x = np.zeros(5)
-y = np.zeros(5)
+    np.testing.assert_array_equal(
+        result.epoch,
+        observations.epoch,
+    )
 
-sx = np.full(5, 0.01)
-sy = np.full(5, 0.02)
+    np.testing.assert_array_equal(
+        result.sigma_x,
+        observations.sigma_x,
+    )
 
-x2, y2 = perturb_xy(
-    x,
-    y,
-    sx,
-    sy,
-    rng=np.random.default_rng(1)
-)
-
-print()
-
-print("PERTURBED X")
-print("=" * 60)
-
-print(x2)
-
-print()
-
-print("PERTURBED Y")
-print("=" * 60)
-
-print(y2)
+    np.testing.assert_array_equal(
+        result.sigma_y,
+        observations.sigma_y,
+    )
