@@ -34,14 +34,14 @@ def compute_triple_orbit(
     X = (
         outer["X"]
         +
-        elements.scale_inner
+        elements.B
         * inner["X"]
     )
 
     Y = (
         outer["Y"]
         +
-        elements.scale_inner
+        elements.B
         * inner["Y"]
     )
 
