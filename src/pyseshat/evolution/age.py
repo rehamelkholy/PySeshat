@@ -13,6 +13,7 @@ from pyseshat.evolution.models import EvolutionTrack
 
 from pyseshat.evolution.observables import StellarObservables
 
+from pyseshat.evolution.residuals import compute_residuals
 
 @dataclass(frozen=True)
 class TrackFitResult:
@@ -92,49 +93,52 @@ def _track_chi2(
     in the χ² calculation.
     """
 
+    residuals = compute_residuals(
+        sample,
+        observables,
+    )
+
     chi2 = 0.0
     n_terms = 0
 
-    def accumulate(observed, sigma, predicted):
-        nonlocal chi2, n_terms
+    comparisons = (
+        (
+            residuals.log_teff,
+            observables.sigma_log_teff,
+        ),
+        (
+            residuals.log_luminosity,
+            observables.sigma_log_luminosity,
+        ),
+        (
+            residuals.log_radius,
+            observables.sigma_log_radius,
+        ),
+        (
+            residuals.log_g,
+            observables.sigma_log_g,
+        ),
+    )
 
-        if observed is None or sigma is None:
-            return
+    for residual, sigma in comparisons:
 
-        chi2 += ((predicted - observed) / sigma) ** 2
+        if residual is None:
+            continue
+
+        if sigma is None:
+            raise ValueError(
+                "Missing uncertainty for an observed quantity."
+            )
+
+        chi2 += (residual / sigma) ** 2
         n_terms += 1
-
-    accumulate(
-        observables.log_teff,
-        observables.sigma_log_teff,
-        sample.log_teff,
-    )
-
-    accumulate(
-        observables.log_luminosity,
-        observables.sigma_log_luminosity,
-        sample.log_luminosity,
-    )
-
-    accumulate(
-        observables.log_radius,
-        observables.sigma_log_radius,
-        sample.log_radius,
-    )
-
-    accumulate(
-        observables.log_g,
-        observables.sigma_log_g,
-        sample.log_g,
-    )
 
     if n_terms == 0:
         raise ValueError(
-            "At least one observable with an uncertainty "
-            "must be provided."
+            "At least one observable must be supplied."
         )
 
-    return float(chi2)
+    return chi2
 
 @dataclass(frozen=True)
 class CommonAgeFitResult:
