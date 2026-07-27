@@ -2,159 +2,111 @@ from pathlib import Path
 
 import numpy as np
 
-from pyseshat.triple.triple_parser import (
-    parse_triple_file
-)
+from pyseshat.triple.triple_fit import fit_triple_orbit
+from pyseshat.triple.triple_fit_result import TripleFitResult
+from pyseshat.triple.triple_parser import parse_triple_file
+from pyseshat.triple.triple_residuals import triple_visual_residuals
 
-from pyseshat.triple.triple_fit import (
-    fit_triple_orbit
-)
 
-from pyseshat.triple.triple_residuals import (
-    triple_visual_residuals
-)
+def load_benchmark():
 
-# ==========================================================
-# Load benchmark
-# ==========================================================
-
-filename = (
-    Path(__file__).resolve().parents[1]
-    / "validation"
-    / "benchmark_systems"
-    / "ZetaAqr"
-    / "ZetaAqr.in2"
-)
-
-result = parse_triple_file(
-    filename
-)
-
-elements = result["elements"]
-
-observations = result[
-    "observations"
-]
-
-# ==========================================================
-# Initial chi-square
-# ==========================================================
-
-initial_residuals = (
-    triple_visual_residuals(
-        observations,
-        elements
+    filename = (
+        Path(__file__).resolve().parents[1]
+        / "validation"
+        / "benchmark_systems"
+        / "ZetaAqr"
+        / "ZetaAqr.in2"
     )
-)
 
-initial_chi2 = np.sum(
-    initial_residuals**2
-)
+    parsed = parse_triple_file(
+        filename
+    )
 
-# ==========================================================
-# Fit
-# ==========================================================
+    return (
+        parsed["elements"],
+        parsed["observations"],
+    )
 
-fitted_elements, optimizer = (
-    fit_triple_orbit(
+
+def test_fit_triple_orbit():
+
+    elements, observations = load_benchmark()
+
+    initial = np.sum(
+        triple_visual_residuals(
+            observations,
+            elements,
+        ) ** 2
+    )
+
+    result = fit_triple_orbit(
         elements,
-        observations
-    )
-)
-
-# ==========================================================
-# Final chi-square
-# ==========================================================
-
-final_residuals = (
-    triple_visual_residuals(
         observations,
-        fitted_elements
     )
-)
 
-final_chi2 = np.sum(
-    final_residuals**2
-)
+    assert isinstance(
+        result,
+        TripleFitResult,
+    )
 
-# ==========================================================
-# Diagnostics
-# ==========================================================
+    final = np.sum(
+        triple_visual_residuals(
+            observations,
+            result.elements,
+        ) ** 2
+    )
 
-print()
+    assert final <= initial
 
-print(
-    "Fitted parameters:"
-)
 
-print(
-    fitted_elements.fitted_parameter_names()
-)
+def test_optimizer_success_flag():
 
-print()
+    elements, observations = load_benchmark()
 
-print(
-    "Initial a2:"
-)
+    result = fit_triple_orbit(
+        elements,
+        observations,
+    )
 
-print(
-    elements.inner.a
-)
+    assert isinstance(
+        result.optimizer_result.success,
+        bool,
+    )
 
-print()
 
-print(
-    "Final a2:"
-)
+def test_summary_runs():
 
-print(
-    fitted_elements.inner.a
-)
+    elements, observations = load_benchmark()
 
-print()
+    result = fit_triple_orbit(
+        elements,
+        observations,
+    )
 
-print(
-    "Initial chi2:"
-)
+    summary = result.summary()
 
-print(
-    initial_chi2
-)
+    assert isinstance(
+        summary,
+        dict,
+    )
 
-print()
+    assert "chi_square" in summary
 
-print(
-    "Final chi2:"
-)
 
-print(
-    final_chi2
-)
+def test_report_runs():
 
-print()
+    elements, observations = load_benchmark()
 
-print(
-    "Delta chi2:"
-)
+    result = fit_triple_orbit(
+        elements,
+        observations,
+    )
 
-print(
-    initial_chi2
-    -
-    final_chi2
-)
+    report = result.report()
 
-print()
+    assert isinstance(
+        report,
+        str,
+    )
 
-print(
-    "Optimizer success:"
-)
-
-print(
-    optimizer.success
-)
-
-print()
-
-print(
-    optimizer.message
-)
+    assert "TRIPLE FIT REPORT" in report
