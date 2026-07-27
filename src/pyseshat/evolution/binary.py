@@ -8,6 +8,10 @@ from pyseshat.evolution.age import (
 )
 from pyseshat.evolution.models import EvolutionTrack
 
+from pyseshat.evolution.observables import (
+    StellarObservables,
+)
+
 
 @dataclass(frozen=True)
 class BinaryTrackFitResult:
@@ -43,18 +47,22 @@ def fit_binary_tracks(
 
     primary = fit_track(
         primary_track,
-        log_teff=primary_log_teff,
-        log_luminosity=primary_log_luminosity,
-        sigma_log_teff=primary_sigma_log_teff,
-        sigma_log_luminosity=primary_sigma_log_luminosity,
+        observables=StellarObservables(
+            log_teff=primary_log_teff,
+            log_luminosity=primary_log_luminosity,
+            sigma_log_teff=primary_sigma_log_teff,
+            sigma_log_luminosity=primary_sigma_log_luminosity,
+        ),
     )
 
     secondary = fit_track(
         secondary_track,
-        log_teff=secondary_log_teff,
-        log_luminosity=secondary_log_luminosity,
-        sigma_log_teff=secondary_sigma_log_teff,
-        sigma_log_luminosity=secondary_sigma_log_luminosity,
+        observables=StellarObservables(
+            log_teff=secondary_log_teff,
+            log_luminosity=secondary_log_luminosity,
+            sigma_log_teff=secondary_sigma_log_teff,
+            sigma_log_luminosity=secondary_sigma_log_luminosity,
+        ),
     )
 
     return BinaryTrackFitResult(

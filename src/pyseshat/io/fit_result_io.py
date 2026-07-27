@@ -3,7 +3,7 @@ import numpy as np
 
 from pathlib import Path
 from dataclasses import asdict
-from datetime import datetime
+from datetime import UTC, datetime
 
 from scipy.optimize import (
     OptimizeResult
@@ -46,7 +46,7 @@ def fit_result_to_dict(
                 system_name,
 
             "created_utc":
-                datetime.utcnow().isoformat(),
+                datetime.now(UTC).isoformat(),
 
             "format":
                 "PySeshat FitResult",
