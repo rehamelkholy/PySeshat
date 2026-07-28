@@ -22,6 +22,10 @@ from pyseshat.inference.context import (
     LikelihoodContext,
 )
 
+from pyseshat.inference.problem import (
+    InferenceProblem,
+)
+
 # ==========================================================
 # Combined visual + RV residuals
 # ==========================================================
@@ -191,6 +195,7 @@ def log_likelihood(
 
     return -0.5 * np.sum(residuals ** 2)
 
+
 def log_likelihood_from_context(
     fitted_values,
     elements,
@@ -208,3 +213,18 @@ def log_likelihood_from_context(
     )
 
     return -0.5 * np.sum(residuals ** 2)
+
+def log_likelihood_from_problem(
+    fitted_values,
+    problem: InferenceProblem,
+):
+    """
+    Preferred likelihood interface operating on an
+    InferenceProblem.
+    """
+
+    return log_likelihood_from_context(
+        fitted_values=fitted_values,
+        elements=problem.elements,
+        context=problem.context,
+    )
