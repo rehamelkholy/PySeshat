@@ -6,96 +6,13 @@ from pyseshat.orbit.rv_model import (
 )
 from pyseshat.orbit.orbital_elements import OrbitalElements
 
+from pyseshat.inference.core import (
+    update_elements,
+)
 
-# ==========================================================
-# Update fitted parameters
-# ==========================================================
-
-def update_elements(elements: OrbitalElements, fitted_values):
-    """
-    Create updated orbital elements object by replacing
-    fitted parameters only.
-
-    Parameters
-    ----------
-    elements : OrbitalElements
-        Original orbital elements
-
-    fitted_values : ndarray
-        Values corresponding ONLY to fitted parameters
-
-    Returns
-    -------
-    OrbitalElements
-    """
-
-    # copy full parameter vector
-    full = elements.to_array().copy()
-
-    # replace fitted parameters
-    full[elements.fitted_mask()] = fitted_values
-
-    updated = OrbitalElements.from_array(
-        full,
-        fit_flags=elements.fit_flags.copy()
-    )
-
-    updated.normalize_angles()
-
-    return updated
-
-
-# ==========================================================
-# Visual XY residuals
-# ==========================================================
-
-def visual_xy_residuals(
-    fitted_values,
-    elements: OrbitalElements,
-    t,
-    X_obs,
-    Y_obs,
-    sx,
-    sy
-):
-    """
-    Compute weighted visual binary residuals
-    in Cartesian coordinates.
-
-    Returns
-    -------
-    residual vector
-    """
-
-    # ------------------------------------------------------
-    # Update fitted parameters
-    # ------------------------------------------------------
-
-    updated_elements = update_elements(
-        elements,
-        fitted_values
-    )
-
-    # ------------------------------------------------------
-    # Compute model orbit
-    # ------------------------------------------------------
-
-    orbit = compute_visual_orbit(
-        t,
-        updated_elements
-    )
-
-    X_model = orbit["X"]
-    Y_model = orbit["Y"]
-
-    # ------------------------------------------------------
-    # Weighted residuals
-    # ------------------------------------------------------
-
-    resX = (X_obs - X_model) / sx
-    resY = (Y_obs - Y_model) / sy
-
-    return np.concatenate([resX, resY])
+from pyseshat.inference.terms import (
+    visual_xy_residuals,
+)
 
 # ==========================================================
 # RV residuals

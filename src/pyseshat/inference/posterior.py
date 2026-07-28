@@ -6,7 +6,10 @@ import numpy as np
 
 from pyseshat.inference.likelihood import (
     log_likelihood,
-    update_elements
+)
+
+from pyseshat.inference.core import (
+    update_elements,
 )
 
 from pyseshat.inference.priors import (

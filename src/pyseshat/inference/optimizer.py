@@ -10,9 +10,15 @@ from pyseshat.inference.node_disambiguation import (
 )
 
 from pyseshat.inference.likelihood import (
-    visual_xy_residuals,
     combined_residuals,
-    update_elements
+)
+
+from pyseshat.inference.terms.visual import (
+    visual_xy_residuals,
+)
+
+from pyseshat.inference.core import (
+    update_elements,
 )
 
 from pyseshat.inference.fit_result import (
