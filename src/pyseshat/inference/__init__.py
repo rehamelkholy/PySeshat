@@ -20,6 +20,10 @@ from .observation_wrappers import (
     fit_visual_orbit_from_observations,
 )
 
+from .solver import (
+    solve,
+)
+
 __all__ = [
 
     "chi_square",
@@ -35,4 +39,6 @@ __all__ = [
     "sample_photometry",
 
     "fit_visual_orbit_from_observations",
+
+    "solve",
 ]
