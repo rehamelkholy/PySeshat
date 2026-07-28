@@ -38,5 +38,11 @@ def solve(
         ctx.sx,
         ctx.sy,
         rv_data=ctx.rv_data,
+        method=problem.method,
+        loss=problem.loss,
+        f_scale=problem.f_scale,
+        bounds=problem.bounds,
+        node_disambiguation=problem.node_disambiguation,
+        node_rtol=problem.node_rtol,
         **kwargs,
     )
