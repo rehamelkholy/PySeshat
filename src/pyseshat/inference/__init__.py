@@ -16,6 +16,10 @@ from pyseshat.inference.photometric_mcmc import (
     sample_photometry,
 )
 
+from .observation_wrappers import (
+    fit_visual_orbit_from_observations,
+)
+
 __all__ = [
 
     "chi_square",
@@ -30,4 +34,5 @@ __all__ = [
 
     "sample_photometry",
 
+    "fit_visual_orbit_from_observations",
 ]
