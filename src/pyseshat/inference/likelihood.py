@@ -15,6 +15,11 @@ from pyseshat.inference.terms import (
     visual_xy_residuals,
     rv_residuals,
     joint_residuals,
+    joint_residuals_from_context,
+)
+
+from pyseshat.inference.context import (
+    LikelihoodContext,
 )
 
 # ==========================================================
@@ -32,19 +37,23 @@ def combined_residuals(
     rv_data=None,
 ):
     """
-    Backward-compatible wrapper around the modular
-    joint residual calculation.
+    Backward-compatible wrapper around the context-based
+    likelihood implementation.
     """
 
-    return joint_residuals(
-        fitted_values,
-        elements,
-        t,
-        X_obs,
-        Y_obs,
-        sx,
-        sy,
+    context = LikelihoodContext(
+        t=t,
+        X_obs=X_obs,
+        Y_obs=Y_obs,
+        sx=sx,
+        sy=sy,
         rv_data=rv_data,
+    )
+
+    return joint_residuals_from_context(
+        fitted_values=fitted_values,
+        elements=elements,
+        context=context,
     )
 
 # ==========================================================
