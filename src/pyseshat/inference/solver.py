@@ -28,16 +28,14 @@ def solve(
     FitResult
     """
 
-    ctx = problem.context
-
     return fit_visual_orbit(
         problem.elements,
-        ctx.t,
-        ctx.X_obs,
-        ctx.Y_obs,
-        ctx.sx,
-        ctx.sy,
-        rv_data=ctx.rv_data,
+        problem.t,
+        problem.X_obs,
+        problem.Y_obs,
+        problem.sx,
+        problem.sy,
+        rv_data=problem.rv_data,
         method=problem.method,
         loss=problem.loss,
         f_scale=problem.f_scale,

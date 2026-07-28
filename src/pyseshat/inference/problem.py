@@ -25,3 +25,27 @@ class InferenceProblem:
     node_disambiguation: bool = True
 
     node_rtol: float = 0.01
+
+    @property
+    def t(self):
+        return self.context.t
+
+    @property
+    def X_obs(self):
+        return self.context.X_obs
+
+    @property
+    def Y_obs(self):
+        return self.context.Y_obs
+
+    @property
+    def sx(self):
+        return self.context.sx
+
+    @property
+    def sy(self):
+        return self.context.sy
+
+    @property
+    def rv_data(self):
+        return self.context.rv_data
