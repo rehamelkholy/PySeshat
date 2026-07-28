@@ -171,36 +171,40 @@ def log_likelihood(
     """
     Gaussian log-likelihood.
 
-    Parameters
-    ----------
-    fitted_values : ndarray
-        Current fitted parameter vector.
-
-    elements : OrbitalElements
-
-    t, X_obs, Y_obs, sx, sy
-
-    rv_data : ndarray or None
-
-    Returns
-    -------
-    float
-        Log-likelihood (up to an additive constant).
+    Public API retained for backward compatibility.
     """
 
-    residuals = combined_residuals(
-        fitted_values=fitted_values,
-        elements=elements,
+    context = LikelihoodContext(
         t=t,
         X_obs=X_obs,
         Y_obs=Y_obs,
         sx=sx,
         sy=sy,
-        rv_data=rv_data
+        rv_data=rv_data,
     )
 
-    chi2 = np.sum(
-        residuals ** 2
+    residuals = joint_residuals_from_context(
+        fitted_values=fitted_values,
+        elements=elements,
+        context=context,
     )
 
-    return -0.5 * chi2
+    return -0.5 * np.sum(residuals ** 2)
+
+def log_likelihood_from_context(
+    fitted_values,
+    elements,
+    context: LikelihoodContext,
+):
+    """
+    Preferred implementation operating directly on
+    LikelihoodContext.
+    """
+
+    residuals = joint_residuals_from_context(
+        fitted_values=fitted_values,
+        elements=elements,
+        context=context,
+    )
+
+    return -0.5 * np.sum(residuals ** 2)
