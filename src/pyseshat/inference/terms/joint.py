@@ -8,6 +8,9 @@ from .radial_velocity import (
     rv_residuals,
 )
 
+from pyseshat.inference.context import (
+    LikelihoodContext,
+)
 
 def joint_residuals(
     fitted_values,
@@ -65,3 +68,25 @@ def joint_residuals(
         )
 
     return np.concatenate(residuals)
+
+def joint_residuals_from_context(
+    fitted_values,
+    elements,
+    context: LikelihoodContext,
+):
+    """
+    Compute residuals from a LikelihoodContext.
+
+    This is the preferred interface for new code.
+    """
+
+    return joint_residuals(
+        fitted_values=fitted_values,
+        elements=elements,
+        t=context.t,
+        X_obs=context.X_obs,
+        Y_obs=context.Y_obs,
+        sx=context.sx,
+        sy=context.sy,
+        rv_data=context.rv_data,
+    )
