@@ -1,10 +1,11 @@
 import numpy as np
 
-from scipy.optimize import least_squares
+from pyseshat.inference.context import LikelihoodContext
 
 from pyseshat.inference.optimizer_engine import (
     run_least_squares
 )
+
 from pyseshat.inference.node_disambiguation import (
     node_flip
 )
@@ -12,6 +13,8 @@ from pyseshat.inference.node_disambiguation import (
 from pyseshat.inference.likelihood import (
     combined_residuals,
 )
+
+from pyseshat.inference.problem import InferenceProblem
 
 from pyseshat.inference.terms.visual import (
     visual_xy_residuals,
@@ -25,13 +28,9 @@ from pyseshat.inference.fit_result import (
     FitResult
 )
 
-from pyseshat.inference.covariance import (
-    estimate_covariance,
-    parameter_uncertainties
-)
-
 from pyseshat.inference.posterior import (
-    log_posterior
+    log_posterior,
+    log_posterior_from_problem,
 )
 
 from pyseshat.inference.mcmc_engine import (
@@ -40,10 +39,6 @@ from pyseshat.inference.mcmc_engine import (
 
 from pyseshat.inference.mcmc_result import (
     MCMCResult
-)
-
-from pyseshat.analysis.statistics import (
-    combined_fit_summary
 )
 
 from pyseshat.orbit.orbital_elements import OrbitalElements
@@ -143,6 +138,75 @@ def fit_visual_orbit(
     node ambiguity when RV data are present.
     """
 
+    context = LikelihoodContext(
+        t=t,
+        X_obs=X_obs,
+        Y_obs=Y_obs,
+        sx=sx,
+        sy=sy,
+        rv_data=rv_data,
+    )
+
+    problem = InferenceProblem(
+        elements=elements,
+        context=context,
+        method=method,
+        loss=loss,
+        f_scale=f_scale,
+        bounds=bounds,
+        node_disambiguation=node_disambiguation,
+        node_rtol=node_rtol,
+    )
+
+    return fit_visual_orbit_from_problem(
+        problem
+    )
+
+# ==========================================================
+# Internal optimizer implementation
+# ==========================================================
+
+def _fit_visual_orbit_impl(
+    problem,
+):
+    """
+    Shared implementation for visual-orbit fitting.
+
+    Parameters
+    ----------
+    problem : InferenceProblem
+
+    Returns
+    -------
+    FitResult
+    """
+
+    elements = problem.elements
+
+    t = problem.t
+
+    X_obs = problem.X_obs
+
+    Y_obs = problem.Y_obs
+
+    sx = problem.sx
+
+    sy = problem.sy
+
+    rv_data = problem.rv_data
+
+    method = problem.method
+
+    loss = problem.loss
+
+    f_scale = problem.f_scale
+
+    bounds = problem.bounds
+
+    node_disambiguation = problem.node_disambiguation
+
+    node_rtol = problem.node_rtol
+
     # --------------------------------------------------
     # Visual-only systems
     # --------------------------------------------------
@@ -164,7 +228,7 @@ def fit_visual_orbit(
             method=method,
             loss=loss,
             f_scale=f_scale,
-            bounds=bounds
+            bounds=bounds,
         )
 
     # --------------------------------------------------
@@ -182,7 +246,7 @@ def fit_visual_orbit(
         method=method,
         loss=loss,
         f_scale=f_scale,
-        bounds=bounds
+        bounds=bounds,
     )
 
     # --------------------------------------------------
@@ -204,12 +268,8 @@ def fit_visual_orbit(
         method=method,
         loss=loss,
         f_scale=f_scale,
-        bounds=bounds
+        bounds=bounds,
     )
-
-    # --------------------------------------------------
-    # Compare final chi-square
-    # --------------------------------------------------
 
     chi2_original = _chi2_from_fit(
         fit_original
@@ -218,10 +278,6 @@ def fit_visual_orbit(
     chi2_flipped = _chi2_from_fit(
         fit_flipped
     )
-
-    # --------------------------------------------------
-    # Nearly equivalent solutions
-    # --------------------------------------------------
 
     relative_difference = (
         abs(
@@ -236,27 +292,27 @@ def fit_visual_orbit(
         )
     )
 
-    if (
-        relative_difference
-        <
-        node_rtol
-    ):
+    if relative_difference < node_rtol:
 
         return fit_original
 
-    # --------------------------------------------------
-    # Choose lower chi-square
-    # --------------------------------------------------
-
-    if (
-        chi2_original
-        <
-        chi2_flipped
-    ):
+    if chi2_original < chi2_flipped:
 
         return fit_original
 
     return fit_flipped
+
+def fit_visual_orbit_from_problem(
+    problem,
+):
+    """
+    Preferred orbit-fitting interface operating on an
+    InferenceProblem.
+    """
+
+    return _fit_visual_orbit_impl(
+        problem
+    )
 
 def _fit_single_solution(
     elements: OrbitalElements,
@@ -362,18 +418,9 @@ def _fit_single_solution(
         bounds=bounds
     )
 
-# ==========================================================
-# Sample a single orbital solution
-# ==========================================================
-
-def _sample_single_solution(
+def _sample_single_solution_from_problem(
     fit_result,
-    t,
-    X_obs,
-    Y_obs,
-    sx,
-    sy,
-    rv_data=None,
+    problem,
     n_walkers=32,
     n_steps=5000,
     burn_in=1000,
@@ -383,16 +430,7 @@ def _sample_single_solution(
 ):
     """
     Sample the posterior distribution of a single orbital
-    solution using emcee.
-
-    Parameters
-    ----------
-    fit_result : FitResult
-        Least-squares solution used to initialize the sampler.
-
-    Returns
-    -------
-    MCMCResult
+    solution using an InferenceProblem.
     """
 
     elements = fit_result.elements
@@ -403,24 +441,10 @@ def _sample_single_solution(
 
     engine = run_emcee(
 
-        log_probability_function=log_posterior,
+        log_probability_function=log_posterior_from_problem,
 
         log_probability_args=(
-
-            elements,
-
-            t,
-
-            X_obs,
-
-            Y_obs,
-
-            sx,
-
-            sy,
-
-            rv_data
-
+            problem,
         ),
 
         initial_parameters=initial_parameters,
@@ -476,6 +500,134 @@ def _sample_single_solution(
     )
 
 # ==========================================================
+# Sample a single orbital solution
+# ==========================================================
+
+def _sample_single_solution(
+    fit_result,
+    t,
+    X_obs,
+    Y_obs,
+    sx,
+    sy,
+    rv_data=None,
+    n_walkers=32,
+    n_steps=5000,
+    burn_in=1000,
+    thin=1,
+    random_scale=1e-4,
+    rng=None
+):
+    """
+    Sample the posterior distribution of a single orbital
+    solution using emcee.
+
+    Parameters
+    ----------
+    fit_result : FitResult
+        Least-squares solution used to initialize the sampler.
+
+    Returns
+    -------
+    MCMCResult
+    """
+
+    context = LikelihoodContext(
+
+        t=t,
+
+        X_obs=X_obs,
+
+        Y_obs=Y_obs,
+
+        sx=sx,
+
+        sy=sy,
+
+        rv_data=rv_data,
+    )
+
+    problem = InferenceProblem(
+
+        elements=fit_result.elements,
+
+        context=context,
+    )
+
+    return _sample_single_solution_from_problem(
+
+        fit_result,
+
+        problem,
+
+        n_walkers=n_walkers,
+
+        n_steps=n_steps,
+
+        burn_in=burn_in,
+
+        thin=thin,
+
+        random_scale=random_scale,
+
+        rng=rng,
+    )
+
+# ==========================================================
+# Bayesian visual-orbit fitting from inference problem
+# ==========================================================
+
+def fit_visual_orbit_mcmc_from_problem(
+    problem,
+    n_walkers=32,
+    n_steps=5000,
+    burn_in=1000,
+    thin=1,
+    random_scale=1e-4,
+    rng=None
+):
+    """
+    Preferred Bayesian orbit-fitting interface operating on
+    an InferenceProblem.
+
+    This function first computes the maximum-likelihood
+    solution, then samples the posterior using emcee.
+    """
+
+    fit = fit_visual_orbit_from_problem(
+        problem
+    )
+
+    return _sample_single_solution(
+
+        fit,
+
+        problem.t,
+
+        problem.X_obs,
+
+        problem.Y_obs,
+
+        problem.sx,
+
+        problem.sy,
+
+        rv_data=problem.rv_data,
+
+        n_walkers=n_walkers,
+
+        n_steps=n_steps,
+
+        burn_in=burn_in,
+
+        thin=thin,
+
+        random_scale=random_scale,
+
+        rng=rng
+    )
+
+# ==========================================================
 # Bayesian visual-orbit fitting
 # ==========================================================
 
@@ -508,21 +660,26 @@ def fit_visual_orbit_mcmc(
     distribution using emcee.
     """
 
-    fit = fit_visual_orbit(
+    context = LikelihoodContext(
 
-        elements,
+        t=t,
 
-        t,
+        X_obs=X_obs,
 
-        X_obs,
+        Y_obs=Y_obs,
 
-        Y_obs,
+        sx=sx,
 
-        sx,
+        sy=sy,
 
-        sy,
+        rv_data=rv_data
+    )
 
-        rv_data=rv_data,
+    problem = InferenceProblem(
+
+        elements=elements,
+
+        context=context,
 
         method=method,
 
@@ -537,21 +694,9 @@ def fit_visual_orbit_mcmc(
         node_rtol=node_rtol
     )
 
-    return _sample_single_solution(
+    return fit_visual_orbit_mcmc_from_problem(
 
-        fit,
-
-        t,
-
-        X_obs,
-
-        Y_obs,
-
-        sx,
-
-        sy,
-
-        rv_data=rv_data,
+        problem,
 
         n_walkers=n_walkers,
 
