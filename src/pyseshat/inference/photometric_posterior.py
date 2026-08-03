@@ -9,13 +9,43 @@ from pyseshat.photometry.parameters import (
 )
 
 from pyseshat.inference.photometric_likelihood import (
-    log_likelihood
+    log_likelihood,
+    photometric_log_likelihood_from_problem,
+)
+
+from pyseshat.inference.photometric_problem import (
+    PhotometricInferenceProblem,
+)
+
+from pyseshat.inference.photometric_context import (
+    PhotometricContext,
 )
 
 from pyseshat.inference.priors import (
     log_photometric_prior
 )
 
+def photometric_log_posterior_from_problem(
+    problem: PhotometricInferenceProblem,
+):
+    """
+    Evaluate the Bayesian photometric posterior for a
+    canonical photometric inference problem.
+    """
+
+    lp = log_photometric_prior(
+        problem.parameters
+    )
+
+    if not np.isfinite(lp):
+
+        return -np.inf
+
+    ll = photometric_log_likelihood_from_problem(
+        problem
+    )
+
+    return lp + ll
 
 # ==========================================================
 # Log-posterior
@@ -75,44 +105,38 @@ def log_posterior(
 
     )
 
-    lp = log_photometric_prior(
+    context = PhotometricContext(
 
-        current
+        atmosphere_grid=atmosphere_grid,
 
-    )
+        passbands=passbands,
 
-    if not np.isfinite(
+        zero_points=zero_points,
 
-        lp
+        measurements=measurements,
 
-    ):
+        primary_logg=primary_logg,
 
-        return -np.inf
+        secondary_logg=secondary_logg,
 
-    ll = log_likelihood(
+        metallicity=metallicity,
 
-        fitted_values,
+        distance=distance,
 
-        current,
-
-        atmosphere_grid,
-
-        passbands,
-
-        zero_points,
-
-        measurements,
-
-        primary_logg,
-
-        secondary_logg,
-
-        metallicity,
-
-        distance,
-
-        rv
+        rv=rv
 
     )
 
-    return lp + ll
+    problem = PhotometricInferenceProblem(
+
+        parameters=current,
+
+        context=context
+
+    )
+
+    return photometric_log_posterior_from_problem(
+
+        problem
+
+    )

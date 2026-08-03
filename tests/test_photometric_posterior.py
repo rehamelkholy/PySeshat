@@ -35,12 +35,9 @@ def test_log_posterior(monkeypatch):
     )
 
     monkeypatch.setattr(
-
         "pyseshat.inference.photometric_posterior."
-        "log_likelihood",
-
-        fake_likelihood
-
+        "photometric_log_likelihood_from_problem",
+        lambda problem: -10.0
     )
 
     parameters = PhotometricParameters(
@@ -233,12 +230,9 @@ def test_log_posterior_updates_parameters(
     )
 
     monkeypatch.setattr(
-
         "pyseshat.inference.photometric_posterior."
-        "log_likelihood",
-
-        lambda *args, **kwargs: 0.0
-
+        "photometric_log_likelihood_from_problem",
+        lambda problem: 0.0
     )
 
     parameters = PhotometricParameters(
@@ -302,3 +296,13 @@ def test_log_posterior_updates_parameters(
     assert updated.primary_radius == 1.4
     assert updated.secondary_radius == 0.95
     assert updated.ebv == 0.2
+
+def fake_likelihood(problem):
+
+    assert problem.parameters.primary_temperature == 6500.0
+    assert problem.parameters.secondary_temperature == 5200.0
+    assert problem.parameters.primary_radius == 1.4
+    assert problem.parameters.secondary_radius == 0.95
+    assert problem.parameters.ebv == 0.2
+
+    return 0.0

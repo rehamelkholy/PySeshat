@@ -157,7 +157,7 @@ def test_sample_photometry(monkeypatch):
 
         ==
 
-        "log_posterior"
+        "photometric_log_posterior_from_problem"
 
     )
 
