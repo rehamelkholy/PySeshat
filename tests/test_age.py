@@ -5,7 +5,7 @@ import pytest
 from pyseshat.evolution.age import (
     TrackFitResult,
     CommonAgeFitResult,
-    _track_chi2,
+    track_chi2,
     fit_common_age,
     fit_track,
     _common_age_grid,
@@ -210,7 +210,7 @@ def test_track_chi2():
         sigma_log_luminosity=0.01,
     )
 
-    assert _track_chi2(sample, obs) == pytest.approx(0.0)
+    assert track_chi2(sample, obs) == pytest.approx(0.0)
 
 def test_track_chi2_single_observable():
 
@@ -224,7 +224,7 @@ def test_track_chi2_single_observable():
         sigma_log_teff=0.02,
     )
 
-    assert _track_chi2(sample, obs) == pytest.approx(0.0)
+    assert track_chi2(sample, obs) == pytest.approx(0.0)
 
 def test_track_chi2_no_observables():
 
@@ -235,7 +235,7 @@ def test_track_chi2_no_observables():
 
     with pytest.raises(ValueError):
 
-        _track_chi2(
+        track_chi2(
             sample,
             StellarObservables(),
         )

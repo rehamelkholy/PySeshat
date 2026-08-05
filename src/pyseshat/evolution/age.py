@@ -62,7 +62,7 @@ def fit_track(
 
         sample = sample_track(track, float(age))
 
-        chi2[i] = _track_chi2(
+        chi2[i] = track_chi2(
             sample,
             observables,
         )
@@ -80,6 +80,92 @@ def fit_track(
         index=index,
     )
 
+def track_residuals(
+    sample: EvolutionSample,
+    observables: StellarObservables,
+) -> np.ndarray:
+    """
+    Compute the standardized residual vector between an
+    interpolated stellar model and a set of observed stellar
+    parameters.
+
+    Only observables with both a measured value and an
+    associated uncertainty are included.
+
+    Parameters
+    ----------
+    sample
+        Interpolated stellar evolution model.
+
+    observables
+        Observed stellar parameters.
+
+    Returns
+    -------
+    numpy.ndarray
+        Standardized residual vector.
+    """
+
+    residuals = compute_residuals(
+        sample,
+        observables,
+    )
+
+    standardized = []
+
+    comparisons = (
+        (
+            residuals.log_teff,
+            observables.sigma_log_teff,
+        ),
+        (
+            residuals.log_luminosity,
+            observables.sigma_log_luminosity,
+        ),
+        (
+            residuals.log_radius,
+            observables.sigma_log_radius,
+        ),
+        (
+            residuals.log_g,
+            observables.sigma_log_g,
+        ),
+    )
+
+    for residual, sigma in comparisons:
+
+        if residual is None:
+            continue
+
+        if sigma is None:
+
+            raise ValueError(
+
+                "Missing uncertainty for an observed quantity."
+
+            )
+
+        standardized.append(
+
+            residual / sigma
+
+        )
+
+    if len(standardized) == 0:
+
+        raise ValueError(
+
+            "At least one observable must be supplied."
+
+        )
+
+    return np.asarray(
+
+        standardized,
+
+        dtype=float,
+
+    )
 
 def _track_chi2(
     sample: EvolutionSample,
@@ -140,6 +226,47 @@ def _track_chi2(
 
     return chi2
 
+def track_chi2(
+    sample: EvolutionSample,
+    observables: StellarObservables,
+) -> float:
+    """
+    Compute the χ² statistic between an interpolated stellar
+    model and a set of observed stellar parameters.
+
+    This is the public statistical interface used by both
+    deterministic fitting routines and Bayesian inference.
+
+    Parameters
+    ----------
+    sample
+        Interpolated stellar evolution model.
+
+    observables
+        Observed stellar parameters.
+
+    Returns
+    -------
+    float
+        χ² statistic.
+    """
+
+    return float(
+
+        np.sum(
+
+            track_residuals(
+
+                sample,
+
+                observables,
+
+            ) ** 2
+
+        )
+
+    )
+
 @dataclass(frozen=True)
 class CommonAgeFitResult:
     """
@@ -194,11 +321,11 @@ def fit_common_age(
         )
 
         chi2 = (
-            _track_chi2(
+            track_chi2(
                 primary,
                 primary_observables,
             )
-            + _track_chi2(
+            + track_chi2(
                 secondary,
                 secondary_observables,
             )
