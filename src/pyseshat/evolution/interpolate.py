@@ -24,6 +24,31 @@ class EvolutionSample:
 
     phase: int | None = None
 
+    @property
+    def stellar_mass(self) -> float:
+        """
+        Return the best available stellar mass.
+
+        Preference order:
+
+        1. current mass
+        2. initial mass
+
+        Raises
+        ------
+        ValueError
+            If neither quantity is available.
+        """
+
+        if self.mass is not None:
+            return self.mass
+
+        if self.initial_mass is not None:
+            return self.initial_mass
+
+        raise ValueError(
+            "EvolutionSample contains no stellar mass."
+        )
 
 def _interp(x, xp, fp):
     """

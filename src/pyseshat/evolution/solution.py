@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyseshat.evolution.age import CommonAgeFitResult
 
 from pyseshat.evolution.interpolate import (
     EvolutionSample,
@@ -59,3 +63,48 @@ class BinaryEvolutionSolution:
             )
 
         return self.chi2 / self.degrees_of_freedom
+
+    @classmethod
+    def from_common_age_fit(
+        cls,
+        result: "CommonAgeFitResult",
+        *,
+        metallicity: float,
+        degrees_of_freedom: int | None = None,
+    ):
+        """
+        Construct a BinaryEvolutionSolution from a
+        CommonAgeFitResult.
+
+        Parameters
+        ----------
+        result
+            Result returned by fit_common_age().
+
+        metallicity
+            Metallicity of the evolutionary tracks.
+
+        degrees_of_freedom
+            Number of degrees of freedom contributing
+            to the total χ².
+
+        Returns
+        -------
+        BinaryEvolutionSolution
+        """
+
+        return cls(
+
+            primary=result.primary,
+
+            secondary=result.secondary,
+
+            age=result.age,
+
+            metallicity=metallicity,
+
+            chi2=result.chi2,
+
+            degrees_of_freedom=degrees_of_freedom,
+
+        )

@@ -15,6 +15,10 @@ from pyseshat.evolution.observables import StellarObservables
 
 from pyseshat.evolution.residuals import compute_residuals
 
+from pyseshat.evolution.solution import (
+    BinaryEvolutionSolution,
+)
+
 @dataclass(frozen=True)
 class TrackFitResult:
     """

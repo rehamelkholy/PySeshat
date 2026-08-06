@@ -1,0 +1,271 @@
+PySeshat
+├── pyseshat
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   └── __init__.cpython-314.pyc
+│   ├── analysis
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── binary_consistency.cpython-314.pyc
+│   │   │   ├── bolometric.cpython-314.pyc
+│   │   │   ├── dynamics.cpython-314.pyc
+│   │   │   ├── ephemeris.cpython-314.pyc
+│   │   │   ├── error_propagation.cpython-314.pyc
+│   │   │   ├── luminosity.cpython-314.pyc
+│   │   │   ├── masses.cpython-314.pyc
+│   │   │   ├── precession.cpython-314.pyc
+│   │   │   ├── report.cpython-314.pyc
+│   │   │   └── statistics.cpython-314.pyc
+│   │   ├── binary_consistency.py
+│   │   ├── bolometric.py
+│   │   ├── dynamics.py
+│   │   ├── error_propagation.py
+│   │   ├── luminosity.py
+│   │   ├── masses.py
+│   │   ├── precession.py
+│   │   ├── report.py
+│   │   └── statistics.py
+│   ├── ephemeris
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── ephemeris.cpython-314.pyc
+│   │   │   └── ephemeris_result.cpython-314.pyc
+│   │   ├── ephemeris.py
+│   │   └── ephemeris_result.py
+│   ├── evolution
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── age.cpython-314.pyc
+│   │   │   ├── binary.cpython-314.pyc
+│   │   │   ├── grids.cpython-314.pyc
+│   │   │   ├── interpolate.cpython-314.pyc
+│   │   │   ├── isochrone.cpython-314.pyc
+│   │   │   ├── model_fit.cpython-314.pyc
+│   │   │   ├── models.cpython-314.pyc
+│   │   │   ├── observables.cpython-314.pyc
+│   │   │   ├── residuals.cpython-314.pyc
+│   │   │   ├── search.cpython-314.pyc
+│   │   │   └── solution.cpython-314.pyc
+│   │   ├── age.py
+│   │   ├── binary.py
+│   │   ├── grids.py
+│   │   ├── hrdiagram.py
+│   │   ├── interpolate.py
+│   │   ├── isochrone.py
+│   │   ├── model_fit.py
+│   │   ├── models.py
+│   │   ├── observables.py
+│   │   ├── parsers
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-314.pyc
+│   │   │   │   └── parsec.cpython-314.pyc
+│   │   │   └── parsec.py
+│   │   ├── residuals.py
+│   │   ├── search.py
+│   │   └── solution.py
+│   ├── experiments
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── experiment.cpython-314.pyc
+│   │   │   ├── experiment_result.cpython-314.pyc
+│   │   │   ├── experiment_runner.cpython-314.pyc
+│   │   │   ├── monte_carlo.cpython-314.pyc
+│   │   │   ├── observation_set.cpython-314.pyc
+│   │   │   └── synthetic.cpython-314.pyc
+│   │   ├── experiment.py
+│   │   ├── experiment_result.py
+│   │   ├── experiment_runner.py
+│   │   ├── monte_carlo.py
+│   │   ├── observation_set.py
+│   │   └── synthetic.py
+│   ├── inference
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── base_fit_result.cpython-314.pyc
+│   │   │   ├── context.cpython-314.pyc
+│   │   │   ├── core.cpython-314.pyc
+│   │   │   ├── covariance.cpython-314.pyc
+│   │   │   ├── diagnostics.cpython-314.pyc
+│   │   │   ├── evolution_likelihood.cpython-314.pyc
+│   │   │   ├── fit_result.cpython-314.pyc
+│   │   │   ├── joint_likelihood.cpython-314.pyc
+│   │   │   ├── joint_parameters.cpython-314.pyc
+│   │   │   ├── joint_problem.cpython-314.pyc
+│   │   │   ├── likelihood.cpython-314.pyc
+│   │   │   ├── mcmc_engine.cpython-314.pyc
+│   │   │   ├── mcmc_result.cpython-314.pyc
+│   │   │   ├── node_disambiguation.cpython-314.pyc
+│   │   │   ├── observation_wrappers.cpython-314.pyc
+│   │   │   ├── optimizer.cpython-314.pyc
+│   │   │   ├── optimizer_engine.cpython-314.pyc
+│   │   │   ├── photometric_context.cpython-314.pyc
+│   │   │   ├── photometric_likelihood.cpython-314.pyc
+│   │   │   ├── photometric_mcmc.cpython-314.pyc
+│   │   │   ├── photometric_optimizer.cpython-314.pyc
+│   │   │   ├── photometric_posterior.cpython-314.pyc
+│   │   │   ├── photometric_problem.cpython-314.pyc
+│   │   │   ├── posterior.cpython-314.pyc
+│   │   │   ├── priors.cpython-314.pyc
+│   │   │   ├── problem.cpython-314.pyc
+│   │   │   ├── solver.cpython-314.pyc
+│   │   │   └── solver_engine.cpython-314.pyc
+│   │   ├── base_fit_result.py
+│   │   ├── context.py
+│   │   ├── core.py
+│   │   ├── covariance.py
+│   │   ├── diagnostics.py
+│   │   ├── evolution_likelihood.py
+│   │   ├── fit_result.py
+│   │   ├── joint_likelihood.py
+│   │   ├── joint_parameters.py
+│   │   ├── joint_posterior.py
+│   │   ├── joint_problem.py
+│   │   ├── likelihood.py
+│   │   ├── mcmc_engine.py
+│   │   ├── mcmc_result.py
+│   │   ├── node_disambiguation.py
+│   │   ├── observation_wrappers.py
+│   │   ├── optimizer.py
+│   │   ├── optimizer_engine.py
+│   │   ├── photometric_context.py
+│   │   ├── photometric_likelihood.py
+│   │   ├── photometric_mcmc.py
+│   │   ├── photometric_optimizer.py
+│   │   ├── photometric_posterior.py
+│   │   ├── photometric_problem.py
+│   │   ├── posterior.py
+│   │   ├── priors.py
+│   │   ├── problem.py
+│   │   ├── solver.py
+│   │   ├── solver_engine.py
+│   │   └── terms
+│   │       ├── __init__.py
+│   │       ├── __pycache__
+│   │       │   ├── __init__.cpython-314.pyc
+│   │       │   ├── joint.cpython-314.pyc
+│   │       │   ├── radial_velocity.cpython-314.pyc
+│   │       │   └── visual.cpython-314.pyc
+│   │       ├── joint.py
+│   │       ├── radial_velocity.py
+│   │       └── visual.py
+│   ├── io
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── coordinates.cpython-314.pyc
+│   │   │   ├── fit_result_io.cpython-314.pyc
+│   │   │   ├── orbit_parser.cpython-314.pyc
+│   │   │   └── report_writer.cpython-314.pyc
+│   │   ├── coordinates.py
+│   │   ├── fit_result_io.py
+│   │   ├── orbit_parser.py
+│   │   └── report_writer.py
+│   ├── observations
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── adapters.cpython-314.pyc
+│   │   │   ├── radial_velocity.cpython-314.pyc
+│   │   │   ├── system.cpython-314.pyc
+│   │   │   └── visual.cpython-314.pyc
+│   │   ├── adapters.py
+│   │   ├── radial_velocity.py
+│   │   ├── system.py
+│   │   └── visual.py
+│   ├── orbit
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── kepler.cpython-314.pyc
+│   │   │   ├── orbit_model.cpython-314.pyc
+│   │   │   ├── orbital_elements.cpython-314.pyc
+│   │   │   ├── phase.cpython-314.pyc
+│   │   │   └── rv_model.cpython-314.pyc
+│   │   ├── orbit_model.py
+│   │   ├── orbital_elements.py
+│   │   ├── phase.py
+│   │   └── rv_model.py
+│   ├── photometry
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── evolution_adapter.cpython-314.pyc
+│   │   │   ├── extinction.cpython-314.pyc
+│   │   │   ├── filters.cpython-314.pyc
+│   │   │   ├── model.cpython-314.pyc
+│   │   │   ├── observations.cpython-314.pyc
+│   │   │   ├── parameters.cpython-314.pyc
+│   │   │   ├── residuals.cpython-314.pyc
+│   │   │   └── synthetic.cpython-314.pyc
+│   │   ├── evolution_adapter.py
+│   │   ├── extinction.py
+│   │   ├── filters.py
+│   │   ├── model.py
+│   │   ├── observations.py
+│   │   ├── parameters.py
+│   │   ├── residuals.py
+│   │   └── synthetic.py
+│   ├── stellar
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── atmospheres.cpython-314.pyc
+│   │   │   ├── binary_photometric_model.cpython-314.pyc
+│   │   │   └── sed_model.cpython-314.pyc
+│   │   ├── atmospheres.py
+│   │   └── sed_model.py
+│   ├── triple
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── triple_bounds.cpython-314.pyc
+│   │   │   ├── triple_diagnostics.cpython-314.pyc
+│   │   │   ├── triple_elements.cpython-314.pyc
+│   │   │   ├── triple_fit.cpython-314.pyc
+│   │   │   ├── triple_fit_result.cpython-314.pyc
+│   │   │   ├── triple_identifiability.cpython-314.pyc
+│   │   │   ├── triple_observation.cpython-314.pyc
+│   │   │   ├── triple_orbit.cpython-314.pyc
+│   │   │   ├── triple_parser.cpython-314.pyc
+│   │   │   ├── triple_pca.cpython-314.pyc
+│   │   │   ├── triple_residuals.cpython-314.pyc
+│   │   │   └── triple_statistics.cpython-314.pyc
+│   │   ├── triple_bounds.py
+│   │   ├── triple_diagnostics.py
+│   │   ├── triple_elements.py
+│   │   ├── triple_fit.py
+│   │   ├── triple_fit_result.py
+│   │   ├── triple_identifiability.py
+│   │   ├── triple_observation.py
+│   │   ├── triple_orbit.py
+│   │   ├── triple_parameters.py
+│   │   ├── triple_parser.py
+│   │   ├── triple_pca.py
+│   │   ├── triple_residuals.py
+│   │   └── triple_statistics.py
+│   ├── validation
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-314.pyc
+│   │   │   └── metrics.cpython-314.pyc
+│   │   └── metrics.py
+│   └── visualization
+│       ├── __init__.py
+│       ├── __pycache__
+│       │   ├── __init__.cpython-314.pyc
+│       │   ├── dynamics_plot.cpython-314.pyc
+│       │   └── orbit_plot.cpython-314.pyc
+│       ├── dynamics_plot.py
+│       └── orbit_plot.py
+└── pyseshat.egg-info
+    ├── dependency_links.txt
+    ├── PKG-INFO
+    ├── requires.txt
+    ├── SOURCES.txt
+    └── top_level.txt

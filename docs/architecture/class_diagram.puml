@@ -1,0 +1,391 @@
+@startuml
+
+package "pyseshat.__init__" {
+}
+
+package "pyseshat.analysis.__init__" {
+}
+
+package "pyseshat.analysis.binary_consistency" {
+class BinaryConsistencyResult
+}
+
+package "pyseshat.analysis.bolometric" {
+}
+
+package "pyseshat.analysis.dynamics" {
+}
+
+package "pyseshat.analysis.error_propagation" {
+}
+
+package "pyseshat.analysis.luminosity" {
+}
+
+package "pyseshat.analysis.masses" {
+}
+
+package "pyseshat.analysis.precession" {
+}
+
+package "pyseshat.analysis.report" {
+}
+
+package "pyseshat.analysis.statistics" {
+}
+
+package "pyseshat.ephemeris.__init__" {
+}
+
+package "pyseshat.ephemeris.ephemeris" {
+}
+
+package "pyseshat.ephemeris.ephemeris_result" {
+class EphemerisResult <<dataclass>>
+}
+
+package "pyseshat.evolution.__init__" {
+}
+
+package "pyseshat.evolution.age" {
+class TrackFitResult
+class CommonAgeFitResult
+}
+
+package "pyseshat.evolution.binary" {
+class BinaryTrackFitResult
+}
+
+package "pyseshat.evolution.grids" {
+}
+
+package "pyseshat.evolution.hrdiagram" {
+}
+
+package "pyseshat.evolution.interpolate" {
+class EvolutionSample
+}
+
+package "pyseshat.evolution.isochrone" {
+class IsochroneFitResult
+}
+
+package "pyseshat.evolution.model_fit" {
+class EvolutionModelFitResult
+}
+
+package "pyseshat.evolution.models" {
+class EvolutionTrack
+class Isochrone
+class EvolutionModel
+}
+
+package "pyseshat.evolution.observables" {
+class StellarObservables
+}
+
+package "pyseshat.evolution.parsers.__init__" {
+}
+
+package "pyseshat.evolution.parsers.parsec" {
+}
+
+package "pyseshat.evolution.residuals" {
+class StellarResiduals
+}
+
+package "pyseshat.evolution.search" {
+}
+
+package "pyseshat.evolution.solution" {
+class BinaryEvolutionSolution
+}
+
+package "pyseshat.experiments.__init__" {
+}
+
+package "pyseshat.experiments.experiment" {
+class Experiment <<abstract>>
+}
+
+package "pyseshat.experiments.experiment_result" {
+class ExperimentResult <<dataclass>>
+}
+
+package "pyseshat.experiments.experiment_runner" {
+class ExperimentRunner
+}
+
+package "pyseshat.experiments.monte_carlo" {
+class MonteCarloExperiment <<dataclass>>
+}
+
+package "pyseshat.experiments.observation_set" {
+}
+
+package "pyseshat.experiments.synthetic" {
+}
+
+package "pyseshat.inference.__init__" {
+}
+
+package "pyseshat.inference.base_fit_result" {
+class BaseFitResult <<dataclass>>
+}
+
+package "pyseshat.inference.context" {
+class LikelihoodContext
+}
+
+package "pyseshat.inference.core" {
+}
+
+package "pyseshat.inference.covariance" {
+}
+
+package "pyseshat.inference.diagnostics" {
+}
+
+package "pyseshat.inference.evolution_likelihood" {
+}
+
+package "pyseshat.inference.fit_result" {
+class FitResult <<dataclass>>
+}
+
+package "pyseshat.inference.joint_likelihood" {
+}
+
+package "pyseshat.inference.joint_parameters" {
+class JointParameters
+}
+
+package "pyseshat.inference.joint_posterior" {
+}
+
+package "pyseshat.inference.joint_problem" {
+class JointInferenceProblem
+}
+
+package "pyseshat.inference.likelihood" {
+}
+
+package "pyseshat.inference.mcmc_engine" {
+}
+
+package "pyseshat.inference.mcmc_result" {
+class MCMCResult <<dataclass>>
+}
+
+package "pyseshat.inference.node_disambiguation" {
+}
+
+package "pyseshat.inference.observation_wrappers" {
+}
+
+package "pyseshat.inference.optimizer" {
+}
+
+package "pyseshat.inference.optimizer_engine" {
+}
+
+package "pyseshat.inference.photometric_context" {
+class PhotometricContext
+}
+
+package "pyseshat.inference.photometric_likelihood" {
+}
+
+package "pyseshat.inference.photometric_mcmc" {
+}
+
+package "pyseshat.inference.photometric_optimizer" {
+}
+
+package "pyseshat.inference.photometric_posterior" {
+}
+
+package "pyseshat.inference.photometric_problem" {
+class PhotometricInferenceProblem
+}
+
+package "pyseshat.inference.posterior" {
+}
+
+package "pyseshat.inference.priors" {
+}
+
+package "pyseshat.inference.problem" {
+class InferenceProblem
+}
+
+package "pyseshat.inference.solver" {
+}
+
+package "pyseshat.inference.solver_engine" {
+}
+
+package "pyseshat.inference.terms.__init__" {
+}
+
+package "pyseshat.inference.terms.joint" {
+}
+
+package "pyseshat.inference.terms.radial_velocity" {
+}
+
+package "pyseshat.inference.terms.visual" {
+}
+
+package "pyseshat.io.__init__" {
+}
+
+package "pyseshat.io.coordinates" {
+}
+
+package "pyseshat.io.fit_result_io" {
+}
+
+package "pyseshat.io.orbit_parser" {
+}
+
+package "pyseshat.io.report_writer" {
+}
+
+package "pyseshat.observations.__init__" {
+}
+
+package "pyseshat.observations.adapters" {
+}
+
+package "pyseshat.observations.radial_velocity" {
+class RVObservationSet
+}
+
+package "pyseshat.observations.system" {
+class SystemObservations
+}
+
+package "pyseshat.observations.visual" {
+class VisualObservationSet
+}
+
+package "pyseshat.orbit.__init__" {
+}
+
+package "pyseshat.orbit.orbit_model" {
+}
+
+package "pyseshat.orbit.orbital_elements" {
+class OrbitalElements <<dataclass>>
+}
+
+package "pyseshat.orbit.phase" {
+}
+
+package "pyseshat.orbit.rv_model" {
+}
+
+package "pyseshat.photometry.__init__" {
+}
+
+package "pyseshat.photometry.evolution_adapter" {
+}
+
+package "pyseshat.photometry.extinction" {
+}
+
+package "pyseshat.photometry.filters" {
+class PhotometricPassband <<dataclass>>
+}
+
+package "pyseshat.photometry.model" {
+}
+
+package "pyseshat.photometry.observations" {
+class PhotometricMeasurement
+}
+
+package "pyseshat.photometry.parameters" {
+class PhotometricParameters
+}
+
+package "pyseshat.photometry.residuals" {
+}
+
+package "pyseshat.photometry.synthetic" {
+}
+
+package "pyseshat.stellar.__init__" {
+}
+
+package "pyseshat.stellar.atmospheres" {
+class AtmosphereModel <<dataclass>>
+class CK04CatalogEntry
+class AtmosphereGrid
+}
+
+package "pyseshat.stellar.sed_model" {
+}
+
+package "pyseshat.triple.__init__" {
+}
+
+package "pyseshat.triple.triple_bounds" {
+}
+
+package "pyseshat.triple.triple_diagnostics" {
+}
+
+package "pyseshat.triple.triple_elements" {
+class TripleOrbitalElements <<dataclass>>
+}
+
+package "pyseshat.triple.triple_fit" {
+}
+
+package "pyseshat.triple.triple_fit_result" {
+class TripleFitResult <<dataclass>>
+}
+
+package "pyseshat.triple.triple_identifiability" {
+}
+
+package "pyseshat.triple.triple_observation" {
+class TripleObservation <<dataclass>>
+}
+
+package "pyseshat.triple.triple_orbit" {
+}
+
+package "pyseshat.triple.triple_parameters" {
+}
+
+package "pyseshat.triple.triple_parser" {
+}
+
+package "pyseshat.triple.triple_pca" {
+}
+
+package "pyseshat.triple.triple_residuals" {
+}
+
+package "pyseshat.triple.triple_statistics" {
+}
+
+package "pyseshat.validation.__init__" {
+}
+
+package "pyseshat.validation.metrics" {
+}
+
+package "pyseshat.visualization.__init__" {
+}
+
+package "pyseshat.visualization.dynamics_plot" {
+}
+
+package "pyseshat.visualization.orbit_plot" {
+}
+
+@enduml
