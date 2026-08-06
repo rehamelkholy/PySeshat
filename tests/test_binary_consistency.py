@@ -16,14 +16,36 @@ from pyseshat.evolution.solution import BinaryEvolutionSolution
 def test_binary_consistency_storage():
 
     result = BinaryConsistencyResult(
-        mass_difference=0.02,
-        age_difference=0.10,
-        luminosity_difference=0.05,
+
+        orbital_mass=2.10,
+
+        evolutionary_mass=2.05,
+
+        fractional_mass_difference=0.02381,
+
+        primary_luminosity_sigma=0.42,
+
+        secondary_luminosity_sigma=-0.18,
     )
 
-    assert result.mass_difference == pytest.approx(0.02)
-    assert result.age_difference == pytest.approx(0.10)
-    assert result.luminosity_difference == pytest.approx(0.05)
+    assert result.orbital_mass == pytest.approx(2.10)
+
+    assert result.evolutionary_mass == pytest.approx(2.05)
+
+    assert (
+        result.fractional_mass_difference
+        == pytest.approx(0.02381)
+    )
+
+    assert (
+        result.primary_luminosity_sigma
+        == pytest.approx(0.42)
+    )
+
+    assert (
+        result.secondary_luminosity_sigma
+        == pytest.approx(-0.18)
+    )
 
 
 def test_mass_consistency_zero():
