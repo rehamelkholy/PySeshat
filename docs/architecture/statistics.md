@@ -4,6 +4,6 @@
 - **Classes**: 40
 - **Dataclasses**: 12
 - **Enums**: 0
-- **Functions**: 203
+- **Functions**: 205
 - **Modules**: 116
 - **Tests**: 160

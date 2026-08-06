@@ -13,6 +13,8 @@
 - compute_mass_consistency()
 - normalized_difference()
 - evolutionary_total_mass()
+- compute_luminosity_consistency()
+- build_binary_consistency_result()
 
 ## pyseshat.analysis.bolometric
 
