@@ -1,5 +1,9 @@
 import numpy as np
 
+from pyseshat.analysis.error_propagation import (
+    sigma_total_mass,
+)
+
 from pyseshat.orbit.orbital_elements import (
     OrbitalElements
 )
@@ -73,6 +77,111 @@ def total_mass_from_elements(
         parallax_mas=parallax_mas
     )
 
+
+def total_mass_uncertainty_from_elements(
+    elements: OrbitalElements,
+    uncertainties: dict,
+    parallax_mas: float,
+    sigma_parallax_mas: float,
+):
+    """
+    Propagate independent uncertainties in the
+    dynamical total mass derived from OrbitalElements.
+
+    The dynamical mass is
+
+        M = (a / pi)^3 / P^2,
+
+    where ``a`` and ``pi`` are expressed in the same
+    angular units and ``P`` is in years.
+
+    Parameters
+    ----------
+    elements : OrbitalElements
+        Orbital solution.
+
+    uncertainties : dict
+        One-sigma uncertainties of the fitted orbital
+        parameters. The dictionary must contain
+        ``"P"`` and ``"a"``.
+
+    parallax_mas : float
+        Parallax in milliarcseconds.
+
+    sigma_parallax_mas : float
+        One-sigma parallax uncertainty in
+        milliarcseconds.
+
+    Returns
+    -------
+    float
+        One-sigma uncertainty of the dynamical
+        total mass in solar masses.
+
+    Notes
+    -----
+    This uses the same independent-error,
+    first-order analytical propagation convention
+    as ``pyseshat.analysis.error_propagation``.
+    """
+
+    if not isinstance(
+        uncertainties,
+        dict
+    ):
+
+        raise TypeError(
+            "uncertainties must be a dictionary."
+        )
+
+    required = (
+        "P",
+        "a",
+    )
+
+    missing = [
+        name
+        for name in required
+        if name not in uncertainties
+    ]
+
+    if missing:
+
+        raise KeyError(
+            "Missing orbital uncertainties: "
+            + ", ".join(missing)
+        )
+
+    parallax_arcsec = (
+        float(parallax_mas) / 1000.0
+    )
+
+    sigma_parallax_arcsec = (
+        float(sigma_parallax_mas) / 1000.0
+    )
+
+    return sigma_total_mass(
+
+        semi_major_axis=elements.a,
+
+        sigma_semi_major_axis=(
+            uncertainties["a"]
+        ),
+
+        period=elements.P,
+
+        sigma_period=(
+            uncertainties["P"]
+        ),
+
+        parallax=parallax_arcsec,
+
+        sigma_parallax=(
+            sigma_parallax_arcsec
+        ),
+    )
+
+
 def compute_mass_function(
     period_years,
     eccentricity,
@@ -116,6 +225,7 @@ def compute_mass_function(
 
         period_days
     )
+
 
 def compute_component_masses(
     period_years,
@@ -210,6 +320,7 @@ def compute_component_masses(
             M2_sin3i
     }
 
+
 def component_masses_from_elements(
     elements
 ):
@@ -230,6 +341,7 @@ def component_masses_from_elements(
 
         K2=elements.K2
     )
+
 
 def minimum_secondary_mass(
     mass_function,
@@ -294,6 +406,7 @@ def minimum_secondary_mass(
             break
 
     return M2
+
 
 def minimum_secondary_mass_from_elements(
     elements,

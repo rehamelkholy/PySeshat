@@ -41,6 +41,7 @@ PySeshat
 │   │   │   ├── age.cpython-314.pyc
 │   │   │   ├── binary.cpython-314.pyc
 │   │   │   ├── grids.cpython-314.pyc
+│   │   │   ├── hrdiagram.cpython-314.pyc
 │   │   │   ├── interpolate.cpython-314.pyc
 │   │   │   ├── isochrone.cpython-314.pyc
 │   │   │   ├── model_fit.cpython-314.pyc
@@ -260,8 +261,10 @@ PySeshat
 │       ├── __pycache__
 │       │   ├── __init__.cpython-314.pyc
 │       │   ├── dynamics_plot.cpython-314.pyc
+│       │   ├── hrdiagram_plot.cpython-314.pyc
 │       │   └── orbit_plot.cpython-314.pyc
 │       ├── dynamics_plot.py
+│       ├── hrdiagram_plot.py
 │       └── orbit_plot.py
 └── pyseshat.egg-info
     ├── dependency_links.txt

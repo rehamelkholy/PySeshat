@@ -123,7 +123,9 @@ def stellar_observables_from_solution(
 
                 parameters.primary_temperature,
 
-                uncertainties["primary_temperature"],
+                uncertainties[
+                    "primary_temperature"
+                ],
 
             ),
 
@@ -149,7 +151,9 @@ def stellar_observables_from_solution(
                     ]
                 ),
 
-                radius=parameters.primary_radius,
+                radius=(
+                    parameters.primary_radius
+                ),
 
                 sigma_radius=(
                     uncertainties[
@@ -197,7 +201,9 @@ def stellar_observables_from_solution(
 
             log_luminosity=compute_log_luminosity(
 
-                radius_solar=parameters.secondary_radius,
+                radius_solar=(
+                    parameters.secondary_radius
+                ),
 
                 temperature_kelvin=(
                     parameters.secondary_temperature
@@ -217,7 +223,9 @@ def stellar_observables_from_solution(
                     ]
                 ),
 
-                radius=parameters.secondary_radius,
+                radius=(
+                    parameters.secondary_radius
+                ),
 
                 sigma_radius=(
                     uncertainties[
@@ -246,5 +254,43 @@ def stellar_observables_from_solution(
             sigma_log_g=None,
 
         ),
+    )
+
+
+def stellar_observables_from_fit_result(
+    fit_result,
+):
+    """
+    Construct StellarObservables directly from a
+    photometric fit result.
+
+    The fit result is expected to expose:
+
+    - ``elements`` containing the fitted
+      PhotometricParameters;
+    - ``uncertainties`` containing the one-sigma
+      parameter uncertainties.
+
+    This function is the direct bridge between the
+    photometric inference layer and the stellar
+    evolution layer.
+
+    Parameters
+    ----------
+    fit_result
+        Photometric fit result returned by the
+        inference engine.
+
+    Returns
+    -------
+    tuple
+        Primary and secondary StellarObservables.
+    """
+
+    return stellar_observables_from_solution(
+
+        parameters=fit_result.elements,
+
+        uncertainties=fit_result.uncertainties,
 
     )

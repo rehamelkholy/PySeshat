@@ -60,6 +60,7 @@ package "pyseshat.evolution.grids" {
 }
 
 package "pyseshat.evolution.hrdiagram" {
+class HRDiagramData
 }
 
 package "pyseshat.evolution.interpolate" {
@@ -383,6 +384,9 @@ package "pyseshat.visualization.__init__" {
 }
 
 package "pyseshat.visualization.dynamics_plot" {
+}
+
+package "pyseshat.visualization.hrdiagram_plot" {
 }
 
 package "pyseshat.visualization.orbit_plot" {

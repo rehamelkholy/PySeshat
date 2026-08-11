@@ -15,6 +15,8 @@
 - evolutionary_total_mass()
 - compute_luminosity_consistency()
 - build_binary_consistency_result()
+- build_binary_consistency_from_elements()
+- build_binary_consistency_from_fit_results()
 
 ## pyseshat.analysis.bolometric
 
@@ -124,6 +126,7 @@
 
 ### Functions
 - fit_binary_tracks()
+- fit_binary_evolution_from_orbit()
 
 ## pyseshat.evolution.grids
 
@@ -132,6 +135,12 @@
 - load_parsec()
 
 ## pyseshat.evolution.hrdiagram
+
+### Classes
+- HRDiagramData
+
+### Functions
+- build_binary_hrdiagram_data()
 
 ## pyseshat.evolution.interpolate
 
@@ -531,6 +540,7 @@
 ### Functions
 - stellar_observables_from_photometric_parameters()
 - stellar_observables_from_solution()
+- stellar_observables_from_fit_result()
 
 ## pyseshat.photometry.extinction
 
@@ -715,6 +725,11 @@
 
 ### Functions
 - plot_separation_vs_time()
+
+## pyseshat.visualization.hrdiagram_plot
+
+### Functions
+- plot_binary_hrdiagram()
 
 ## pyseshat.visualization.orbit_plot
 

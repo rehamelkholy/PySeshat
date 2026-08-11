@@ -3,11 +3,11 @@ import numpy as np
 import pytest
 
 from pyseshat.photometry.parameters import (
-    PhotometricParameters
+    PhotometricParameters,
 )
 
 from pyseshat.inference.photometric_posterior import (
-    log_posterior
+    log_posterior,
 )
 
 
@@ -21,7 +21,10 @@ def test_log_posterior(monkeypatch):
 
         return -2.5
 
-    def fake_likelihood(*args, **kwargs):
+    def fake_likelihood(
+        *args,
+        **kwargs,
+    ):
 
         return -10.0
 
@@ -30,14 +33,19 @@ def test_log_posterior(monkeypatch):
         "pyseshat.inference.photometric_posterior."
         "log_photometric_prior",
 
-        fake_prior
+        fake_prior,
 
     )
 
     monkeypatch.setattr(
+
         "pyseshat.inference.photometric_posterior."
         "photometric_log_likelihood_from_problem",
-        lambda problem: -10.0
+
+        lambda problem: fake_likelihood(
+            problem
+        ),
+
     )
 
     parameters = PhotometricParameters(
@@ -50,7 +58,7 @@ def test_log_posterior(monkeypatch):
 
         secondary_radius=0.9,
 
-        ebv=0.1
+        ebv=0.1,
 
     )
 
@@ -68,7 +76,7 @@ def test_log_posterior(monkeypatch):
 
                 0.9,
 
-                0.1
+                0.1,
 
             ]
 
@@ -90,7 +98,7 @@ def test_log_posterior(monkeypatch):
 
         metallicity=0.0,
 
-        distance=10.0
+        distance=10.0,
 
     )
 
@@ -107,7 +115,7 @@ def test_log_posterior(monkeypatch):
 
 def test_log_posterior_prior_rejection(
 
-    monkeypatch
+    monkeypatch,
 
 ):
 
@@ -117,7 +125,13 @@ def test_log_posterior_prior_rejection(
 
         return -np.inf
 
-    def fake_likelihood(*args, **kwargs):
+    def fake_likelihood(
+
+        *args,
+
+        **kwargs,
+
+    ):
 
         nonlocal called
 
@@ -130,16 +144,16 @@ def test_log_posterior_prior_rejection(
         "pyseshat.inference.photometric_posterior."
         "log_photometric_prior",
 
-        fake_prior
+        fake_prior,
 
     )
 
     monkeypatch.setattr(
 
         "pyseshat.inference.photometric_posterior."
-        "log_likelihood",
+        "photometric_log_likelihood_from_problem",
 
-        fake_likelihood
+        fake_likelihood,
 
     )
 
@@ -153,7 +167,7 @@ def test_log_posterior_prior_rejection(
 
         secondary_radius=0.9,
 
-        ebv=0.1
+        ebv=0.1,
 
     )
 
@@ -171,7 +185,7 @@ def test_log_posterior_prior_rejection(
 
                 0.9,
 
-                0.1
+                0.1,
 
             ]
 
@@ -193,7 +207,7 @@ def test_log_posterior_prior_rejection(
 
         metallicity=0.0,
 
-        distance=10.0
+        distance=10.0,
 
     )
 
@@ -208,7 +222,7 @@ def test_log_posterior_prior_rejection(
 
 def test_log_posterior_updates_parameters(
 
-    monkeypatch
+    monkeypatch,
 
 ):
 
@@ -225,14 +239,17 @@ def test_log_posterior_updates_parameters(
         "pyseshat.inference.photometric_posterior."
         "log_photometric_prior",
 
-        fake_prior
+        fake_prior,
 
     )
 
     monkeypatch.setattr(
+
         "pyseshat.inference.photometric_posterior."
         "photometric_log_likelihood_from_problem",
-        lambda problem: 0.0
+
+        lambda problem: 0.0,
+
     )
 
     parameters = PhotometricParameters(
@@ -245,7 +262,7 @@ def test_log_posterior_updates_parameters(
 
         secondary_radius=0.8,
 
-        ebv=0.0
+        ebv=0.0,
 
     )
 
@@ -263,7 +280,7 @@ def test_log_posterior_updates_parameters(
 
                 0.95,
 
-                0.2
+                0.2,
 
             ]
 
@@ -285,24 +302,18 @@ def test_log_posterior_updates_parameters(
 
         metallicity=0.0,
 
-        distance=10.0
+        distance=10.0,
 
     )
 
     updated = captured["parameters"]
 
     assert updated.primary_temperature == 6500.0
+
     assert updated.secondary_temperature == 5200.0
+
     assert updated.primary_radius == 1.4
+
     assert updated.secondary_radius == 0.95
+
     assert updated.ebv == 0.2
-
-def fake_likelihood(problem):
-
-    assert problem.parameters.primary_temperature == 6500.0
-    assert problem.parameters.secondary_temperature == 5200.0
-    assert problem.parameters.primary_radius == 1.4
-    assert problem.parameters.secondary_radius == 0.95
-    assert problem.parameters.ebv == 0.2
-
-    return 0.0
