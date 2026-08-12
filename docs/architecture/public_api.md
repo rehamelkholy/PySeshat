@@ -40,6 +40,7 @@
 - sigma_log_temperature()
 - sigma_log_radius()
 - sigma_log_luminosity()
+- sigma_total_mass()
 
 ## pyseshat.analysis.luminosity
 
@@ -54,6 +55,7 @@
 ### Functions
 - compute_total_mass()
 - total_mass_from_elements()
+- total_mass_uncertainty_from_elements()
 - compute_mass_function()
 - compute_component_masses()
 - component_masses_from_elements()
