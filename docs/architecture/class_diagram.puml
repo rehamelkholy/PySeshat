@@ -332,6 +332,12 @@ package "pyseshat.stellar.sed_model" {
 package "pyseshat.triple.__init__" {
 }
 
+package "pyseshat.triple.orbit3_bounds" {
+}
+
+package "pyseshat.triple.orbit3_fit" {
+}
+
 package "pyseshat.triple.triple_bounds" {
 }
 

@@ -172,10 +172,6 @@ def _parse_header_metadata(
 
     # ------------------------------------------------------
     # First pass: explicitly labeled fields.
-    #
-    # We deliberately use regular expressions here rather
-    # than startswith() so that whitespace and capitalization
-    # variations do not affect metadata extraction.
     # ------------------------------------------------------
 
     labeled_patterns = {
@@ -237,10 +233,6 @@ def _parse_header_metadata(
 
     # ------------------------------------------------------
     # Second pass: positional header.
-    #
-    # We use only unlabeled lines for this pass. This prevents
-    # labeled metadata lines from shifting the positional
-    # interpretation.
     # ------------------------------------------------------
 
     unlabeled_lines = []
@@ -337,7 +329,8 @@ def _parse_parameter_line(
 
         (key, value, fitted, error)
 
-    The leading ``*`` indicates a fitted parameter.
+    A leading ``*`` indicates a fixed parameter.
+    An unstarred parameter is fitted.
     """
 
     if len(parts) < 2:
@@ -350,6 +343,7 @@ def _parse_parameter_line(
     fixed = raw_key.startswith(
         "*"
     )
+
     fitted = not fixed
 
 
@@ -483,7 +477,9 @@ def _parse_position_line(
 
         sigma=sigma,
 
-        orbit_id=tag
+        orbit_id=tag,
+
+        velocity=None
 
     )
 
@@ -508,9 +504,9 @@ def _parse_rv_line(
 
     where:
 
-        Va = first component
-        Vb = second component
-        Vc = third component
+        Va = radial velocity of Aa
+        Vb = radial velocity of Ab
+        Vc = radial velocity of B
     """
 
     if len(parts) < 4:
@@ -556,17 +552,21 @@ def _parse_rv_line(
         return None
 
 
-    return {
+    return TripleObservation(
 
-        "epoch": epoch,
+        epoch=epoch,
 
-        "velocity": velocity,
+        theta=None,
 
-        "sigma": sigma,
+        rho=None,
 
-        "component": component
+        sigma=sigma,
 
-    }
+        orbit_id=component,
+
+        velocity=velocity
+
+    )
 
 
 # ==========================================================
@@ -611,7 +611,7 @@ def parse_triple_file(
             Astrometric TripleObservation objects.
 
         ``rv_observations``
-            Radial-velocity records.
+            Radial-velocity TripleObservation objects.
 
         ``parameter_errors``
             Supplied parameter errors.

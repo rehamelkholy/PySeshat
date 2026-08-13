@@ -1,13 +1,19 @@
+"""
+Triple-orbit fitting.
+
+This module contains the legacy ORBITT2 15-parameter fitting
+path and the modern ORBIT3 20-parameter parameter-vector
+utilities.
+
+The two parameterizations deliberately use independent
+parameter masks.
+"""
+
 import numpy as np
 
 
-from pyseshat.triple.triple_elements import (
-    TripleOrbitalElements
-)
-
-
-from pyseshat.triple.triple_residuals import (
-    triple_visual_residuals
+from pyseshat.inference.optimizer_engine import (
+    run_least_squares
 )
 
 
@@ -16,23 +22,26 @@ from pyseshat.triple.triple_bounds import (
 )
 
 
+from pyseshat.triple.triple_elements import (
+    TripleOrbitalElements
+)
+
+
 from pyseshat.triple.triple_fit_result import (
     TripleFitResult
 )
 
 
-from pyseshat.inference.optimizer_engine import (
-    run_least_squares
+from pyseshat.triple.triple_residuals import (
+    triple_visual_residuals
 )
 
 
 # ==========================================================
-# Legacy ORBITT2 parameter order
+# Parameter orders
 # ==========================================================
 
-TRIPLE_PARAMETER_ORDER = [
-
-    # outer orbit
+LEGACY_TRIPLE_PARAMETER_ORDER = [
 
     "P",
     "T0",
@@ -42,7 +51,32 @@ TRIPLE_PARAMETER_ORDER = [
     "omega",
     "i",
 
-    # inner orbit
+    "P2",
+    "T02",
+    "e2",
+    "a2",
+    "Omega2",
+    "omega2",
+    "i2",
+
+    "B",
+
+]
+
+
+ORBIT3_PARAMETER_ORDER = [
+
+    "P",
+    "T0",
+    "e",
+    "a",
+    "Omega",
+    "omega",
+    "i",
+
+    "K1",
+    "K2",
+    "f",
 
     "P2",
     "T02",
@@ -52,115 +86,29 @@ TRIPLE_PARAMETER_ORDER = [
     "omega2",
     "i2",
 
-    # scale
-
-    "B"
+    "K3",
+    "K4",
+    "V0",
 
 ]
 
 
 # ==========================================================
-# Legacy fitted-parameter mask
-# ==========================================================
-
-def _legacy_fitted_mask(
-    elements: TripleOrbitalElements
-):
-    """
-    Return the fitted-parameter mask used by the legacy
-    ORBITT2 triple fitter.
-
-    The legacy fitter operates on the 15-parameter vector
-    defined by TRIPLE_PARAMETER_ORDER.
-
-    This is intentionally independent of
-    TripleOrbitalElements.fitted_mask(), because the latter
-    now represents the expanded ORBIT3 parameter space.
-    """
-
-    return np.array([
-
-        # --------------------------------------------------
-        # Outer orbit
-        # --------------------------------------------------
-
-        elements.fit_flags["P"],
-        elements.fit_flags["T0"],
-        elements.fit_flags["e"],
-        elements.fit_flags["a"],
-        elements.fit_flags["Omega"],
-        elements.fit_flags["omega"],
-        elements.fit_flags["i"],
-
-        # --------------------------------------------------
-        # Inner orbit
-        # --------------------------------------------------
-
-        elements.fit_flags["P2"],
-        elements.fit_flags["T02"],
-        elements.fit_flags["e2"],
-        elements.fit_flags["a2"],
-        elements.fit_flags["Omega2"],
-        elements.fit_flags["omega2"],
-        elements.fit_flags["i2"],
-
-        # --------------------------------------------------
-        # Legacy scale
-        # --------------------------------------------------
-
-        elements.fit_flags["B"]
-
-    ], dtype=bool)
-
-
-# ==========================================================
-# Legacy fitted-parameter names
-# ==========================================================
-
-def _legacy_fitted_parameter_names(
-    elements: TripleOrbitalElements
-):
-    """
-    Return fitted parameter names in legacy ORBITT2 order.
-    """
-
-    mask = _legacy_fitted_mask(
-        elements
-    )
-
-
-    return [
-
-        name
-
-        for name, fitted
-
-        in zip(
-            TRIPLE_PARAMETER_ORDER,
-            mask
-        )
-
-        if fitted
-
-    ]
-
-
-# ==========================================================
-# Triple -> array
+# Legacy Triple -> array
 # ==========================================================
 
 def triple_to_array(
     elements: TripleOrbitalElements
 ):
     """
-    Convert TripleOrbitalElements into the legacy
-    15-parameter ORBITT2 vector.
+    Convert TripleOrbitalElements to the legacy 15-parameter
+    ORBITT2 vector.
 
-    The ordering is:
-
-        P, T0, e, a, Omega, omega, i,
-        P2, T02, e2, a2, Omega2, omega2, i2,
-        B
+    Ordering
+    --------
+    P, T0, e, a, Omega, omega, i,
+    P2, T02, e2, a2, Omega2, omega2, i2,
+    B
     """
 
     return np.array([
@@ -181,13 +129,13 @@ def triple_to_array(
         elements.inner.omega,
         elements.inner.i,
 
-        elements.B
+        elements.B,
 
     ], dtype=float)
 
 
 # ==========================================================
-# Array -> triple
+# Legacy array -> Triple
 # ==========================================================
 
 def array_to_triple(
@@ -195,21 +143,8 @@ def array_to_triple(
     template: TripleOrbitalElements
 ):
     """
-    Build TripleOrbitalElements from the legacy
+    Build a TripleOrbitalElements object from the legacy
     15-parameter ORBITT2 vector.
-
-    Parameters
-    ----------
-    p : array-like
-        Fifteen legacy triple parameters.
-
-    template : TripleOrbitalElements
-        Template providing the non-legacy parameters
-        introduced for ORBIT3.
-
-    Returns
-    -------
-    TripleOrbitalElements
     """
 
     p = np.asarray(
@@ -218,12 +153,13 @@ def array_to_triple(
     )
 
 
-    if p.shape != (15,):
+    if p.size != 15:
 
         raise ValueError(
 
             "Legacy triple parameter vector must "
-            "contain exactly 15 elements."
+            "contain exactly 15 parameters; "
+            f"received {p.size}."
 
         )
 
@@ -233,46 +169,40 @@ def array_to_triple(
     inner = template.inner.copy()
 
 
-    # ------------------------------------------------------
-    # Outer orbit
-    # ------------------------------------------------------
-
     outer.P = p[0]
+
     outer.T0 = p[1]
+
     outer.e = p[2]
+
     outer.a = p[3]
+
     outer.Omega = p[4]
+
     outer.omega = p[5]
+
     outer.i = p[6]
 
 
-    # ------------------------------------------------------
-    # Inner orbit
-    # ------------------------------------------------------
-
     inner.P = p[7]
+
     inner.T0 = p[8]
+
     inner.e = p[9]
+
     inner.a = p[10]
+
     inner.Omega = p[11]
+
     inner.omega = p[12]
+
     inner.i = p[13]
 
-
-    # ------------------------------------------------------
-    # Normalize angular elements.
-    # ------------------------------------------------------
 
     outer.normalize_angles()
 
     inner.normalize_angles()
 
-
-    # ------------------------------------------------------
-    # Preserve the complete fit-flag dictionary.
-    #
-    # The legacy fitter simply ignores the new ORBIT3 flags.
-    # ------------------------------------------------------
 
     return TripleOrbitalElements(
 
@@ -288,7 +218,7 @@ def array_to_triple(
 
 
 # ==========================================================
-# Update triple elements
+# Legacy update
 # ==========================================================
 
 def update_triple_elements(
@@ -296,9 +226,7 @@ def update_triple_elements(
     parameter_vector
 ):
     """
-    Alias matching the binary API style.
-
-    This remains a legacy 15-parameter operation.
+    Update a legacy 15-parameter triple model.
     """
 
     return array_to_triple(
@@ -311,15 +239,95 @@ def update_triple_elements(
 
 
 # ==========================================================
-# Extract fitted parameters
+# Legacy fit mask
+# ==========================================================
+
+def legacy_triple_fitted_mask(
+    elements: TripleOrbitalElements
+):
+    """
+    Return the 15-element fit mask used by the legacy
+    ORBITT2 parameterization.
+
+    This must remain separate from
+    TripleOrbitalElements.fitted_mask(), which represents
+    the complete 20-parameter ORBIT3 vector.
+    """
+
+    mask = np.array(
+
+        [
+
+            elements.fit_flags[name]
+
+            for name
+            in LEGACY_TRIPLE_PARAMETER_ORDER
+
+        ],
+
+        dtype=bool
+
+    )
+
+
+    if mask.size != 15:
+
+        raise RuntimeError(
+
+            "Internal legacy ORBITT2 fit mask must "
+            f"contain 15 entries; received {mask.size}."
+
+        )
+
+
+    return mask
+
+
+# ==========================================================
+# Legacy fitted parameter names
+# ==========================================================
+
+def legacy_triple_fitted_parameter_names(
+    elements: TripleOrbitalElements
+):
+    """
+    Return the fitted parameter names for the legacy
+    ORBITT2 representation.
+    """
+
+    mask = legacy_triple_fitted_mask(
+        elements
+    )
+
+
+    return [
+
+        name
+
+        for name, fitted
+        in zip(
+
+            LEGACY_TRIPLE_PARAMETER_ORDER,
+
+            mask
+
+        )
+
+        if fitted
+
+    ]
+
+
+# ==========================================================
+# Legacy fitted parameters
 # ==========================================================
 
 def triple_fitted_parameters(
     elements
 ):
     """
-    Return fitted parameters for the legacy ORBITT2
-    15-parameter representation.
+    Return the fitted parameters of the legacy 15-element
+    ORBITT2 representation.
     """
 
     full = triple_to_array(
@@ -327,9 +335,21 @@ def triple_fitted_parameters(
     )
 
 
-    mask = _legacy_fitted_mask(
+    mask = legacy_triple_fitted_mask(
         elements
     )
+
+
+    if mask.size != full.size:
+
+        raise RuntimeError(
+
+            "Internal error: legacy ORBITT2 fit mask "
+            f"contains {mask.size} entries, but the "
+            f"legacy parameter vector contains "
+            f"{full.size} entries."
+
+        )
 
 
     return full[
@@ -338,7 +358,7 @@ def triple_fitted_parameters(
 
 
 # ==========================================================
-# Update fitted parameters only
+# Legacy update fitted parameters
 # ==========================================================
 
 def update_triple_fitted_parameters(
@@ -347,7 +367,7 @@ def update_triple_fitted_parameters(
 ):
     """
     Update only parameters marked as fitted in the legacy
-    ORBITT2 parameter representation.
+    ORBITT2 representation.
     """
 
     full = triple_to_array(
@@ -355,33 +375,33 @@ def update_triple_fitted_parameters(
     ).copy()
 
 
-    mask = _legacy_fitted_mask(
+    mask = legacy_triple_fitted_mask(
         elements
     )
 
 
     fitted_values = np.asarray(
+
         fitted_values,
+
         dtype=float
+
     )
 
 
     expected = int(
-        np.count_nonzero(
-            mask
-        )
+        np.count_nonzero(mask)
     )
 
 
-    if fitted_values.shape != (
-        expected,
-    ):
+    if fitted_values.size != expected:
 
         raise ValueError(
 
-            "Number of fitted triple parameters "
-            "does not match the number of parameters "
-            "marked as fitted."
+            "The number of fitted values does not match "
+            "the number of fitted legacy ORBITT2 "
+            "parameters: "
+            f"{fitted_values.size} != {expected}."
 
         )
 
@@ -401,7 +421,7 @@ def update_triple_fitted_parameters(
 
 
 # ==========================================================
-# Generic triple fit residuals
+# Legacy generic fit residuals
 # ==========================================================
 
 def triple_fit_flag_residuals(
@@ -410,7 +430,7 @@ def triple_fit_flag_residuals(
     observations
 ):
     """
-    Residual function using the legacy fit flags.
+    Residual function using legacy ORBITT2 fit flags.
     """
 
     updated = (
@@ -436,7 +456,7 @@ def triple_fit_flag_residuals(
 
 
 # ==========================================================
-# Triple fit residuals
+# Legacy full residuals
 # ==========================================================
 
 def triple_fit_residuals(
@@ -445,23 +465,8 @@ def triple_fit_residuals(
     observations
 ):
     """
-    SciPy-compatible residual function.
-
-    Parameters
-    ----------
-    parameter_vector : ndarray
-        Complete legacy 15-parameter vector.
-
-    template : TripleOrbitalElements
-        Template triple system.
-
-    observations : list
-        Astrometric triple observations.
-
-    Returns
-    -------
-    ndarray
-        Visual-orbit residuals.
+    SciPy-compatible residual function for the legacy
+    15-parameter triple model.
     """
 
     elements = update_triple_elements(
@@ -483,7 +488,7 @@ def triple_fit_residuals(
 
 
 # ==========================================================
-# B-only residuals
+# Legacy B-only residuals
 # ==========================================================
 
 def triple_B_residuals(
@@ -492,34 +497,8 @@ def triple_B_residuals(
     observations
 ):
     """
-    Residuals when fitting only B.
-
-    Parameters
-    ----------
-    B : ndarray
-        Length-1 parameter vector.
-
-    template : TripleOrbitalElements
-
-    observations : list
-
-    Returns
-    -------
-    ndarray
+    Residuals when fitting only the legacy B parameter.
     """
-
-    B = np.asarray(
-        B,
-        dtype=float
-    )
-
-
-    if B.shape != (1,):
-
-        raise ValueError(
-            "B must contain exactly one value."
-        )
-
 
     trial = TripleOrbitalElements(
 
@@ -544,7 +523,7 @@ def triple_B_residuals(
 
 
 # ==========================================================
-# a2-only residuals
+# Legacy a2-only residuals
 # ==========================================================
 
 def triple_a2_residuals(
@@ -553,34 +532,9 @@ def triple_a2_residuals(
     observations
 ):
     """
-    Residuals when fitting only the inner semi-major axis.
-
-    Parameters
-    ----------
-    a2 : ndarray
-        Length-1 parameter vector.
-
-    template : TripleOrbitalElements
-
-    observations : list
-
-    Returns
-    -------
-    ndarray
+    Residuals when fitting only the legacy inner
+    semi-major axis.
     """
-
-    a2 = np.asarray(
-        a2,
-        dtype=float
-    )
-
-
-    if a2.shape != (1,):
-
-        raise ValueError(
-            "a2 must contain exactly one value."
-        )
-
 
     outer = template.outer.copy()
 
@@ -615,7 +569,357 @@ def triple_a2_residuals(
 
 
 # ==========================================================
-# Triple orbit fitting
+# ORBIT3 -> array
+# ==========================================================
+
+def orbit3_to_array(
+    elements: TripleOrbitalElements
+):
+    """
+    Convert TripleOrbitalElements into the complete
+    20-parameter ORBIT3 vector.
+
+    Ordering
+    --------
+    P, T0, e, a, Omega, omega, i,
+    K1, K2, f,
+    P2, T02, e2, a2, Omega2, omega2, i2,
+    K3, K4, V0
+    """
+
+    return np.array([
+
+        # --------------------------------------------------
+        # Inner orbit
+        # --------------------------------------------------
+
+        elements.inner.P,
+        elements.inner.T0,
+        elements.inner.e,
+        elements.inner.a,
+        elements.inner.Omega,
+        elements.inner.omega,
+        elements.inner.i,
+
+        # --------------------------------------------------
+        # Inner spectroscopy / wobble
+        # --------------------------------------------------
+
+        elements.K1,
+        elements.K2,
+        elements.f,
+
+        # --------------------------------------------------
+        # Outer orbit
+        # --------------------------------------------------
+
+        elements.outer.P,
+        elements.outer.T0,
+        elements.outer.e,
+        elements.outer.a,
+        elements.outer.Omega,
+        elements.outer.omega,
+        elements.outer.i,
+
+        # --------------------------------------------------
+        # Outer spectroscopy
+        # --------------------------------------------------
+
+        elements.K3,
+        elements.K4,
+        elements.V0,
+
+    ], dtype=float)
+
+
+# ==========================================================
+# ORBIT3 array -> Triple
+# ==========================================================
+
+def array_to_orbit3(
+    p,
+    template: TripleOrbitalElements
+):
+    """
+    Build a TripleOrbitalElements object from the complete
+    20-parameter ORBIT3 vector.
+    """
+
+    p = np.asarray(
+
+        p,
+
+        dtype=float
+
+    )
+
+
+    if p.size != 20:
+
+        raise ValueError(
+
+            "ORBIT3 parameter vector must contain "
+            "exactly 20 parameters; "
+            f"received {p.size}."
+
+        )
+
+
+    inner = template.inner.copy()
+
+    outer = template.outer.copy()
+
+
+    # ------------------------------------------------------
+    # Inner orbit
+    # ------------------------------------------------------
+
+    inner.P = p[0]
+
+    inner.T0 = p[1]
+
+    inner.e = p[2]
+
+    inner.a = p[3]
+
+    inner.Omega = p[4]
+
+    inner.omega = p[5]
+
+    inner.i = p[6]
+
+
+    # ------------------------------------------------------
+    # Inner spectroscopy
+    # ------------------------------------------------------
+
+    K1 = p[7]
+
+    K2 = p[8]
+
+    f = p[9]
+
+
+    # ------------------------------------------------------
+    # Outer orbit
+    # ------------------------------------------------------
+
+    outer.P = p[10]
+
+    outer.T0 = p[11]
+
+    outer.e = p[12]
+
+    outer.a = p[13]
+
+    outer.Omega = p[14]
+
+    outer.omega = p[15]
+
+    outer.i = p[16]
+
+
+    # ------------------------------------------------------
+    # Outer spectroscopy
+    # ------------------------------------------------------
+
+    K3 = p[17]
+
+    K4 = p[18]
+
+    V0 = p[19]
+
+
+    inner.normalize_angles()
+
+    outer.normalize_angles()
+
+
+    return TripleOrbitalElements(
+
+        outer=outer,
+
+        inner=inner,
+
+        K1=K1,
+
+        K2=K2,
+
+        f=f,
+
+        K3=K3,
+
+        K4=K4,
+
+        V0=V0,
+
+        B=template.B,
+
+        fit_flags=template.fit_flags.copy()
+
+    )
+
+
+# ==========================================================
+# ORBIT3 fitted parameters
+# ==========================================================
+
+def orbit3_fitted_parameters(
+    elements: TripleOrbitalElements
+):
+    """
+    Return the fitted parameters of the complete
+    20-parameter ORBIT3 representation.
+    """
+
+    full = orbit3_to_array(
+        elements
+    )
+
+
+    mask = elements.fitted_mask()
+
+
+    if mask.size != full.size:
+
+        raise ValueError(
+
+            "The ORBIT3 fit mask must contain exactly "
+            f"{full.size} entries; "
+            f"received {mask.size}."
+
+        )
+
+
+    return full[
+        mask
+    ]
+
+
+# ==========================================================
+# ORBIT3 update fitted parameters
+# ==========================================================
+
+def update_orbit3_fitted_parameters(
+    elements: TripleOrbitalElements,
+    fitted_values
+):
+    """
+    Update only parameters marked as fitted in the modern
+    ORBIT3 representation.
+    """
+
+    full = orbit3_to_array(
+        elements
+    ).copy()
+
+
+    mask = elements.fitted_mask()
+
+
+    if mask.size != full.size:
+
+        raise ValueError(
+
+            "The ORBIT3 fit mask must contain exactly "
+            f"{full.size} entries; "
+            f"received {mask.size}."
+
+        )
+
+
+    fitted_values = np.asarray(
+
+        fitted_values,
+
+        dtype=float
+
+    )
+
+
+    expected = int(
+        np.count_nonzero(mask)
+    )
+
+
+    if fitted_values.size != expected:
+
+        raise ValueError(
+
+            "The number of fitted values does not match "
+            "the number of fitted ORBIT3 parameters: "
+            f"{fitted_values.size} != {expected}."
+
+        )
+
+
+    full[
+        mask
+    ] = fitted_values
+
+
+    return array_to_orbit3(
+
+        full,
+
+        elements
+
+    )
+
+
+# ==========================================================
+# ORBIT3 parameter names
+# ==========================================================
+
+def orbit3_fitted_parameter_names(
+    elements: TripleOrbitalElements
+):
+    """
+    Return fitted ORBIT3 parameter names.
+    """
+
+    return [
+
+        name
+
+        for name, fitted
+        in zip(
+
+            ORBIT3_PARAMETER_ORDER,
+
+            elements.fitted_mask()
+
+        )
+
+        if fitted
+
+    ]
+
+
+# ==========================================================
+# ORBIT3 residual update
+# ==========================================================
+
+def orbit3_fit_flag_elements(
+    fitted_values,
+    template
+):
+    """
+    Construct an updated TripleOrbitalElements object from
+    fitted ORBIT3 values.
+    """
+
+    return update_orbit3_fitted_parameters(
+
+        template,
+
+        fitted_values
+
+    )
+
+
+# ==========================================================
+# Legacy triple orbit fitting
 # ==========================================================
 
 def fit_triple_orbit(
@@ -624,48 +928,19 @@ def fit_triple_orbit(
     method="trf"
 ):
     """
-    Fit a hierarchical triple orbit using the legacy
-    ORBITT2 astrometric parameterization.
+    Fit the legacy ORBITT2 hierarchical triple orbit.
 
-    This function deliberately remains a 15-parameter
-    visual-orbit fitter. ORBIT3 spectroscopic parameters
-    are not fitted here yet.
+    This function intentionally remains separate from the
+    modern ORBIT3 fitting path.
     """
-
-    # ------------------------------------------------------
-    # Initial fitted parameter vector.
-    # ------------------------------------------------------
 
     p0 = triple_fitted_parameters(
         elements
     )
 
 
-    # ------------------------------------------------------
-    # Bounds.
-    #
-    # build_triple_bounds() is part of the existing legacy
-    # triple-fitting pathway. We pass the same elements but
-    # ensure that the parameter vector used by this function
-    # remains the 15-parameter legacy vector.
-    # ------------------------------------------------------
-
     bounds = build_triple_bounds(
         elements
-    )
-
-
-    # ------------------------------------------------------
-    # Parameter names.
-    #
-    # Do not use elements.fitted_parameter_names() here:
-    # that method now represents the expanded ORBIT3 model.
-    # ------------------------------------------------------
-
-    parameter_names = (
-        _legacy_fitted_parameter_names(
-            elements
-        )
     )
 
 
@@ -693,7 +968,15 @@ def fit_triple_orbit(
 
             ),
 
-        parameter_names=parameter_names,
+        parameter_names=(
+
+            legacy_triple_fitted_parameter_names(
+
+                elements
+
+            )
+
+        ),
 
         fit_result_class=TripleFitResult,
 

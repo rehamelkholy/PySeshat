@@ -225,6 +225,8 @@ PySeshat
 │   │   ├── __init__.py
 │   │   ├── __pycache__
 │   │   │   ├── __init__.cpython-314.pyc
+│   │   │   ├── orbit3_bounds.cpython-314.pyc
+│   │   │   ├── orbit3_fit.cpython-314.pyc
 │   │   │   ├── triple_bounds.cpython-314.pyc
 │   │   │   ├── triple_diagnostics.cpython-314.pyc
 │   │   │   ├── triple_elements.cpython-314.pyc
@@ -233,10 +235,13 @@ PySeshat
 │   │   │   ├── triple_identifiability.cpython-314.pyc
 │   │   │   ├── triple_observation.cpython-314.pyc
 │   │   │   ├── triple_orbit.cpython-314.pyc
+│   │   │   ├── triple_parameters.cpython-314.pyc
 │   │   │   ├── triple_parser.cpython-314.pyc
 │   │   │   ├── triple_pca.cpython-314.pyc
 │   │   │   ├── triple_residuals.cpython-314.pyc
 │   │   │   └── triple_statistics.cpython-314.pyc
+│   │   ├── orbit3_bounds.py
+│   │   ├── orbit3_fit.py
 │   │   ├── triple_bounds.py
 │   │   ├── triple_diagnostics.py
 │   │   ├── triple_elements.py

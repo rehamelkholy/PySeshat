@@ -617,6 +617,18 @@
 
 ## pyseshat.triple.__init__
 
+## pyseshat.triple.orbit3_bounds
+
+### Functions
+- orbit3_full_bounds()
+- build_orbit3_bounds()
+
+## pyseshat.triple.orbit3_fit
+
+### Functions
+- orbit3_fit_flag_residuals()
+- fit_orbit3()
+
 ## pyseshat.triple.triple_bounds
 
 ### Functions
@@ -650,6 +662,12 @@
 - triple_fit_residuals()
 - triple_B_residuals()
 - triple_a2_residuals()
+- orbit3_to_array()
+- array_to_orbit3()
+- orbit3_fitted_parameters()
+- update_orbit3_fitted_parameters()
+- orbit3_fitted_parameter_names()
+- orbit3_fit_flag_elements()
 - fit_triple_orbit()
 
 ## pyseshat.triple.triple_fit_result
@@ -680,12 +698,21 @@
 
 ### Functions
 - compute_triple_orbit()
+- compute_orbit3_visual()
+- compute_orbit3_radial_velocities()
+- compute_orbit3_model()
 
 ## pyseshat.triple.triple_parameters
 
 ### Functions
 - triple_to_array()
 - array_to_triple()
+- triple_to_orbit3_array()
+- orbit3_array_to_triple()
+- orbit3_fitted_parameters()
+- update_orbit3_fitted_parameters()
+- legacy_triple_parameter_names()
+- orbit3_parameter_names()
 
 ## pyseshat.triple.triple_parser
 
@@ -704,6 +731,10 @@
 
 ### Functions
 - triple_visual_residuals()
+- orbit3_visual_residuals()
+- orbit3_radial_velocity_residuals()
+- orbit3_residuals()
+- orbit3_chi_square()
 
 ## pyseshat.triple.triple_statistics
 
