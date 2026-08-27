@@ -1,34 +1,86 @@
 {
   "system": "Zeta Aquarii AB",
-  "source": "ORBIT example dataset",
+  "source": "Tokovinin (2016), \"The Triple System Zeta Aquarii\", ApJ, 831, 151, Table 5",
   "file": "ZetaAqr.in2",
   "orbit_type": "hierarchical_triple",
-  "supported": "partial",
-
-  "initial_parameters": {
-    "P": 540.0,
-    "T0": 1980.50,
-    "e": 0.419,
-    "a": 3.496,
-    "Omega": 131.3,
-    "omega": 269.3,
-    "i": 142.0
-  },
-
-  "secondary_orbit": {
-    "P2": 25.951,
-    "T2": 2006.516,
-    "e2": 0.8716,
-    "a2": 0.110,
-    "Omega2": 293.7,
-    "omega2": 100.9,
-    "i2": 11.8
-  },
+  "fitting_path": "orbit3",
+  "supported": true,
 
   "notes": [
-    "Hierarchical triple system",
-    "Current PySeshat support is visual-only",
-    "RV and nested-orbit coupling not yet implemented",
-    "Important edge-case benchmark for future orbitT2 parity"
-  ]
+    "Hierarchical triple system, fit through the modern 20-parameter ORBIT3 formalism (triple.orbit3_fit.fit_orbit3), not the plain binary path.",
+    "No RV data of adequate precision to establish the inner nodes -- rv_observations is empty for this system; K1,K2,K3,K4,V0 are unused (fixed at 0.0).",
+    "The published inner-orbit semimajor axis a_astrometric=0.110 arcsec is the ASTROMETRIC wobble amplitude, not the true ORBIT3 inner semimajor axis. The true inner a is a_true = F * a_astrometric = 3.50 * 0.110 = 0.385 arcsec, and the ORBIT3 wobble factor is f = 1/F = 0.2857142857142857, so that f * a_true = a_astrometric. Do not use a_astrometric directly as the inner 'a' parameter.",
+    "The literature .in2 file's I1/I2 observation tags are opposite to the ORBIT3 convention used here -- I1 (as tagged in ZetaAqr.in2) is the OUTER A-B orbit and I2 is the INNER Aa-Ab orbit; they must be swapped before fitting (see tests/test_zetaaqr_reproduce_orbit.py::convert_to_orbit3_observations).",
+    "Inner 'a' is fixed (not fitted) during the ORBIT3 fit, since it's derived from the literature F ratio -- only f (the wobble amplitude) and the remaining 6 inner angular/period elements plus all 7 outer elements are fitted.",
+    "zeta Aqr is an orbit-reproduction benchmark, not a precision dynamical-mass benchmark: the ~3.55% parallax uncertainty (1.26/35.50 mas) alone propagates to ~10.6% mass uncertainty via M ~ varpi^-3, well short of the ~2% precision needed to meaningfully test stellar evolution models."
+  ],
+
+  "parallax_mas": {
+    "value": 35.50,
+    "sigma": 1.26
+  },
+
+  "masses_Msun_approximate": {
+    "M_Aa": 1.4,
+    "M_B": 1.4,
+    "M_Ab": 0.6,
+    "note": "Approximate component masses from Tokovinin (2016); not independently re-derived here."
+  },
+
+  "initial_parameters": {
+    "P": 25.95,
+    "T0": 2006.52,
+    "e": 0.872,
+    "a": 0.385,
+    "Omega": 293.7,
+    "omega": 100.9,
+    "i": 11.8,
+    "f": 0.2857142857142857,
+    "P2": 540.0,
+    "T02": 1981.50,
+    "e2": 0.419,
+    "a2": 3.496,
+    "Omega2": 131.3,
+    "omega2": 269.3,
+    "i2": 142.0
+  },
+
+  "initial_parameters_sigma": {
+    "P": 0.048,
+    "T0": 0.13,
+    "e": 0.006,
+    "a_astrometric": 0.0,
+    "Omega": 74.0,
+    "omega": 73.0,
+    "i": 6.7,
+    "F": 0.09,
+    "P2": 15.0,
+    "T02": 0.58,
+    "e2": 0.011,
+    "a2": 0.046,
+    "Omega2": 0.8,
+    "omega2": 1.7,
+    "i2": 0.4
+  },
+
+  "fitted_flags": {
+    "P": true,
+    "T0": true,
+    "e": true,
+    "a": false,
+    "Omega": true,
+    "omega": true,
+    "i": true,
+    "f": true,
+    "P2": true,
+    "T02": true,
+    "e2": true,
+    "a2": true,
+    "Omega2": true,
+    "omega2": true,
+    "i2": true
+  },
+
+  "paper_table_row": "outer",
+  "paper_table_row_note": "The paper's Benchmark Results v1 table reports the OUTER orbit (P2,a2,e2,i2 above, renamed P,a,e,i for the table) plus chi2, M_dyn, and sigma_M/M derived from the outer orbit and the parallax above."
 }

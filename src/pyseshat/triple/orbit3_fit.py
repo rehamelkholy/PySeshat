@@ -27,6 +27,21 @@ from pyseshat.triple.triple_residuals import (
 )
 
 
+from pyseshat.triple.orbit3_likelihood import (
+    log_posterior_orbit3
+)
+
+
+from pyseshat.inference.mcmc_engine import (
+    run_emcee
+)
+
+
+from pyseshat.inference.mcmc_result import (
+    MCMCResult
+)
+
+
 # ==========================================================
 # ORBIT3 residual wrapper
 # ==========================================================
@@ -467,5 +482,180 @@ def fit_orbit3(
         bounds=optimizer_bounds,
 
         jac=jacobian
+
+    )
+
+
+# ==========================================================
+# ORBIT3 Bayesian (MCMC) fit
+# ==========================================================
+
+def fit_orbit3_mcmc(
+    elements,
+    observations,
+    rv_observations,
+    method="lm",
+    loss="linear",
+    f_scale=1.0,
+    bounds=None,
+    n_walkers=32,
+    n_steps=5000,
+    burn_in=1000,
+    thin=1,
+    random_scale=1e-4,
+    rng=None
+):
+    """
+    Bayesian ORBIT3 hierarchical-triple fitting.
+
+    This is the ORBIT3 counterpart of
+    ``pyseshat.inference.optimizer.fit_visual_orbit_mcmc``: it
+    first computes the maximum-likelihood ORBIT3 solution
+    using ``fit_orbit3`` (deterministic least squares), then
+    samples the posterior distribution of the fitted
+    parameters using emcee, seeded from the least-squares
+    solution and its covariance.
+
+    Until this function, no MCMC/posterior-inference entry
+    point existed for triple/ORBIT3 orbits at all --
+    ``inference.mcmc_engine`` and ``inference.mcmc_result`` are
+    fully generic (operating on a flat parameter vector and a
+    caller-supplied log-probability function) and needed no
+    changes; only an ORBIT3-specific log-posterior
+    (``triple.orbit3_likelihood.log_posterior_orbit3``, itself
+    built on ``triple.orbit3_priors.log_prior_orbit3`` and
+    ``triple.triple_residuals.orbit3_residuals``) was missing.
+
+    Parameters
+    ----------
+    elements : TripleOrbitalElements
+        Initial ORBIT3 element set, including the fit mask
+        (``elements.fit_flags``) that determines which of the
+        20 ORBIT3 parameters are fitted.
+
+    observations : list[TripleObservation]
+        Astrometric (I1/I2) observations.
+
+    rv_observations : list[TripleObservation]
+        Radial-velocity (Va/Vb/Vc) observations. Pass an empty
+        list for systems with no usable RV data (e.g. ZetaAqr).
+
+    method, loss, f_scale, bounds
+        Passed through to the initial ``fit_orbit3`` call.
+
+    n_walkers, n_steps, burn_in, thin, random_scale, rng
+        Passed through to ``inference.mcmc_engine.run_emcee``.
+        See that function's docstring for details.
+
+    Returns
+    -------
+    MCMCResult
+        Posterior samples and diagnostics, plus the underlying
+        least-squares solution (elements, residuals,
+        covariance, uncertainties) inherited from
+        ``BaseFitResult``.
+    """
+
+    # ------------------------------------------------------
+    # Maximum-likelihood solution
+    # ------------------------------------------------------
+
+    fit_result = fit_orbit3(
+
+        elements,
+
+        observations,
+
+        rv_observations,
+
+        method=method,
+
+        loss=loss,
+
+        f_scale=f_scale,
+
+        bounds=bounds
+
+    )
+
+    fitted_elements = fit_result.elements
+
+    initial_parameters = orbit3_to_array(
+        fitted_elements
+    )[
+        fitted_elements.fitted_mask()
+    ]
+
+    # ------------------------------------------------------
+    # Posterior sampling
+    # ------------------------------------------------------
+
+    engine = run_emcee(
+
+        log_probability_function=log_posterior_orbit3,
+
+        log_probability_args=(
+
+            fitted_elements,
+
+            observations,
+
+            rv_observations
+
+        ),
+
+        initial_parameters=initial_parameters,
+
+        covariance=fit_result.covariance,
+
+        n_walkers=n_walkers,
+
+        n_steps=n_steps,
+
+        burn_in=burn_in,
+
+        thin=thin,
+
+        random_scale=random_scale,
+
+        rng=rng
+
+    )
+
+    return MCMCResult(
+
+        elements=fitted_elements,
+
+        optimizer_result=fit_result.optimizer_result,
+
+        residuals=fit_result.residuals,
+
+        covariance=fit_result.covariance,
+
+        uncertainties=fit_result.uncertainties,
+
+        samples=engine["samples"],
+
+        log_probability=engine["log_probability"],
+
+        parameter_names=(
+            fitted_elements.fitted_parameter_names()
+        ),
+
+        acceptance_fraction=engine[
+            "acceptance_fraction"
+        ],
+
+        autocorrelation_time=engine[
+            "autocorrelation_time"
+        ],
+
+        n_walkers=n_walkers,
+
+        n_steps=n_steps,
+
+        burn_in=burn_in,
+
+        thin=thin
 
     )

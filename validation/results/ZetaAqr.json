@@ -1,0 +1,118 @@
+{
+  "system": "ZetaAqr",
+  "orbit_type": "hierarchical_triple",
+  "fitting_path": "orbit3",
+  "paper_table_row": "outer",
+  "statistics": {
+    "initial_chi_square": 699.7334123610008,
+    "chi_square": 694.507554063731,
+    "reduced_chi_square": 1.0717709167650171,
+    "rms": 1.0242583007042352,
+    "n_data": 662,
+    "n_params": 14
+  },
+  "parameter_errors": {
+    "P": {
+      "expected": 25.95,
+      "fitted": 25.948067873902364,
+      "relative_error": 7.44557263057992e-05
+    },
+    "T0": {
+      "expected": 2006.52,
+      "fitted": 2006.488873896313,
+      "relative_error": 1.551248115494945e-05
+    },
+    "e": {
+      "expected": 0.872,
+      "fitted": 0.8780741267158632,
+      "relative_error": 0.006965741646632064
+    },
+    "a": {
+      "expected": 0.385,
+      "fitted": 0.385,
+      "relative_error": 0.0
+    },
+    "Omega": {
+      "expected": 293.7,
+      "fitted": 293.8161604254481,
+      "relative_error": 0.00064533569693405
+    },
+    "omega": {
+      "expected": 100.9,
+      "fitted": 100.32162228672908,
+      "relative_error": 0.003213209518171804
+    },
+    "i": {
+      "expected": 11.8,
+      "fitted": 14.092176109842985,
+      "relative_error": 0.19425221269855797
+    },
+    "f": {
+      "expected": 0.2857142857142857,
+      "fitted": 0.29730971573054976,
+      "relative_error": 0.04058400505692422
+    },
+    "P2": {
+      "expected": 540.0,
+      "fitted": 542.0193913867035,
+      "relative_error": 0.0037396136790806413
+    },
+    "T02": {
+      "expected": 1981.5,
+      "fitted": 1981.4210511145643,
+      "relative_error": 3.984299037885099e-05
+    },
+    "e2": {
+      "expected": 0.419,
+      "fitted": 0.4209412599972264,
+      "relative_error": 0.004633078752330409
+    },
+    "a2": {
+      "expected": 3.496,
+      "fitted": 3.4990380874977407,
+      "relative_error": 0.0008690181629693091
+    },
+    "Omega2": {
+      "expected": 131.3,
+      "fitted": 131.02198542807824,
+      "relative_error": 0.0015445253995654046
+    },
+    "omega2": {
+      "expected": 269.3,
+      "fitted": 268.91724944531603,
+      "relative_error": 0.002126391970466557
+    },
+    "i2": {
+      "expected": 142.0,
+      "fitted": 141.9251062871626,
+      "relative_error": 0.0005274205129393936
+    }
+  },
+  "fitted_elements": {
+    "P": 25.948067873902364,
+    "T0": 2006.488873896313,
+    "e": 0.8780741267158632,
+    "a": 0.385,
+    "Omega": 293.8161604254481,
+    "omega": 100.32162228672908,
+    "i": 14.092176109842985,
+    "K1": 0.0,
+    "K2": 0.0,
+    "f": 0.29730971573054976,
+    "P2": 542.0193913867035,
+    "T02": 1981.4210511145643,
+    "e2": 0.4209412599972264,
+    "a2": 3.4990380874977407,
+    "Omega2": 131.02198542807824,
+    "omega2": 268.91724944531603,
+    "i2": 141.9251062871626,
+    "K3": 0.0,
+    "K4": 0.0,
+    "V0": 0.0
+  },
+  "optimizer_success": true,
+  "optimizer_message": "`xtol` termination condition is satisfied.",
+  "mass_dynamical_Msun": 3.2593522740847325,
+  "mass_sigma_Msun": 0.40282569543544006,
+  "mass_relative_sigma": 0.12359072035211617
+}

@@ -1,0 +1,87 @@
+{
+  "system": "FIN379",
+  "orbit_type": "combined_visual_sb2",
+  "fitting_path": "binary",
+  "paper_table_row": null,
+  "statistics": {
+    "chi2_visual": 28.27542590376766,
+    "chi2_rv1": 25.539796763031248,
+    "chi2_rv2": 25.259352687298563,
+    "chi2_total": 79.07457535409746,
+    "reduced_chi2": 1.6824377734914353,
+    "rms": 1.1778256457669238,
+    "chi_square": 79.07457535409746,
+    "reduced_chi_square": 1.6824377734914353,
+    "n_data": 57,
+    "n_params": 10
+  },
+  "parameter_errors": {
+    "P": {
+      "expected": 6.69,
+      "fitted": 6.690240381601489,
+      "relative_error": 3.5931480043179434e-05
+    },
+    "T0": {
+      "expected": 2008.8443,
+      "fitted": 2008.8436978270297,
+      "relative_error": 2.9976089748479036e-07
+    },
+    "e": {
+      "expected": 0.4988,
+      "fitted": 0.49892379453688784,
+      "relative_error": 0.0002481847170966768
+    },
+    "a": {
+      "expected": 0.1003,
+      "fitted": 0.10021647506329555,
+      "relative_error": 0.0008327511137034058
+    },
+    "Omega": {
+      "expected": 183.9,
+      "fitted": 183.76385617570492,
+      "relative_error": 0.0007563545794171647
+    },
+    "omega": {
+      "expected": 191.0,
+      "fitted": 191.15757591494625,
+      "relative_error": 0.0008754217497015462
+    },
+    "i": {
+      "expected": 42.0,
+      "fitted": 41.95546820341358,
+      "relative_error": 0.0010602808711052177
+    },
+    "K1": {
+      "expected": 7.43,
+      "fitted": 7.429038462690448,
+      "relative_error": 0.00012941282766510496
+    },
+    "K2": {
+      "expected": 8.05,
+      "fitted": 8.050303565167775,
+      "relative_error": 3.77099587297543e-05
+    },
+    "V0": {
+      "expected": -0.51,
+      "fitted": -0.5123706739882703,
+      "relative_error": 0.004648380369157429
+    }
+  },
+  "fitted_elements": {
+    "P": 6.690240381601489,
+    "T0": 2008.8436978270297,
+    "e": 0.49892379453688784,
+    "a": 0.10021647506329555,
+    "Omega": 183.76385617570492,
+    "omega": 191.15757591494625,
+    "i": 41.95546820341358,
+    "K1": 7.429038462690448,
+    "K2": 8.050303565167775,
+    "V0": -0.5123706739882703
+  },
+  "optimizer_success": true,
+  "optimizer_message": "`ftol` termination condition is satisfied.",
+  "mass_dynamical_Msun": null,
+  "mass_sigma_Msun": null,
+  "mass_relative_sigma": null
+}

@@ -92,19 +92,24 @@ comparison. Adding another grid later is an extension, not a replacement.
 
 ## Current bottleneck & next step
 
-**Open question:** can PySeshat's ORBIT3 implementation reproduce the
-published Tokovinin triple solution and its residual structure closely
-enough that any remaining gap is scientifically explainable? Not yet fully
-resolved — there's a small unexplained discrepancy for ζ Aqr specifically.
+**RESOLVED (2026-08-27):** the ζ Aqr open question above was answered by
+the residual-decomposition run described below (real measurement scatter
+at one epoch, not a PySeshat bug) and ζ Aqr is now fully wired into
+`validation/benchmark_runner.py` via the real ORBIT3 path, alongside a new
+HIP111805 regression benchmark and a new triple/ORBIT3 MCMC entry point —
+see "ζ Aqr/HIP111805 ORBIT3 benchmark wiring + triple MCMC entry point
+(2026-08-27)" near the end of this document for the full writeup. The
+triple/ORBIT3 and Al-Wardat gap analysis below is likewise resolved on the
+triple/ORBIT3 side; only the Al-Wardat gap remains open.
 
-**Agreed next step: residual-decomposition diagnostic**, not optimizer
-replacement. Decompose by I1 vs I2, X vs Y (astrometric) and compare
-Tokovinin vs PySeshat χ². This infrastructure already exists for HIP 111805
-(see `tests/test_hip111805_*_diagnostic.py`) — the same approach needs to be
-applied to ζ Aqr. Do NOT respond to the discrepancy by: rewriting the
-optimizer, redesigning triple architecture, switching residual definitions,
-adding another atmosphere model, jumping to MCMC, or changing conventions
-without evidence.
+**Current bottleneck: Al-Wardat/SED end-to-end validation** (the second,
+larger gap identified in that analysis — individual functions are
+unit-tested correct, but nothing has run end-to-end against a real system's
+real photometry compared to real published stellar parameters). Per the
+user's own explicit sequencing, this comes next, to be followed by
+validating all produced plots throughout the software; do not start either
+until Al-Wardat's own target-system-selection literature-research step has
+been done first.
 
 ## Benchmark reference values
 
@@ -284,11 +289,12 @@ triple_elements.LEGACY_TRIPLE_PARAMETER_ORDER`) and by re-running the full
 staged suite (`pytest tests/ -q`): same single pre-existing failure noted
 above, everything else (58 tests) passes.
 
-Separately noted, not a bug: `inference/` (including `mcmc_engine.py`) has
-no imports from `triple/` at all — MCMC is wired up for binary/joint fitting
-(e.g. FIN379) but there is currently no MCMC entry point for triple/ORBIT3
-orbits. That's a gap/missing feature, not a duplication or correctness
-issue, and wasn't touched here.
+Separately noted, not a bug (**RESOLVED 2026-08-27** — see "ζ Aqr/HIP111805
+ORBIT3 benchmark wiring + triple MCMC entry point" below): `inference/`
+(including `mcmc_engine.py`) has no imports from `triple/` at all — MCMC is
+wired up for binary/joint fitting (e.g. FIN379) but there is currently no
+MCMC entry point for triple/ORBIT3 orbits. That's a gap/missing feature, not
+a duplication or correctness issue, and wasn't touched here.
 
 ## Whole-codebase audit (2026-08-26)
 
@@ -593,6 +599,221 @@ applies the deletion, so the doc doesn't describe files that no longer
 exist. This session has no file-delete capability on the user's device, so
 as with the first cleanup pass, execution needs to go through a separate
 session with real shell/git access, working from the itemized list above.
+
+### Triple/ORBIT3 and Al-Wardat validation gap analysis (2026-08-27)
+
+The user correctly flagged that `validation/` only ever ran the plain
+binary path (three systems, from before triple/ORBIT3 existed), never the
+triple/ORBIT3 formalism, and never touched Al-Wardat/SED at all. Full
+gap analysis (what already exists vs. what's missing, for each) written to
+the "Binaries Paper" claude.ai Project as
+`gap-analysis-triple-orbit3-al-wardat.md` — read that before starting
+either build. Short version: the triple/ORBIT3 gap is mostly wiring
+already-validated science (ζ Aqr's real ORBIT3 fit + literature values
+already exist, just not routed through `benchmark_runner.py`) plus one real
+open item (no MCMC entry point for triple/ORBIT3 orbits at all). The
+Al-Wardat gap is larger and different in kind — individual functions are
+unit-tested correct, but nothing has ever run end-to-end against a real
+system's real photometry compared to real published stellar parameters;
+per the roadmap's own phasing this comes after Benchmark Results v1, and
+needs a literature-research step (target system selection) before any
+code work. No code changed in this pass — scoping only.
+
+**Triple/ORBIT3 side RESOLVED (2026-08-27)** — see the dedicated section
+below. Al-Wardat remains open and is the current bottleneck.
+
+### ζ Aqr/HIP111805 ORBIT3 benchmark wiring + triple MCMC entry point (2026-08-27)
+
+Closed out the triple/ORBIT3 side of the gap analysis above, per explicit
+user instruction to execute the full triple/ORBIT3 task breakdown, add
+HIP111805 as a formal 4th regression benchmark (previously scoped as
+optional), and build the triple/ORBIT3 MCMC entry point (previously left as
+an explicit scope decision for the user to make — they decided: build it).
+
+**`tests/test_hip111805_orbit3.py` loose assertion, fixed.**
+`test_hip111805_orbit3_residual_decomposition`'s `assert fitted_chi2 <
+initial_chi2` failed on numerically-equal floats
+(`502.1038162393516 < 502.1038162393516`) because `load_hip111805()`
+initializes elements directly from the `.in3` file's header, which already
+*is* the published Tokovinin & Latham (2017) solution — the optimizer
+starts at the optimum and correctly returns it unchanged. Changed to `<=`
+with an explanatory comment; this is exactly the follow-up flagged (but not
+fixed) in the ORBIT3 parameter-vector consolidation entry above.
+
+**`validation/expected_results/ZetaAqr.json` rewritten** to hold the
+complete, correctly-converted ORBIT3 literature solution (inner + outer
+elements, uncertainties, parallax, approximate masses, full Tokovinin 2016
+Table 5 citation) instead of the old file's plain-binary-shaped
+`initial_parameters` (which used the *astrometric* inner
+`a=0.110″` directly — wrong; see the astrometric-vs-true-`a` decision
+above) and stale "visual-only, not implemented" notes. Pure transcription
+from the already-verified, already-cited `LITERATURE` dict in
+`tests/test_zetaaqr_reproduce_orbit.py` — no new derivation needed.
+
+**`validation/benchmark_runner.py`: new ORBIT3 fitting path.**
+`run_benchmark()` now branches on `expected["fitting_path"] == "orbit3"`
+and dispatches such systems to a new `run_orbit3_benchmark()`, which:
+parses the file via `triple_parser.parse_triple_file`; for legacy `.in2`
+files (format-detected from `parsed["metadata"]`), swaps the I1/I2
+astrometric observation tags via a new `_convert_legacy_orbit3_observations`
+helper (replicating `test_zetaaqr_reproduce_orbit.py`'s
+`convert_to_orbit3_observations` — `.in2` files tag the OUTER pair `I1` and
+the INNER pair `I2`, backwards from the ORBIT3 convention
+`orbit3_residuals()` expects; this is a no-op for genuinely modern `.in3`
+files, which already use the ORBIT3 convention natively); builds a
+`TripleOrbitalElements` from the `expected_results` file's flat
+`initial_parameters`/`fitted_flags` (not from whatever `parse_triple_file`
+read out of the raw file's own header — the `expected_results` file is the
+single authoritative, literature-cited source) via a new
+`_build_orbit3_elements` helper; and calls `triple.orbit3_fit.fit_orbit3`.
+A new `_flatten_orbit3_elements` helper converts the fitted
+`TripleOrbitalElements` back to the same flat schema for parameter-error
+comparison and JSON output.
+
+**Cross-system statistics consistency**, addressing the user's explicit
+"make sure all benchmark results are consistent": the binary path's
+`combined_fit_summary()` (`chi2_total`/`reduced_chi2`) and the new ORBIT3
+path independently compute chi-square under different key names than each
+other and than the unrelated `fit_summary()` elsewhere in
+`analysis/statistics.py` (`chi_square`/`reduced_chi_square`). Rather than
+changing either library function's public return schema (other
+callers/tests depend on them), both `run_benchmark()` and
+`run_orbit3_benchmark()` now normalize their `"statistics"` dict through a
+new `_normalize_statistics()` helper before returning, adding the common
+keys (`chi_square`, `reduced_chi_square`, `rms`, `n_data`, `n_params`)
+alongside the path-specific ones. Both paths' top-level return dicts were
+also unified to the same key set (`system`, `orbit_type`, `fitting_path`,
+`paper_table_row`, `statistics`, `parameter_errors`, `fitted_elements`,
+`optimizer_success`, `optimizer_message`, `mass_dynamical_Msun`,
+`mass_sigma_Msun`, `mass_relative_sigma` — `None` where a path doesn't
+apply, e.g. mass fields for a system with no `paper_table_row`).
+`metrics.parameter_relative_error`'s node-aware angular comparison
+(previously only `"Omega"`/`"omega"`) was extended to also cover the outer
+orbit's `"Omega2"`/`"omega2"` — the same node ambiguity applies to both
+orbits of a hierarchical triple.
+
+**`validation/benchmark_registry.csv`-driven runner, matching what
+`CLAUDE.md` already documented but that didn't actually exist**: added
+`run_all_benchmarks()` (reads the registry, derives each system's
+`benchmark_systems/<stem>/`, `expected_results/<stem>.json`, and
+`results/<stem>.json` paths from the data filename's stem, runs
+`run_benchmark()` for every `supported == "yes"` row, writes one result
+JSON per system, and never lets one system's failure abort the rest) plus
+an `if __name__ == "__main__"` block and a console summary
+(`_print_summary`) so `python validation/benchmark_runner.py` does what
+`CLAUDE.md` said it did. Fixed a latent bug surfaced while building this:
+`benchmark_registry.csv`'s leading blank line made `csv.DictReader` treat
+it as the header, silently producing zero rows — fixed both in the loader
+(skip blank lines before parsing) and in the CSV file itself.
+`benchmark_registry.csv`'s ZetaAqr row updated from `partial`/"visual-only
+currently" to `yes`/ORBIT3; a new HIP111805 row added (see below).
+
+**M_dyn for ζ Aqr's outer orbit**, using the already-existing
+`analysis/masses.py` (`total_mass_from_elements`,
+`total_mass_uncertainty_from_elements`) against the fitted outer orbit and
+the 35.50±1.26 mas parallax from `ZetaAqr.json`: **M_dyn ≈ 3.26 ± 0.40 M☉
+(≈12.4% relative)**, consistent with the ~10.6% expected from parallax
+uncertainty alone propagating through M∝ϖ⁻³, and close to the ≈3.4 M☉ sum
+of Tokovinin's approximate component masses. `paper_table_row: "outer"` in
+`ZetaAqr.json` tells `run_orbit3_benchmark()` which orbit (and which
+`fitted_parameter_names()` suffix, `"2"` for outer) to compute the mass
+from; `HIP111805.json` deliberately omits `paper_table_row` (no
+independent parallax uncertainty is available for it, and it isn't part of
+the paper's Benchmark Results v1 table anyway), so no mass is computed for
+it.
+
+**Full ζ Aqr ORBIT3 fit result** (via the new pipeline, `method="lm"`
+default): converges (`optimizer_success=True`), `chi_square≈694.51` (vs.
+`initial_chi_square≈699.73` at the literature starting point — matches the
+Δ=5.23 improvement already found by the residual-decomposition run above),
+`reduced_chi_square≈1.07`, 14 fitted parameters (inner `a` fixed, all 5
+spectroscopic params unused/fixed at 0 — no RV data). Parameter recovery is
+good everywhere except inner `i` (14.09° vs. literature 11.8°, ~19% relative
+error) — well within the literature's own `σ_i=6.7°` for this poorly-
+constrained inner orbit, not a red flag.
+
+**HIP111805 added as a 4th regression benchmark**
+(`validation/expected_results/HIP111805.json`, `fitting_path: "orbit3"`,
+all 20 parameters fitted, matching the existing
+`test_hip111805_orbit3_fit_mask` test). Values transcribed directly from
+`HIP111805.in3`'s own header (all 20 already match the Tokovinin & Latham
+2017 figures recorded in "Benchmark reference values" above), with two
+format quirks worth remembering if this file is touched again: (1) the WDS
+metadata line and the real `P` parameter line are glued together in the
+raw file with no intervening newline (`...HD 214608P        1.50041...`
+immediately followed by a separate, correctly-formatted `P        1.50119`
+line) — `_parse_header_metadata`'s WDS-line regex swallows the glued
+fragment whole before the main parameter parser ever sees it, so the real
+`P=1.50119` is unambiguous, but it's easy to misread the raw file and think
+there are two conflicting `P` values; (2) the file's third numeric column
+after `W2`/`w2` (334.24, 264.6) is not a plausible angular uncertainty (it
+exceeds the 0–360° range entirely) and is not used anywhere — only `P2`'s
+third column (0.0174) is a plausible period uncertainty and is the only
+`initial_parameters_sigma` entry kept. Because the `.in3` header already
+*is* the fitted optimum (per the loose-assertion fix above),
+`run_orbit3_benchmark("HIP111805", ...)` reproduces it exactly:
+`chi_square == initial_chi_square == 502.1038162393516`, every parameter's
+`relative_error == 0.0`. `HIP111805`'s `.in3` file already used the correct
+ORBIT3 I1=inner/I2=outer observation-tag convention natively (confirmed via
+`tests/test_hip111805_orbit3.py`, which never calls an I1/I2 swap helper),
+unlike ZetaAqr's legacy `.in2` file — no swap needed for this system.
+
+**New triple/ORBIT3 MCMC entry point** (the one real "missing feature," not
+duplication, noted in the ORBIT3 consolidation entry above). Three new
+modules under `triple/`:
+- `orbit3_priors.py`: `log_prior_orbit3(elements: TripleOrbitalElements)`,
+  mirroring `inference.priors.log_prior` (binary/single-orbit) applied to
+  both the inner and outer `OrbitalElements`, plus the wobble factor `f`
+  and the four spectroscopic semi-amplitudes. Bound choices are
+  deliberately identical to `orbit3_bounds.orbit3_full_bounds()` (the
+  deterministic optimizer's own bounded-method bounds) so the MCMC prior
+  support and the least-squares bounds never disagree — critically
+  including `f` being left **unrestricted** (flat/improper prior): the
+  published HIP111805 solution has `f=-0.330`, so `f` must not be
+  constrained to `[0,1]` here any more than it is in
+  `orbit3_bounds.py`. K1–K4 only constrain the prior when they're fitted
+  parameters (mirroring `log_prior`'s treatment of K1/K2), so fixed/unused
+  spectroscopic defaults (e.g. ZetaAqr's, all zero and unfitted) don't
+  contribute.
+- `orbit3_likelihood.py`: `log_likelihood_orbit3` (`-0.5 * sum(weighted
+  orbit3_residuals**2)`, matching the binary path's `log_likelihood`
+  convention of omitting the constant Gaussian normalization term) and
+  `log_posterior_orbit3` (`log_prior_orbit3 + log_likelihood_orbit3`, with
+  the same `-inf` short-circuit before evaluating the ORBIT3 forward model
+  at all when the prior already rejects the point).
+- `orbit3_fit.py`: new `fit_orbit3_mcmc()`, the ORBIT3 counterpart of
+  `inference.optimizer.fit_visual_orbit_mcmc()` — runs `fit_orbit3()` for
+  the MLE solution, then seeds `inference.mcmc_engine.run_emcee` from that
+  solution and its covariance, and returns a plain
+  `inference.mcmc_result.MCMCResult`. Neither `mcmc_engine.py` nor
+  `mcmc_result.py` needed any changes: both were already fully generic
+  (a flat parameter vector in, a caller-supplied log-probability function),
+  confirming the audit's characterization of this as a wiring gap, not an
+  architecture gap.
+
+Verified end-to-end on both ZetaAqr (no RV data, inner `a` fixed, 14 fitted
+params) and HIP111805 (full RV data, all 20 fitted params) with small
+smoke-test walker/step counts: posteriors land in the right physical
+neighborhood (e.g. ZetaAqr's `f` posterior median 0.297±0.008 against the
+literature-derived 0.286, `Omega`/`omega` posteriors far wider than the
+well-constrained outer-orbit angles — consistent with the literature's own
+`σ_Ω=74°`, `σ_ω=73°` for this poorly-constrained inner orbit), acceptance
+fractions in the healthy ~0.3–0.35 range, all samples/log-probabilities
+finite. New test file `tests/test_orbit3_mcmc.py` (10 tests): direct
+prior/likelihood/posterior unit tests (finite for valid elements, `-inf`
+for out-of-range eccentricity, `-inf` only when unfitted-vs-fitted K1 is
+negative, negative `f` allowed and finite everywhere including far from the
+data optimum) plus one `fit_orbit3_mcmc()` end-to-end smoke test against
+real ZetaAqr data. Full suite (`pytest tests/ validation/`) passes: 136/136.
+(A `test_passband_loader.py` collection failure seen mid-session was **not**
+a real repo issue — it was this session's own locally-staged working copy
+missing `validation/photometry/passbands/*.dat`, which do exist in the repo;
+staging them fixed it. Correcting the record here since the Al-Wardat work
+below depends on exactly this photometry subsystem.)
+
+Not done in this pass, deliberately: Al-Wardat benchmarking and validating
+all produced plots throughout the software, per the user's own explicit
+"afterwards" sequencing — see "Current bottleneck & next step" above.
 
 ### Next steps (from the paper roadmap)
 

@@ -1,0 +1,143 @@
+{
+  "system": "HIP111805",
+  "orbit_type": "hierarchical_triple",
+  "fitting_path": "orbit3",
+  "paper_table_row": null,
+  "statistics": {
+    "initial_chi_square": 502.10381623935166,
+    "chi_square": 502.10381623935166,
+    "reduced_chi_square": 1.7136649018407906,
+    "rms": 1.266556570821288,
+    "n_data": 313,
+    "n_params": 20
+  },
+  "parameter_errors": {
+    "P": {
+      "expected": 1.50119,
+      "fitted": 1.50119,
+      "relative_error": 0.0
+    },
+    "T0": {
+      "expected": 1986.093,
+      "fitted": 1986.093,
+      "relative_error": 0.0
+    },
+    "e": {
+      "expected": 0.022,
+      "fitted": 0.022,
+      "relative_error": 0.0
+    },
+    "a": {
+      "expected": 0.0385,
+      "fitted": 0.0385,
+      "relative_error": 0.0
+    },
+    "Omega": {
+      "expected": 334.5,
+      "fitted": 334.5,
+      "relative_error": 0.0
+    },
+    "omega": {
+      "expected": 232.9,
+      "fitted": 232.9,
+      "relative_error": 0.0
+    },
+    "i": {
+      "expected": 85.8,
+      "fitted": 85.8,
+      "relative_error": 0.0
+    },
+    "K1": {
+      "expected": 13.13,
+      "fitted": 13.13,
+      "relative_error": 0.0
+    },
+    "K2": {
+      "expected": 19.21,
+      "fitted": 19.21,
+      "relative_error": 0.0
+    },
+    "f": {
+      "expected": -0.33,
+      "fitted": -0.33,
+      "relative_error": 0.0
+    },
+    "P2": {
+      "expected": 30.127,
+      "fitted": 30.127,
+      "relative_error": 0.0
+    },
+    "T02": {
+      "expected": 2010.179,
+      "fitted": 2010.179,
+      "relative_error": 0.0
+    },
+    "e2": {
+      "expected": 0.324,
+      "fitted": 0.324,
+      "relative_error": 0.0
+    },
+    "a2": {
+      "expected": 0.3361,
+      "fitted": 0.3361,
+      "relative_error": 0.0
+    },
+    "Omega2": {
+      "expected": 154.25,
+      "fitted": 154.25,
+      "relative_error": 0.0
+    },
+    "omega2": {
+      "expected": 84.92,
+      "fitted": 84.92,
+      "relative_error": 0.0
+    },
+    "i2": {
+      "expected": 88.28,
+      "fitted": 88.28,
+      "relative_error": 0.0
+    },
+    "K3": {
+      "expected": 6.057,
+      "fitted": 6.057,
+      "relative_error": 0.0
+    },
+    "K4": {
+      "expected": 8.6,
+      "fitted": 8.6,
+      "relative_error": 0.0
+    },
+    "V0": {
+      "expected": -22.575,
+      "fitted": -22.575,
+      "relative_error": 0.0
+    }
+  },
+  "fitted_elements": {
+    "P": 1.50119,
+    "T0": 1986.093,
+    "e": 0.022,
+    "a": 0.0385,
+    "Omega": 334.5,
+    "omega": 232.9,
+    "i": 85.8,
+    "K1": 13.13,
+    "K2": 19.21,
+    "f": -0.33,
+    "P2": 30.127,
+    "T02": 2010.179,
+    "e2": 0.324,
+    "a2": 0.3361,
+    "Omega2": 154.25,
+    "omega2": 84.92,
+    "i2": 88.28,
+    "K3": 6.057,
+    "K4": 8.6,
+    "V0": -22.575
+  },
+  "optimizer_success": true,
+  "optimizer_message": "`xtol` termination condition is satisfied.",
+  "mass_dynamical_Msun": null,
+  "mass_sigma_Msun": null,
+  "mass_relative_sigma": null
+}

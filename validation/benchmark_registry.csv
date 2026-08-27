@@ -1,5 +1,5 @@
-
 filename,system_name,type,supported,notes
 FIN379.inp,FIN 379,combined VB+SB2,yes, visual benchmark
 GL765.inp,GL 765,combined VB+SB2,yes, primary benchmark
-ZetaAqr.in2,Zeta Aqr,hierarchical triple,partial,visual-only currently
+ZetaAqr.in2,Zeta Aqr,hierarchical triple,yes,fit via ORBIT3 (orbit3_fit.fit_orbit3); outer-orbit table row
+HIP111805.in3,HIP 111805,hierarchical triple,yes,fit via ORBIT3 (orbit3_fit.fit_orbit3); regression only, no paper table row

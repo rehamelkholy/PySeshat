@@ -75,7 +75,14 @@ def parameter_relative_error(
 
     angular_parameters = [
         "Omega",
-        "omega"
+        "omega",
+        # Outer-orbit angles of a hierarchical triple in the
+        # flat ORBIT3 parameter schema (see
+        # triple.triple_elements.ORBIT3_PARAMETER_ORDER) carry
+        # the same node-ambiguity as the inner/binary "Omega"
+        # and "omega" above and must be compared the same way.
+        "Omega2",
+        "omega2"
     ]
 
     if parameter in angular_parameters:
