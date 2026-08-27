@@ -36,8 +36,7 @@ class TripleFitResult(BaseFitResult):
     def summary(self):
 
         n_parameters = len(
-            self.elements
-            .fitted_parameter_names()
+            self.elements.fitted_parameter_names()
         )
 
         return triple_fit_summary(
@@ -116,70 +115,107 @@ class TripleFitResult(BaseFitResult):
         )
 
         for name in (
-            self.elements
-            .fitted_parameter_names()
+            self.elements.fitted_parameter_names()
         ):
 
-            if name == "a2":
+            # --------------------------------------------------
+            # Inner-orbit parameters
+            #
+            # ORBIT3 parameter names without a suffix refer
+            # to the inner orbit.
+            # --------------------------------------------------
 
-                value = (
-                    self.elements
-                    .inner.a
+            if name in (
+                "P",
+                "T0",
+                "e",
+                "a",
+                "Omega",
+                "omega",
+                "i",
+            ):
+
+                value = getattr(
+                    self.elements.inner,
+                    name
                 )
 
-            elif name == "P2":
+            # --------------------------------------------------
+            # Inner spectroscopic / wobble parameters
+            # --------------------------------------------------
 
-                value = (
-                    self.elements
-                    .inner.P
+            elif name in (
+                "K1",
+                "K2",
+                "f",
+            ):
+
+                value = getattr(
+                    self.elements,
+                    name
                 )
 
-            elif name == "T02":
+            # --------------------------------------------------
+            # Outer-orbit parameters
+            #
+            # ORBIT3 represents these with the *2 suffix in
+            # the parameter vector.
+            # --------------------------------------------------
 
-                value = (
-                    self.elements
-                    .inner.T0
-                )
+            elif name in (
+                "P2",
+                "T02",
+                "e2",
+                "a2",
+                "Omega2",
+                "omega2",
+                "i2",
+            ):
 
-            elif name == "e2":
-
-                value = (
-                    self.elements
-                    .inner.e
-                )
-
-            elif name == "Omega2":
-
-                value = (
-                    self.elements
-                    .inner.Omega
-                )
-
-            elif name == "omega2":
-
-                value = (
-                    self.elements
-                    .inner.omega
-                )
-
-            elif name == "i2":
-
-                value = (
-                    self.elements
-                    .inner.i
-                )
-
-            elif name == "B":
-
-                value = (
-                    self.elements.B
-                )
-
-            else:
+                outer_parameter_name = {
+                    "P2": "P",
+                    "T02": "T0",
+                    "e2": "e",
+                    "a2": "a",
+                    "Omega2": "Omega",
+                    "omega2": "omega",
+                    "i2": "i",
+                }[name]
 
                 value = getattr(
                     self.elements.outer,
+                    outer_parameter_name
+                )
+
+            # --------------------------------------------------
+            # Outer spectroscopic parameters
+            # --------------------------------------------------
+
+            elif name in (
+                "K3",
+                "K4",
+                "V0",
+            ):
+
+                value = getattr(
+                    self.elements,
                     name
+                )
+
+            # --------------------------------------------------
+            # Additional triple parameter retained by the
+            # general TripleOrbitalElements representation.
+            # --------------------------------------------------
+
+            elif name == "B":
+
+                value = self.elements.B
+
+            else:
+
+                raise ValueError(
+                    "Unknown TripleFitResult parameter "
+                    f"'{name}'."
                 )
 
             sigma = (
@@ -190,11 +226,9 @@ class TripleFitResult(BaseFitResult):
             )
 
             lines.append(
-
                 f"{name:<10}"
                 f"{value:>15.8f}"
                 f" +/- {sigma:.8f}"
-
             )
 
         lines.append("")
@@ -258,8 +292,7 @@ class TripleFitResult(BaseFitResult):
         corr = self.correlations()
 
         names = (
-            self.elements
-            .fitted_parameter_names()
+            self.elements.fitted_parameter_names()
         )
 
         header = (
@@ -281,14 +314,12 @@ class TripleFitResult(BaseFitResult):
         ):
 
             lines.append(
-
                 f"{name:<12}"
                 +
                 "".join(
                     f"{v:12.4f}"
                     for v in row
                 )
-
             )
 
         lines.append("")
@@ -312,7 +343,7 @@ class TripleFitResult(BaseFitResult):
         return "\n".join(
             lines
         )
-    
+
     # ======================================================
     # PCA
     # ======================================================

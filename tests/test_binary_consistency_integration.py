@@ -158,7 +158,7 @@ def test_binary_consistency_integration():
         0.20
     )
 
-    assert result.primary_luminosity_sigma == pytest.approx(
+    assert result.primary_luminosity_z_score == pytest.approx(
         0.0
     )
 
@@ -173,6 +173,6 @@ def test_binary_consistency_integration():
         -0.10
     )
 
-    assert result.secondary_luminosity_sigma == pytest.approx(
+    assert result.secondary_luminosity_z_score == pytest.approx(
         0.0
     )

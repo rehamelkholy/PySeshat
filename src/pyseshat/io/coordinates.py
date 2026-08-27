@@ -80,11 +80,20 @@ def parse_dec(dec_string):
 
     s = float(parts[2])
 
-    sign = 1.0
+    # ------------------------------------------------------
+    # Determine sign from the *string*, not from `d < 0`.
+    #
+    # For a negative-but-zero degree field (e.g. "-00:30:00"),
+    # float("-00") == -0.0, and -0.0 < 0 is False in Python --
+    # so a sign test on `d` silently drops the minus sign for
+    # any southern declination with |degrees| < 1.
+    # ------------------------------------------------------
 
-    if d < 0:
-
-        sign = -1.0
+    sign = (
+        -1.0
+        if parts[0].strip().startswith("-")
+        else 1.0
+    )
 
     return sign * (
 

@@ -1,5 +1,17 @@
 import numpy as np
 
+from pyseshat.triple.triple_elements import (
+    LEGACY_TRIPLE_PARAMETER_ORDER
+)
+
+# LEGACY_TRIPLE_PARAMETER_ORDER is imported from
+# triple_elements.py, the single canonical source of this
+# ordering (triple_fit.py also imports it from there rather
+# than redefining it). It is deliberately *not* imported from
+# triple_fit.py here: triple_fit.py already imports
+# build_triple_bounds from this module, so the reverse import
+# would be circular.
+
 
 # ==========================================================
 # Legacy ORBITT2 fitted-parameter mask
@@ -12,11 +24,9 @@ def _legacy_fitted_mask(
     Return the fitted-parameter mask for the legacy
     15-parameter ORBITT2 triple representation.
 
-    Parameter order:
-
-        P, T0, e, a, Omega, omega, i,
-        P2, T02, e2, a2, Omega2, omega2, i2,
-        B
+    Parameter order: see LEGACY_TRIPLE_PARAMETER_ORDER
+    (P, T0, e, a, Omega, omega, i, P2, T02, e2, a2, Omega2,
+    omega2, i2, B).
 
     This must remain separate from
     TripleOrbitalElements.fitted_mask(), which represents
@@ -25,35 +35,10 @@ def _legacy_fitted_mask(
 
     return np.array([
 
-        # --------------------------------------------------
-        # Outer orbit
-        # --------------------------------------------------
+        elements.fit_flags[name]
 
-        elements.fit_flags["P"],
-        elements.fit_flags["T0"],
-        elements.fit_flags["e"],
-        elements.fit_flags["a"],
-        elements.fit_flags["Omega"],
-        elements.fit_flags["omega"],
-        elements.fit_flags["i"],
-
-        # --------------------------------------------------
-        # Inner orbit
-        # --------------------------------------------------
-
-        elements.fit_flags["P2"],
-        elements.fit_flags["T02"],
-        elements.fit_flags["e2"],
-        elements.fit_flags["a2"],
-        elements.fit_flags["Omega2"],
-        elements.fit_flags["omega2"],
-        elements.fit_flags["i2"],
-
-        # --------------------------------------------------
-        # Legacy scale parameter
-        # --------------------------------------------------
-
-        elements.fit_flags["B"]
+        for name
+        in LEGACY_TRIPLE_PARAMETER_ORDER
 
     ], dtype=bool)
 

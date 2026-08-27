@@ -1,18 +1,31 @@
+"""
+Regression tests for `analysis.statistics` against combined
+visual(+RV) benchmark fits.
+
+This file used to be a print-only script (module-level code with no
+`assert`s, 0 items collected by pytest) that ran a fit for each
+benchmark system and printed every statistic for manual inspection.
+Rewritten to assert the actual invariants those printouts were
+implicitly checking by eye.
+"""
+
 from pathlib import Path
 
 import numpy as np
 
+import pytest
+
 from pyseshat.io.orbit_parser import (
-    parse_orbit_file
+    parse_orbit_file,
 )
 
 from pyseshat.inference.optimizer import (
-    fit_visual_orbit
+    fit_visual_orbit,
 )
 
 from pyseshat.inference.likelihood import (
     visual_xy_residuals,
-    rv_residuals
+    rv_residuals,
 )
 
 from pyseshat.analysis.statistics import (
@@ -21,41 +34,22 @@ from pyseshat.analysis.statistics import (
     rms_residual,
     fit_summary,
     combined_fit_summary,
-    parameter_comparison
+    parameter_comparison,
 )
 
-# ==========================================================
-# Benchmark datasets
-# ==========================================================
 
 ROOT = Path("validation/benchmark_systems")
 
-benchmark_files = [
-
+BENCHMARKS = [
     ROOT / "FIN379" / "FIN379.inp",
-
     ROOT / "GL765" / "GL765.inp",
-
-    ROOT / "ZetaAqr" / "ZetaAqr.in2"
+    ROOT / "ZetaAqr" / "ZetaAqr.in2",
 ]
 
-# ==========================================================
-# Run tests
-# ==========================================================
 
-for filepath in benchmark_files:
+def _fit_benchmark(filepath):
 
-    print()
-
-    print("=" * 60)
-
-    print(filepath.name)
-
-    print("=" * 60)
-
-    parsed = parse_orbit_file(
-        str(filepath)
-    )
+    parsed = parse_orbit_file(str(filepath))
 
     elements = parsed["elements"]
 
@@ -63,124 +57,106 @@ for filepath in benchmark_files:
 
     rv_data = parsed["rv_data"]
 
-    # ------------------------------------------------------
-    # Cartesian conversion
-    # ------------------------------------------------------
+    t = visual_data[:, 0]
 
-    t = visual_data[:,0]
+    theta = np.deg2rad(visual_data[:, 1])
 
-    theta = np.deg2rad(
-        visual_data[:,1]
-    )
+    rho = visual_data[:, 2]
 
-    rho = visual_data[:,2]
-
-    sigma = visual_data[:,3]
+    sigma = visual_data[:, 3]
 
     X = rho * np.cos(theta)
 
     Y = rho * np.sin(theta)
 
-    sx = sigma
-
-    sy = sigma
-
-    # ------------------------------------------------------
-    # Fit
-    # ------------------------------------------------------
-
     fit_result = fit_visual_orbit(
-        elements,
-        t,
-        X,
-        Y,
-        sx,
-        sy,
-        rv_data=rv_data
+        elements, t, X, Y, sigma, sigma, rv_data=rv_data
     )
+
+    return elements, fit_result, t, X, Y, sigma, rv_data
+
+
+@pytest.mark.parametrize(
+    "filepath",
+    BENCHMARKS,
+    ids=[f.name for f in BENCHMARKS],
+)
+def test_basic_statistics_are_internally_consistent(filepath):
+
+    _, fit_result, *_ = _fit_benchmark(filepath)
 
     fitted = fit_result.elements
 
     residuals = fit_result.residuals
 
-    # ------------------------------------------------------
-    # Basic statistics
-    # ------------------------------------------------------
+    n_fit = len(fitted.fitted_parameters())
 
-    print()
+    chi2 = chi_square(residuals)
 
-    print("Chi-square:")
+    assert chi2 == pytest.approx(np.sum(residuals**2))
 
-    print(
-        chi_square(residuals)
+    redchi2 = reduced_chi_square(residuals, n_fit)
+
+    assert redchi2 == pytest.approx(
+        chi2 / (len(residuals) - n_fit)
     )
 
-    print()
+    rms = rms_residual(residuals)
 
-    print("Reduced chi-square:")
-
-    print(
-        reduced_chi_square(
-            residuals,
-            len(
-                fitted.fitted_parameters()
-            )
-        )
+    assert rms == pytest.approx(
+        np.sqrt(np.mean(residuals**2))
     )
 
-    print()
+    summary = fit_summary(residuals, fitted)
 
-    print("RMS residual:")
+    assert summary["chi_square"] == pytest.approx(chi2)
 
-    print(
-        rms_residual(residuals)
+    assert summary["reduced_chi_square"] == pytest.approx(redchi2)
+
+    assert summary["rms"] == pytest.approx(rms)
+
+
+@pytest.mark.parametrize(
+    "filepath",
+    BENCHMARKS,
+    ids=[f.name for f in BENCHMARKS],
+)
+def test_combined_fit_summary_matches_component_residuals(filepath):
+
+    elements, fit_result, t, X, Y, sigma, rv_data = _fit_benchmark(
+        filepath
     )
 
-    # ------------------------------------------------------
-    # Fit summary
-    # ------------------------------------------------------
+    fitted = fit_result.elements
 
-    summary = fit_summary(
-        residuals,
-        fitted
-    )
-
-    print()
-
-    print("Fit summary:")
-
-    print(summary)
-
-    # ------------------------------------------------------
-    # Combined diagnostics
-    # ------------------------------------------------------
+    n_params = len(fitted.fitted_parameters())
 
     visual_res = visual_xy_residuals(
-        fitted.fitted_parameters(),
-        fitted,
-        t,
-        X,
-        Y,
-        sx,
-        sy
+        fitted.fitted_parameters(), fitted, t, X, Y, sigma, sigma
     )
 
     if len(rv_data) > 0:
 
         rv_res = rv_residuals(
-            fitted.fitted_parameters(),
-            fitted,
-            rv_data
+            fitted.fitted_parameters(), fitted, rv_data
         )
 
         combined = combined_fit_summary(
             visual_residuals=visual_res,
             rv_residuals=rv_res,
-            rv_components=rv_data[:,3],
-            n_params=len(
-                fitted.fitted_parameters()
-            )
+            rv_components=rv_data[:, 3],
+            n_params=n_params,
         )
+
+        expected_chi2_total = (
+            np.sum(visual_res**2) + np.sum(rv_res**2)
+        )
+
+        expected_n_total = len(visual_res) + len(rv_res)
+
+        assert combined["chi2_rv1"] + combined[
+            "chi2_rv2"
+        ] == pytest.approx(np.sum(rv_res**2))
 
     else:
 
@@ -188,42 +164,59 @@ for filepath in benchmark_files:
             visual_residuals=visual_res,
             rv_residuals=None,
             rv_components=None,
-            n_params=len(
-                fitted.fitted_parameters()
-            )
+            n_params=n_params,
         )
 
-    print()
+        expected_chi2_total = np.sum(visual_res**2)
 
-    print("Visual residual count:")
+        expected_n_total = len(visual_res)
 
-    print(len(visual_res))
-
-    if len(rv_data) > 0:
-
-        print()
-
-        print("RV residual count:")
-
-        print(len(rv_res))
-    
-    print("Combined summary:")
-
-    print(combined)
-
-    # ------------------------------------------------------
-    # Parameter comparison
-    # ------------------------------------------------------
-
-    comparison = parameter_comparison(
-        elements,
-        fitted
+    assert combined["chi2_visual"] == pytest.approx(
+        np.sum(visual_res**2)
     )
 
-    print()
-
-    print("Parameter comparison keys:")
-
-    print(
-        list(comparison.keys())
+    assert combined["chi2_total"] == pytest.approx(
+        expected_chi2_total
     )
+
+    expected_dof = expected_n_total - n_params
+
+    assert expected_dof > 0
+
+    assert combined["reduced_chi2"] == pytest.approx(
+        expected_chi2_total / expected_dof
+    )
+
+    assert combined["rms"] == pytest.approx(
+        np.sqrt(expected_chi2_total / expected_n_total)
+    )
+
+
+@pytest.mark.parametrize(
+    "filepath",
+    BENCHMARKS,
+    ids=[f.name for f in BENCHMARKS],
+)
+def test_parameter_comparison_covers_all_elements(filepath):
+
+    elements, fit_result, *_ = _fit_benchmark(filepath)
+
+    fitted = fit_result.elements
+
+    comparison = parameter_comparison(elements, fitted)
+
+    assert set(comparison.keys()) == set(
+        elements.PARAMETER_ORDER
+    )
+
+    for name in elements.PARAMETER_ORDER:
+
+        entry = comparison[name]
+
+        assert entry["initial"] == pytest.approx(
+            getattr(elements, name)
+        )
+
+        assert entry["fitted"] == pytest.approx(
+            getattr(fitted, name)
+        )

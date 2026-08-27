@@ -6,16 +6,6 @@ from pyseshat.orbit.orbit_model import (
 )
 
 
-from pyseshat.orbit.orbital_elements import (
-    OrbitalElements
-)
-
-
-from pyseshat.orbit.rv_model import (
-    compute_rv_orbit
-)
-
-
 from pyseshat.triple.triple_elements import (
     TripleOrbitalElements
 )
@@ -75,7 +65,6 @@ def compute_triple_orbit(
         +
 
         elements.scale_inner
-
         * inner["X"]
 
     )
@@ -88,7 +77,6 @@ def compute_triple_orbit(
         +
 
         elements.scale_inner
-
         * inner["Y"]
 
     )
@@ -257,7 +245,6 @@ def compute_orbit3_visual(
         +
 
         elements.f
-
         * inner["X"]
 
     )
@@ -270,7 +257,6 @@ def compute_orbit3_visual(
         +
 
         elements.f
-
         * inner["Y"]
 
     )
@@ -399,24 +385,22 @@ def compute_orbit3_radial_velocities(
 
         RV_B  = RV_outer_secondary
 
-    The inner systemic velocity is explicitly set to zero
-    in the original ORBIT3 implementation. The outer orbit
-    carries the fitted systemic velocity V0.
+    The ORBIT3 input omega is already in the spectroscopic
+    convention for combined visual/spectroscopic orbits.
 
-    Parameters
-    ----------
-    epochs : array-like
-        Observation epochs.
+    Therefore, unlike the generic visual-binary RV model,
+    this function must NOT apply an additional 180-degree
+    omega transformation.
 
-    elements : TripleOrbitalElements
-        ORBIT3 triple orbital elements.
+    The implementation follows Tokovinin's orbit3.pro:
 
-    Returns
-    -------
-    dict
-        Arrays for ``Aa``, ``Ab``, and ``B`` radial
-        velocities, together with the individual inner and
-        outer binary RV curves.
+        A1 = e*cos(omega) + cos(nu + omega)
+
+        RV1 = V0 + K1*A1
+        RV2 = V0 - K2*A1
+
+    The inner systemic velocity is explicitly zero in
+    orbit3.pro, while the outer orbit carries V0.
     """
 
     epochs = np.asarray(
@@ -426,59 +410,93 @@ def compute_orbit3_radial_velocities(
 
 
     # ------------------------------------------------------
-    # Construct temporary binary-element objects containing
-    # the spectroscopic parameters belonging to each orbit.
+    # Obtain the orbital anomalies directly from the
+    # corresponding visual-orbit calculations.
     #
-    # The orbital geometry itself is taken directly from the
-    # corresponding TripleOrbitalElements orbit.
+    # compute_visual_orbit provides E and nu from P, T0,
+    # and e. Its nu calculation is independent of the
+    # visual/spectroscopic omega convention.
     # ------------------------------------------------------
 
-    inner_rv_elements = OrbitalElements(
+    inner_orbit = compute_visual_orbit(
 
-        P=elements.inner.P,
+        epochs,
 
-        T0=elements.inner.T0,
-
-        e=elements.inner.e,
-
-        a=elements.inner.a,
-
-        Omega=elements.inner.Omega,
-
-        omega=elements.inner.omega,
-
-        i=elements.inner.i,
-
-        K1=elements.K1,
-
-        K2=elements.K2,
-
-        V0=0.0
+        elements.inner
 
     )
 
 
-    outer_rv_elements = OrbitalElements(
+    outer_orbit = compute_visual_orbit(
 
-        P=elements.outer.P,
+        epochs,
 
-        T0=elements.outer.T0,
+        elements.outer
 
-        e=elements.outer.e,
+    )
 
-        a=elements.outer.a,
 
-        Omega=elements.outer.Omega,
+    # ------------------------------------------------------
+    # ORBIT3 spectroscopic convention
+    #
+    # IMPORTANT:
+    #
+    # orbit3.pro uses the supplied omega directly:
+    #
+    #     U  = V + W
+    #     A1 = e*CW + cos(U)
+    #
+    # There is no omega -> omega + 180 transformation.
+    # ------------------------------------------------------
 
-        omega=elements.outer.omega,
+    inner_omega = np.deg2rad(
+        elements.inner.omega
+    )
 
-        i=elements.outer.i,
 
-        K1=elements.K3,
+    outer_omega = np.deg2rad(
+        elements.outer.omega
+    )
 
-        K2=elements.K4,
 
-        V0=elements.V0
+    inner_common = (
+
+        np.cos(
+
+            inner_orbit["nu"]
+            +
+            inner_omega
+
+        )
+
+        +
+
+        elements.inner.e
+        *
+        np.cos(
+            inner_omega
+        )
+
+    )
+
+
+    outer_common = (
+
+        np.cos(
+
+            outer_orbit["nu"]
+            +
+            outer_omega
+
+        )
+
+        +
+
+        elements.outer.e
+        *
+        np.cos(
+            outer_omega
+        )
 
     )
 
@@ -486,28 +504,32 @@ def compute_orbit3_radial_velocities(
     # ------------------------------------------------------
     # Inner spectroscopic orbit
     #
-    # component 0 -> Aa
-    # component 1 -> Ab
+    # orbit3.pro:
+    #
+    #   elin = [el[0:8], 0.]
+    #
+    #   RV_Aa_inner = K1 * A1
+    #   RV_Ab_inner = -K2 * A1
+    #
+    # The inner systemic velocity is zero.
     # ------------------------------------------------------
 
-    inner_primary = compute_rv_orbit(
+    inner_primary = (
 
-        epochs,
-
-        inner_rv_elements,
-
-        component=0
+        elements.K1
+        *
+        inner_common
 
     )
 
 
-    inner_secondary = compute_rv_orbit(
+    inner_secondary = (
 
-        epochs,
+        -
 
-        inner_rv_elements,
-
-        component=1
+        elements.K2
+        *
+        inner_common
 
     )
 
@@ -515,28 +537,34 @@ def compute_orbit3_radial_velocities(
     # ------------------------------------------------------
     # Outer spectroscopic orbit
     #
-    # component 0 -> A
-    # component 1 -> B
+    # orbit3.pro:
+    #
+    #   RV_A_outer = V0 + K3*A1
+    #   RV_B_outer = V0 - K4*A1
     # ------------------------------------------------------
 
-    outer_primary = compute_rv_orbit(
+    outer_primary = (
 
-        epochs,
+        elements.V0
 
-        outer_rv_elements,
+        +
 
-        component=0
+        elements.K3
+        *
+        outer_common
 
     )
 
 
-    outer_secondary = compute_rv_orbit(
+    outer_secondary = (
 
-        epochs,
+        elements.V0
 
-        outer_rv_elements,
+        -
 
-        component=1
+        elements.K4
+        *
+        outer_common
 
     )
 

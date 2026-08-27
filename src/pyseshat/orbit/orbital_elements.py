@@ -163,7 +163,32 @@ class OrbitalElements:
         self.Omega = self.Omega % 360.0
         self.omega = self.omega % 360.0
 
-        self.i = np.clip(self.i, 0.0, 180.0)
+        # --------------------------------------------------
+        # Fold i into [0, 180] by REFLECTION, not clipping.
+        #
+        # The visual-orbit model (thiele_innes) only ever uses
+        # cos(i), which is even about both i=0 and i=180:
+        #   cos(-x) = cos(x)  and  cos(180+x) = cos(180-x).
+        # So folding via i -> -i (for i<0) or i -> 360-i (for
+        # i>180) reproduces the identical model for any input.
+        #
+        # np.clip(i, 0, 180) does NOT have this property: it
+        # replaces the value itself, so e.g. i=-10 degrees
+        # would be clipped to i=0 (cos=1) instead of correctly
+        # folding to i=10 (cos~0.985) -- a real distortion of
+        # the model, not just a boundary clamp. This only
+        # bites when an unbounded fit (method="lm") probes i
+        # outside [0, 180] -- e.g. during finite-difference
+        # Jacobian steps -- since bounded methods already keep
+        # i inside [0, 180] via optimizer bounds.
+        # --------------------------------------------------
+
+        i = self.i % 360.0
+
+        if i > 180.0:
+            i = 360.0 - i
+
+        self.i = i
     
     def copy(self):
         """
@@ -195,6 +220,21 @@ class OrbitalElements:
         Therefore:
 
             omega_SB = omega_VB + 180 deg
+
+        WARNING: this function is not used anywhere in the
+        codebase, and `orbit.rv_model.compute_rv_orbit` does
+        NOT apply this shift -- it uses `elements.omega`
+        directly for both components. That unshifted
+        convention has been validated against real published
+        joint visual+RV solutions (FIN379, GL765: see
+        tests/test_rv_sign_convention_validation.py and
+        docs/project_decisions.md), which converge to the
+        literature omega/K1/K2 without needing this +180 deg
+        shift. Do not wire this function into compute_rv_orbit
+        (or anywhere else) without re-deriving why those two
+        benchmark systems would still need to converge
+        correctly afterward -- as written today, applying it
+        would very likely reintroduce a real regression.
         """
 
         new = OrbitalElements.from_array(

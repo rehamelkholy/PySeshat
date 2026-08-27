@@ -243,10 +243,14 @@ def combined_fit_summary(
 
         chi2_total = chi2_visual
 
-        dof = max(
-            n_visual - n_params,
-            1
-        )
+        dof = n_visual - n_params
+
+        if dof <= 0:
+            raise ValueError(
+                "Degrees of freedom must be positive. "
+                f"Got {dof} (n_obs={n_visual}, "
+                f"n_params={n_params})."
+            )
 
         rms = np.sqrt(
             chi2_total / n_visual
@@ -303,10 +307,14 @@ def combined_fit_summary(
         len(rv_residuals)
     )
 
-    dof = max(
-        n_total - n_params,
-        1
-    )
+    dof = n_total - n_params
+
+    if dof <= 0:
+        raise ValueError(
+            "Degrees of freedom must be positive. "
+            f"Got {dof} (n_obs={n_total}, "
+            f"n_params={n_params})."
+        )
 
     reduced = (
         chi2_total / dof

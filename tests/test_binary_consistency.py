@@ -87,9 +87,9 @@ def test_binary_consistency_storage():
 
         fractional_mass_difference=0.02381,
 
-        primary_luminosity_sigma=0.42,
+        primary_luminosity_z_score=0.42,
 
-        secondary_luminosity_sigma=-0.18,
+        secondary_luminosity_z_score=-0.18,
 
         orbital_mass_sigma=0.08,
     )
@@ -108,12 +108,12 @@ def test_binary_consistency_storage():
     )
 
     assert (
-        result.primary_luminosity_sigma
+        result.primary_luminosity_z_score
         == pytest.approx(0.42)
     )
 
     assert (
-        result.secondary_luminosity_sigma
+        result.secondary_luminosity_z_score
         == pytest.approx(-0.18)
     )
 
@@ -133,9 +133,9 @@ def test_binary_consistency_storage_without_mass_uncertainty():
 
         fractional_mass_difference=0.02381,
 
-        primary_luminosity_sigma=0.42,
+        primary_luminosity_z_score=0.42,
 
-        secondary_luminosity_sigma=-0.18,
+        secondary_luminosity_z_score=-0.18,
     )
 
     assert result.orbital_mass_sigma is None

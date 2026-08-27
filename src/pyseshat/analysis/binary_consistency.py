@@ -49,6 +49,17 @@ class BinaryConsistencyResult:
 
     Luminosities are expressed as
     log10(L / L_sun).
+
+    The `*_luminosity_z_score` fields are NOT one-sigma
+    uncertainties. Each is a normalized discrepancy
+
+        (observed - evolutionary) / sigma_observed
+
+    from `normalized_difference()`/`compute_luminosity_consistency()`
+    -- i.e. how many observational sigma the evolutionary
+    prediction is away from the observed value. A value near
+    0 means good agreement; do not report it as an uncertainty
+    on the luminosity itself.
     """
 
     orbital_mass: float
@@ -61,13 +72,13 @@ class BinaryConsistencyResult:
 
     primary_evolutionary_log_luminosity: float | None = None
 
-    primary_luminosity_sigma: float | None = None
+    primary_luminosity_z_score: float | None = None
 
     secondary_observed_log_luminosity: float | None = None
 
     secondary_evolutionary_log_luminosity: float | None = None
 
-    secondary_luminosity_sigma: float | None = None
+    secondary_luminosity_z_score: float | None = None
 
     orbital_mass_sigma: float | None = None
 
@@ -338,7 +349,7 @@ def build_binary_consistency_result(
             evolution_solution.primary.log_luminosity
         ),
 
-        primary_luminosity_sigma=(
+        primary_luminosity_z_score=(
             compute_luminosity_consistency(
 
                 primary_observables,
@@ -355,7 +366,7 @@ def build_binary_consistency_result(
             evolution_solution.secondary.log_luminosity
         ),
 
-        secondary_luminosity_sigma=(
+        secondary_luminosity_z_score=(
             compute_luminosity_consistency(
 
                 secondary_observables,

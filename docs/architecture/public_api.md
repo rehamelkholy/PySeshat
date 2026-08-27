@@ -627,6 +627,8 @@
 
 ### Functions
 - orbit3_fit_flag_residuals()
+- orbit3_parameter_scales()
+- orbit3_jacobian()
 - fit_orbit3()
 
 ## pyseshat.triple.triple_bounds
@@ -656,6 +658,8 @@
 - triple_to_array()
 - array_to_triple()
 - update_triple_elements()
+- legacy_triple_fitted_mask()
+- legacy_triple_fitted_parameter_names()
 - triple_fitted_parameters()
 - update_triple_fitted_parameters()
 - triple_fit_flag_residuals()

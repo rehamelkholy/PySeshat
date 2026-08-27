@@ -105,6 +105,495 @@ _PARAMETER_MAPPING = {
 
 
 # ==========================================================
+# ORBIT epoch conversion
+# ==========================================================
+
+_JD240000_TO_BESSELIAN_YEAR_OFFSET = 15020.31352
+
+_DAYS_PER_BESSELIAN_YEAR = 365.242198781
+
+
+def _rv_epoch_to_besselian_year(
+    epoch
+):
+    """
+    Convert an ORBIT3 radial-velocity epoch from the
+    reduced Julian-date convention to Besselian year.
+
+    ORBIT3 stores RV epochs in the form
+
+        JD - 2400000
+
+    and converts them to Besselian years using
+
+        1900
+        +
+        (epoch - 15020.31352)
+        / 365.242198781
+
+    before evaluating the orbital model.
+
+    Parameters
+    ----------
+    epoch : float
+        Radial-velocity epoch as stored in an ORBIT3
+        input record.
+
+    Returns
+    -------
+    float
+        Epoch expressed as Besselian year.
+    """
+
+    return (
+
+        1900.0
+
+        +
+
+        (
+
+            epoch
+            -
+            _JD240000_TO_BESSELIAN_YEAR_OFFSET
+
+        )
+
+        /
+
+        _DAYS_PER_BESSELIAN_YEAR
+
+    )
+
+
+# ==========================================================
+# ORBIT3 coordinate conversion
+# ==========================================================
+
+def _orbit3_getcoord(
+    value
+):
+    """
+    Reproduce the ORBIT3 ``getcoord`` function.
+
+    ORBIT3 interprets packed sexagesimal coordinates such as
+
+        22.3848 -> 22 deg 38 min 48 sec
+
+    and
+
+        44.19 -> 44 deg 19 min 00 sec.
+
+    The conversion is intentionally not replaced by ordinary
+    decimal-degree interpretation because ORBIT3 explicitly
+    uses packed sexagesimal input.
+    """
+
+    text = str(
+        value
+    ).strip()
+
+
+    if "." not in text:
+
+        return float(
+            text
+        )
+
+
+    decimal_position = text.find(
+        "."
+    )
+
+
+    degrees = int(
+        text[:decimal_position]
+    )
+
+
+    minutes = int(
+        text[
+            decimal_position + 1 :
+            decimal_position + 3
+        ]
+        or "0"
+    )
+
+
+    seconds_text = text[
+        decimal_position + 3 :
+    ]
+
+
+    seconds = (
+
+        float(
+            seconds_text
+        )
+
+        if seconds_text
+
+        else 0.0
+
+    )
+
+
+    result = (
+
+        abs(degrees)
+
+        +
+
+        minutes / 60.0
+
+        +
+
+        seconds / 3600.0
+
+    )
+
+
+    if degrees < 0:
+
+        result = -result
+
+
+    return result
+
+
+# ==========================================================
+# ORBIT3 observation epoch correction
+# ==========================================================
+
+def _orbit3_correct_observation_epochs(
+    observations,
+    orbital_epoch
+):
+    """
+    Reproduce the ORBIT3 ``correct`` procedure for
+    astrometric observations.
+
+    ORBIT3 changes between:
+
+        calendar/Besselian years
+
+    and
+
+        JD - 2400000
+
+    according to the representation of the orbital
+    reference epoch.
+
+    The conversion is applied to the observation epochs
+    before the ORBIT3 precession correction.
+    """
+
+    corrected = []
+
+
+    for observation in observations:
+
+        epoch = observation.epoch
+
+
+        # --------------------------------------------------
+        # Years -> JD - 2400000
+        # --------------------------------------------------
+
+        if (
+
+            epoch < 3000.0
+            and orbital_epoch > 3000.0
+
+        ):
+
+            epoch = (
+
+                _DAYS_PER_BESSELIAN_YEAR
+                *
+                (
+                    epoch
+                    -
+                    1900.0
+                )
+                +
+                _JD240000_TO_BESSELIAN_YEAR_OFFSET
+
+            )
+
+
+        # --------------------------------------------------
+        # JD - 2400000 -> Besselian years
+        # --------------------------------------------------
+
+        elif (
+
+            epoch > 3000.0
+            and orbital_epoch < 3000.0
+
+        ):
+
+            epoch = (
+
+                1900.0
+
+                +
+
+                (
+                    epoch
+                    -
+                    _JD240000_TO_BESSELIAN_YEAR_OFFSET
+                )
+                /
+                _DAYS_PER_BESSELIAN_YEAR
+
+            )
+
+
+        if epoch == observation.epoch:
+
+            corrected.append(
+                observation
+            )
+
+        else:
+
+            corrected.append(
+
+                TripleObservation(
+
+                    epoch=epoch,
+
+                    theta=observation.theta,
+
+                    rho=observation.rho,
+
+                    sigma=observation.sigma,
+
+                    orbit_id=observation.orbit_id,
+
+                    velocity=observation.velocity
+
+                )
+
+            )
+
+
+    return corrected
+
+
+# ==========================================================
+# ORBIT3 precession correction
+# ==========================================================
+
+def _orbit3_precession_rate(
+    metadata,
+    orbital_epoch
+):
+    """
+    Reproduce the ORBIT3 precession-rate calculation.
+
+    ORBIT3 uses
+
+        PR =
+            0.0057
+            * sin(RA)
+            / cos(Dec)
+
+    in degrees per year.
+
+    RA is interpreted as hours in packed sexagesimal form
+    and converted to degrees by multiplication by 15.
+
+    The correction is enabled only when:
+
+        RA > 0
+
+    and
+
+        T0 < 3000
+
+    exactly as in ORBIT3 ``readinp``.
+    """
+
+    ra_value = metadata.get(
+        "ra"
+    )
+
+    dec_value = metadata.get(
+        "dec"
+    )
+
+
+    if (
+
+        ra_value is None
+        or dec_value is None
+
+    ):
+
+        return None
+
+
+    if orbital_epoch >= 3000.0:
+
+        return None
+
+
+    try:
+
+        ra_hours = _orbit3_getcoord(
+            ra_value
+        )
+
+        dec_degrees = _orbit3_getcoord(
+            dec_value
+        )
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        return None
+
+
+    ra_degrees = (
+        15.0
+        *
+        ra_hours
+    )
+
+
+    if ra_degrees <= 0.0:
+
+        return None
+
+
+    return (
+
+        0.0057
+
+        *
+
+        __import__(
+            "math"
+        ).sin(
+            __import__(
+                "math"
+            ).radians(
+                ra_degrees
+            )
+        )
+
+        /
+
+        __import__(
+            "math"
+        ).cos(
+            __import__(
+                "math"
+            ).radians(
+                dec_degrees
+            )
+        )
+
+    )
+
+
+def _orbit3_apply_precession(
+    observations,
+    metadata,
+    orbital_epoch
+):
+    """
+    Apply the ORBIT3 ``readinp`` precession correction
+    to visual observations.
+
+    ORBIT3 performs:
+
+        theta_corrected =
+            theta_original
+            +
+            (2000 - epoch) * PR
+
+    for both POS1 and POS2.
+
+    The returned TripleObservation objects contain the
+    corrected theta because that is the angle subsequently
+    converted by ORBIT3 into its fitting X/Y coordinates.
+    """
+
+    precession_rate = _orbit3_precession_rate(
+        metadata,
+        orbital_epoch
+    )
+
+
+    if precession_rate is None:
+
+        return observations
+
+
+    corrected = []
+
+
+    for observation in observations:
+
+        if observation.orbit_id not in (
+            "I1",
+            "I2"
+        ):
+
+            corrected.append(
+                observation
+            )
+
+            continue
+
+
+        corrected_theta = (
+
+            observation.theta
+
+            +
+
+            (
+                2000.0
+                -
+                observation.epoch
+            )
+            *
+            precession_rate
+
+        )
+
+
+        corrected.append(
+
+            TripleObservation(
+
+                epoch=observation.epoch,
+
+                theta=corrected_theta,
+
+                rho=observation.rho,
+
+                sigma=observation.sigma,
+
+                orbit_id=observation.orbit_id,
+
+                velocity=observation.velocity
+
+            )
+
+        )
+
+
+    return corrected
+
+
+# ==========================================================
 # Comment handling
 # ==========================================================
 
@@ -119,8 +608,11 @@ def _is_comment(
 
     stripped = line.lstrip()
 
+
     if not stripped:
+
         return True
+
 
     return stripped[0].upper() == "C"
 
@@ -135,26 +627,31 @@ def _parse_header_metadata(
     """
     Parse metadata from an ORBIT input file.
 
-    The parser accepts both:
+    Supported forms
 
-    1. The documented positional header:
+    ---------------
 
-           object
-           R.A.
-           Dec.
-           WDS
+    Labeled records:
 
-    2. Labeled headers such as:
+        Object: ...
+        RA: ...
+        R.A.: ...
+        Dec.: ...
+        WDS: ...
 
-           Object: ...
-           R.A.: ...
-           Dec.: ...
-           WDS: ...
+    ORBIT3 WDS record:
 
-    Returns
-    -------
-    dict
-        Metadata dictionary.
+        WDS 22388+4419 ADS 16138 ...
+
+    Positional records:
+
+        object
+        RA
+        Dec
+        WDS
+
+    For a WDS record containing additional catalog
+    information, only the first token after WDS is stored.
     """
 
     metadata = {
@@ -170,30 +667,38 @@ def _parse_header_metadata(
     }
 
 
-    # ------------------------------------------------------
-    # First pass: explicitly labeled fields.
-    # ------------------------------------------------------
-
     labeled_patterns = {
 
         "object_name": re.compile(
+
             r"^\s*object\s*:\s*(.*?)\s*$",
+
             re.IGNORECASE
+
         ),
 
         "ra": re.compile(
+
             r"^\s*r\.?\s*a\.?\s*:\s*(.*?)\s*$",
+
             re.IGNORECASE
+
         ),
 
         "dec": re.compile(
+
             r"^\s*dec(?:lination)?\.?\s*:\s*(.*?)\s*$",
+
             re.IGNORECASE
+
         ),
 
         "wds_code": re.compile(
+
             r"^\s*wds\s*:\s*(.*?)\s*$",
+
             re.IGNORECASE
+
         )
 
     }
@@ -203,10 +708,14 @@ def _parse_header_metadata(
 
         stripped = line.strip()
 
+
         if not stripped:
+
             continue
 
+
         if _is_comment(line):
+
             continue
 
 
@@ -218,34 +727,106 @@ def _parse_header_metadata(
                 stripped
             )
 
+
             if match:
 
                 value = match.group(
                     1
                 ).strip()
 
-                metadata[field] = (
-                    value
-                    if value
-                    else None
-                )
+
+                if field == "wds_code":
+
+                    parts = value.split()
 
 
-    # ------------------------------------------------------
-    # Second pass: positional header.
-    # ------------------------------------------------------
+                    metadata[field] = (
 
-    unlabeled_lines = []
+                        parts[0]
+
+                        if parts
+
+                        else None
+
+                    )
+
+                else:
+
+                    metadata[field] = (
+
+                        value
+
+                        if value
+
+                        else None
+
+                    )
+
+
+                break
+
+
+    positional = []
+
 
     for line in lines:
 
         stripped = line.strip()
 
+
         if not stripped:
+
+            if positional:
+
+                break
+
             continue
 
+
         if _is_comment(line):
+
+            if positional:
+
+                continue
+
             continue
+
+
+        wds_match = re.match(
+
+            r"^\s*wds(?:\s+|:)(.*)$",
+
+            stripped,
+
+            re.IGNORECASE
+
+        )
+
+
+        if wds_match:
+
+            value = wds_match.group(
+                1
+            ).strip()
+
+
+            parts = value.split()
+
+
+            if (
+
+                metadata["wds_code"] is None
+                and parts
+
+            ):
+
+                metadata["wds_code"] = (
+                    parts[0]
+                )
+
+
+            continue
+
 
         is_labeled = any(
 
@@ -258,55 +839,105 @@ def _parse_header_metadata(
 
         )
 
-        if not is_labeled:
 
-            unlabeled_lines.append(
-                stripped
-            )
+        if is_labeled:
+
+            continue
 
 
-    # ------------------------------------------------------
-    # Fill only metadata fields not already obtained from
-    # labeled records.
-    # ------------------------------------------------------
+        parts = stripped.split()
+
+
+        if not parts:
+
+            continue
+
+
+        raw_key = parts[0].lstrip(
+            "*"
+        )
+
+
+        if raw_key in (
+
+            _LEGACY_PARAMETER_KEYS
+            |
+            _ORBIT3_PARAMETER_KEYS
+
+        ):
+
+            break
+
+
+        if len(parts) >= 4:
+
+            if any(
+
+                tag in parts[3:]
+
+                for tag in (
+                    "I1",
+                    "I2",
+                    "Va",
+                    "Vb",
+                    "Vc"
+                )
+
+            ):
+
+                break
+
+
+        positional.append(
+            stripped
+        )
+
 
     if (
+
         metadata["object_name"] is None
-        and len(unlabeled_lines) >= 1
+        and len(positional) >= 1
+
     ):
 
         metadata["object_name"] = (
-            unlabeled_lines[0]
+            positional[0]
         )
 
 
     if (
+
         metadata["ra"] is None
-        and len(unlabeled_lines) >= 2
+        and len(positional) >= 2
+
     ):
 
         metadata["ra"] = (
-            unlabeled_lines[1]
+            positional[1]
         )
 
 
     if (
+
         metadata["dec"] is None
-        and len(unlabeled_lines) >= 3
+        and len(positional) >= 3
+
     ):
 
         metadata["dec"] = (
-            unlabeled_lines[2]
+            positional[2]
         )
 
 
     if (
+
         metadata["wds_code"] is None
-        and len(unlabeled_lines) >= 4
+        and len(positional) >= 4
+
     ):
 
         metadata["wds_code"] = (
-            unlabeled_lines[3]
+            positional[3].split()[0]
         )
 
 
@@ -321,19 +952,15 @@ def _parse_parameter_line(
     parts
 ):
     """
-    Parse an ORBIT orbital-element line.
+    Parse an ORBIT orbital-parameter line.
 
-    Returns
-    -------
-    tuple or None
+    A leading ``*`` means that the parameter is FIXED.
 
-        (key, value, fitted, error)
-
-    A leading ``*`` indicates a fixed parameter.
-    An unstarred parameter is fitted.
+    An unstarred parameter is FITTED.
     """
 
     if len(parts) < 2:
+
         return None
 
 
@@ -344,6 +971,7 @@ def _parse_parameter_line(
         "*"
     )
 
+
     fitted = not fixed
 
 
@@ -353,10 +981,13 @@ def _parse_parameter_line(
 
 
     if key not in (
+
         _LEGACY_PARAMETER_KEYS
         |
         _ORBIT3_PARAMETER_KEYS
+
     ):
+
         return None
 
 
@@ -410,18 +1041,17 @@ def _parse_position_line(
     """
     Parse an ORBIT positional observation.
 
-    The documented form contains:
+    Expected form includes:
 
-        time theta rho error ... I1 ...
+        epoch theta rho sigma ... I1
 
     or:
 
-        time theta rho error ... I2 ...
-
-    The I1/I2 tag may occur after additional fields.
+        epoch theta rho sigma ... I2
     """
 
     if len(parts) < 5:
+
         return None
 
 
@@ -441,6 +1071,7 @@ def _parse_position_line(
 
 
     if tag is None:
+
         return None
 
 
@@ -494,22 +1125,21 @@ def _parse_rv_line(
     """
     Parse an ORBIT3 radial-velocity observation.
 
-    The documented form is:
+    Expected forms include:
 
-        time RV error ... Va ...
+        epoch RV sigma ... Va
 
-        time RV error ... Vb ...
+        epoch RV sigma ... Vb
 
-        time RV error ... Vc ...
+        epoch RV sigma ... Vc
 
-    where:
-
-        Va = radial velocity of Aa
-        Vb = radial velocity of Ab
-        Vc = radial velocity of B
+    ORBIT3 stores these RV epochs as reduced Julian dates
+    (JD - 2400000) and converts them to Besselian years
+    before evaluating the orbital model.
     """
 
     if len(parts) < 4:
+
         return None
 
 
@@ -530,6 +1160,7 @@ def _parse_rv_line(
 
 
     if component is None:
+
         return None
 
 
@@ -550,6 +1181,11 @@ def _parse_rv_line(
     except ValueError:
 
         return None
+
+
+    epoch = _rv_epoch_to_besselian_year(
+        epoch
+    )
 
 
     return TripleObservation(
@@ -579,45 +1215,33 @@ def parse_triple_file(
     """
     Parse an ORBIT triple-star input file.
 
-    Both legacy ``.in2`` files used by ``orbitT2.pro`` and
-    modern ``.in3`` files used by ``orbit3.pro`` are
-    supported.
+    Supported formats:
 
-    Legacy ``.in2`` files use:
+        .in2
+            Legacy ORBITT2 hierarchical-triple format.
 
-        P, T, e, a, W, w, i,
-        P2, T2, e2, a2, W2, w2, i2,
-        B
-
-    with the first orbit representing the outer orbit.
-
-    Modern ``.in3`` files use:
-
-        P, T, e, a, W, w, i,
-        K1, K2, f,
-        P2, T2, e2, a2, W2, w2, i2,
-        K3, K4, V0
-
-    with the first orbit representing the inner orbit.
+        .in3
+            Modern ORBIT3 hierarchical-triple format.
 
     Returns
     -------
+
     dict
 
-        ``elements``
-            TripleOrbitalElements.
+        elements
+            TripleOrbitalElements
 
-        ``observations``
-            Astrometric TripleObservation objects.
+        observations
+            Visual observations
 
-        ``rv_observations``
-            Radial-velocity TripleObservation objects.
+        rv_observations
+            Radial-velocity observations
 
-        ``parameter_errors``
-            Supplied parameter errors.
+        parameter_errors
+            Parameter uncertainties supplied in the file
 
-        ``metadata``
-            Parsed object metadata and detected format.
+        metadata
+            Object metadata and detected format
     """
 
     filename = Path(
@@ -639,10 +1263,6 @@ def parse_triple_file(
 
     fit_flags = {
 
-        # --------------------------------------------------
-        # Inner orbit
-        # --------------------------------------------------
-
         "P": False,
         "T0": False,
         "e": False,
@@ -651,17 +1271,9 @@ def parse_triple_file(
         "omega": False,
         "i": False,
 
-        # --------------------------------------------------
-        # Inner spectroscopy / wobble
-        # --------------------------------------------------
-
         "K1": False,
         "K2": False,
         "f": False,
-
-        # --------------------------------------------------
-        # Outer orbit
-        # --------------------------------------------------
 
         "P2": False,
         "T02": False,
@@ -671,17 +1283,9 @@ def parse_triple_file(
         "omega2": False,
         "i2": False,
 
-        # --------------------------------------------------
-        # Outer spectroscopy
-        # --------------------------------------------------
-
         "K3": False,
         "K4": False,
         "V0": False,
-
-        # --------------------------------------------------
-        # Legacy ORBITT2 parameter
-        # --------------------------------------------------
 
         "B": False
 
@@ -724,7 +1328,7 @@ def parse_triple_file(
 
 
     # ======================================================
-    # Header metadata
+    # Header
     # ======================================================
 
     metadata.update(
@@ -737,26 +1341,25 @@ def parse_triple_file(
 
 
     # ======================================================
-    # Parse records
+    # Parse all records
     # ======================================================
 
     for line in lines:
 
         if _is_comment(line):
+
             continue
 
 
         parts = line.split()
 
 
-        # --------------------------------------------------
-        # Orbital parameter
-        # --------------------------------------------------
-
         parsed_parameter = (
+
             _parse_parameter_line(
                 parts
             )
+
         )
 
 
@@ -789,6 +1392,7 @@ def parse_triple_file(
                     _PARAMETER_MAPPING[key]
                 )
 
+
                 fit_flags[
                     mapped_key
                 ] = True
@@ -797,14 +1401,12 @@ def parse_triple_file(
             continue
 
 
-        # --------------------------------------------------
-        # Astrometric observation
-        # --------------------------------------------------
-
         positional = (
+
             _parse_position_line(
                 parts
             )
+
         )
 
 
@@ -817,14 +1419,12 @@ def parse_triple_file(
             continue
 
 
-        # --------------------------------------------------
-        # Radial-velocity observation
-        # --------------------------------------------------
-
         radial_velocity = (
+
             _parse_rv_line(
                 parts
             )
+
         )
 
 
@@ -884,7 +1484,7 @@ def parse_triple_file(
 
 
     # ======================================================
-    # Modern ORBIT3 parameters
+    # ORBIT3 spectroscopic parameters
     # ======================================================
 
     K1 = parameters.get(
@@ -934,24 +1534,22 @@ def parse_triple_file(
 
 
     # ======================================================
-    # Determine file formulation
+    # Determine representation
     # ======================================================
 
     is_orbit3 = (
+
         metadata["format"] == "in3"
+
     )
 
 
     # ======================================================
-    # ORBIT3 formulation
+    # Modern ORBIT3
     # ======================================================
 
     if is_orbit3:
 
-        # --------------------------------------------------
-        # Inner orbit
-        # --------------------------------------------------
-
         inner = OrbitalElements(
 
             P=parameters["P"],
@@ -970,10 +1568,6 @@ def parse_triple_file(
 
         )
 
-
-        # --------------------------------------------------
-        # Outer orbit
-        # --------------------------------------------------
 
         outer = OrbitalElements(
 
@@ -994,16 +1588,47 @@ def parse_triple_file(
         )
 
 
+        # --------------------------------------------------
+        # ORBIT3 readinp preprocessing
+        # --------------------------------------------------
+        #
+        # ORBIT3 performs:
+        #
+        #   correct(pos,  t0)
+        #   correct(pos2, t0)
+        #
+        # followed by the precession correction to both
+        # POS1 and POS2.
+        #
+        # The primary orbital epoch is T = el[1].
+        # --------------------------------------------------
+
+        orbital_epoch = parameters["T"]
+
+
+        observations = (
+            _orbit3_correct_observation_epochs(
+                observations,
+                orbital_epoch
+            )
+        )
+
+
+        observations = (
+            _orbit3_apply_precession(
+                observations,
+                metadata,
+                orbital_epoch
+            )
+        )
+
+
     # ======================================================
-    # Legacy ORBITT2 formulation
+    # Legacy ORBITT2
     # ======================================================
 
     else:
 
-        # --------------------------------------------------
-        # Outer orbit
-        # --------------------------------------------------
-
         outer = OrbitalElements(
 
             P=parameters["P"],
@@ -1022,10 +1647,6 @@ def parse_triple_file(
 
         )
 
-
-        # --------------------------------------------------
-        # Inner orbit
-        # --------------------------------------------------
 
         inner = OrbitalElements(
 
@@ -1047,7 +1668,7 @@ def parse_triple_file(
 
 
     # ======================================================
-    # Construct triple elements
+    # Construct TripleOrbitalElements
     # ======================================================
 
     triple = TripleOrbitalElements(

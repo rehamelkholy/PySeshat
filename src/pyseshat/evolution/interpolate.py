@@ -77,6 +77,15 @@ def _interp(x, xp, fp):
     if xp.size != fp.size:
         raise ValueError("xp and fp must have the same length.")
 
+    if xp.size > 1 and np.any(np.diff(xp) <= 0):
+        raise ValueError(
+            "xp must be sorted in strictly increasing order. "
+            "np.interp silently returns wrong values for an "
+            "unsorted or non-monotonic table (e.g. a track with "
+            "a post-AGB or blue-loop segment where age or mass "
+            "is not monotonic)."
+        )
+
     if x < xp[0] or x > xp[-1]:
         raise ValueError(
             f"Interpolation point {x} is outside "

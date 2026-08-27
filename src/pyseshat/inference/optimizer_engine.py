@@ -1,3 +1,5 @@
+import numpy as np
+
 from scipy.optimize import least_squares
 
 from pyseshat.inference.covariance import (
@@ -22,7 +24,8 @@ def run_least_squares(
     method="trf",
     loss="linear",
     f_scale=1.0,
-    bounds=None
+    bounds=None,
+    jac="2-point"
 ):
     """
     Generic least-squares optimization engine.
@@ -36,7 +39,8 @@ def run_least_squares(
         Initial parameter vector.
 
     residual_function : callable
-        Residual function compatible with scipy.optimize.least_squares.
+        Residual function compatible with
+        scipy.optimize.least_squares.
 
     residual_args : tuple
         Arguments passed to residual_function.
@@ -44,9 +48,6 @@ def run_least_squares(
     solution_builder : callable
         Function that converts an optimized parameter vector
         into the corresponding fitted orbital-element object.
-
-    template_elements : object
-        Template element object used by update_function.
 
     parameter_names : list[str]
         Names of fitted parameters.
@@ -58,13 +59,16 @@ def run_least_squares(
         SciPy least-squares method.
 
     loss : str
-        Robust loss function.
+        Loss function.
 
     f_scale : float
         Robust loss scale.
 
-    bounds : tuple(ndarray, ndarray)
+    bounds : tuple(ndarray, ndarray) or None
         Lower and upper parameter bounds.
+
+    jac : {'2-point', '3-point', 'cs'} or callable
+        Jacobian specification passed directly to SciPy.
 
     Returns
     -------
@@ -75,14 +79,60 @@ def run_least_squares(
     # Optimization
     # ------------------------------------------------------
 
+    if bounds is None:
+
+        bounds_for_optimizer = (
+            (-float("inf"), float("inf"))
+        )
+
+    else:
+
+        bounds_for_optimizer = bounds
+
+    # ------------------------------------------------------
+    # SciPy's LM method does not support finite bounds.
+    #
+    # ORBIT3 itself is unbounded, so an ORBIT3 LM call
+    # reaches this branch with infinite bounds.
+    # ------------------------------------------------------
+
+    if method == "lm":
+
+        lower, upper = bounds_for_optimizer
+
+        if np.any(
+            np.isfinite(lower)
+        ) or np.any(
+            np.isfinite(upper)
+        ):
+
+            raise ValueError(
+                "SciPy method='lm' does not support "
+                "finite parameter bounds."
+            )
+
+        bounds_for_optimizer = (
+            (-float("inf"), float("inf"))
+        )
+
     result = least_squares(
+
         residual_function,
+
         initial_parameters,
+
         args=residual_args,
+
         method=method,
+
+        jac=jac,
+
         loss=loss,
+
         f_scale=f_scale,
-        bounds=bounds
+
+        bounds=bounds_for_optimizer
+
     )
 
     # ------------------------------------------------------
@@ -125,9 +175,15 @@ def run_least_squares(
     # ------------------------------------------------------
 
     return fit_result_class(
+
         elements=fitted_elements,
+
         optimizer_result=result,
+
         residuals=residuals,
+
         covariance=covariance,
+
         uncertainties=uncertainties
+
     )

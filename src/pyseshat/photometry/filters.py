@@ -207,18 +207,6 @@ class PhotometricPassband:
 
             )
 
-        if np.any(
-
-            self.throughput < 0.0
-
-        ):
-
-            raise ValueError(
-
-                "throughput must be non-negative."
-
-            )
-
         if not np.any(
 
             self.throughput > 0.0

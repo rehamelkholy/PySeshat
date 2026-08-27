@@ -25,60 +25,19 @@ The ORBIT3 representation contains 20 parameters:
     K4
     V0
 
-This module is deliberately separate from the legacy
-ORBITT2 bounds implementation in ``triple_bounds.py``.
+This module is separate from the legacy ORBITT2
+parameterization in ``triple_bounds.py``.
 """
 
 import numpy as np
 
+from pyseshat.triple.triple_elements import (
+    ORBIT3_PARAMETER_ORDER
+)
 
-# ==========================================================
-# ORBIT3 parameter order
-# ==========================================================
-
-ORBIT3_PARAMETER_ORDER = [
-
-    # ------------------------------------------------------
-    # Inner orbit
-    # ------------------------------------------------------
-
-    "P",
-    "T0",
-    "e",
-    "a",
-    "Omega",
-    "omega",
-    "i",
-
-    # ------------------------------------------------------
-    # Inner spectroscopic orbit / wobble
-    # ------------------------------------------------------
-
-    "K1",
-    "K2",
-    "f",
-
-    # ------------------------------------------------------
-    # Outer orbit
-    # ------------------------------------------------------
-
-    "P2",
-    "T02",
-    "e2",
-    "a2",
-    "Omega2",
-    "omega2",
-    "i2",
-
-    # ------------------------------------------------------
-    # Outer spectroscopic orbit
-    # ------------------------------------------------------
-
-    "K3",
-    "K4",
-    "V0",
-
-]
+# ORBIT3_PARAMETER_ORDER is imported from triple_elements.py,
+# the single canonical source of this ordering, and re-exported
+# here for backward compatibility with existing imports.
 
 
 # ==========================================================
@@ -98,35 +57,20 @@ def orbit3_full_bounds():
     P2, T02, e2, a2, Omega2, omega2, i2,
     K3, K4, V0
 
-    These are physical parameter-domain bounds.
+    The bounds on f are deliberately unrestricted.
 
-    Orbital eccentricities satisfy
+    The reference ORBIT3 implementation does not impose
+    explicit optimizer bounds on f, and the official
+    HIP111805 benchmark contains
 
-        0 <= e < 1
+        f = -0.33.
 
-    and
+    Therefore f must not be restricted to [0, 1].
 
-        0 <= e2 < 1.
-
-    The astrometric wobble factor satisfies
-
-        0 <= f <= 1.
-
-    This follows from the ORBIT3 definition
-
-        f = q_in / (1 + q_in).
-
-    Periods and semi-major axes are positive.
-
-    Angular elements use the conventional ranges
-
-        0 <= Omega < 360 deg
-        0 <= omega < 360 deg
-        0 <= i <= 180 deg.
-
-    Radial-velocity semi-amplitudes are non-negative.
-
-    Epochs and systemic velocity are otherwise unrestricted.
+    The remaining bounds provide numerical/physical
+    safeguards for the SciPy optimizer. They should not be
+    interpreted as bounds imposed by the original IDL
+    implementation.
     """
 
     lower = np.array([
@@ -149,7 +93,7 @@ def orbit3_full_bounds():
 
         0.0,         # K1
         0.0,         # K2
-        0.0,         # f
+        -np.inf,     # f
 
         # --------------------------------------------------
         # Outer orbit
@@ -194,7 +138,7 @@ def orbit3_full_bounds():
 
         np.inf,      # K1
         np.inf,      # K2
-        1.0,         # f
+        np.inf,      # f
 
         # --------------------------------------------------
         # Outer orbit
@@ -245,19 +189,26 @@ def orbit3_full_bounds():
 
 
 # ==========================================================
-# Fitted ORBIT3 bounds
+# Fitted-parameter bounds
 # ==========================================================
 
 def build_orbit3_bounds(
     elements
 ):
     """
-    Construct optimizer bounds for the fitted parameters
-    of a TripleOrbitalElements object using the modern
-    20-parameter ORBIT3 representation.
+    Construct optimizer bounds for the fitted ORBIT3
+    parameters only.
 
-    Only parameters marked True in the ORBIT3 fit mask are
-    returned.
+    Parameters
+    ----------
+    elements : TripleOrbitalElements
+        ORBIT3 element object containing the fit mask.
+
+    Returns
+    -------
+    tuple(ndarray, ndarray)
+        Lower and upper bounds corresponding exactly to
+        ``elements.fitted_parameter_names()``.
     """
 
     lower_full, upper_full = (
@@ -282,9 +233,8 @@ def build_orbit3_bounds(
 
         raise RuntimeError(
 
-            "Internal ORBIT3 lower-bound vector must "
-            f"contain exactly 20 parameters; "
-            f"received {lower_full.size}."
+            "Internal ORBIT3 lower-bound vector "
+            "does not contain 20 parameters."
 
         )
 
@@ -293,9 +243,8 @@ def build_orbit3_bounds(
 
         raise RuntimeError(
 
-            "Internal ORBIT3 upper-bound vector must "
-            f"contain exactly 20 parameters; "
-            f"received {upper_full.size}."
+            "Internal ORBIT3 upper-bound vector "
+            "does not contain 20 parameters."
 
         )
 

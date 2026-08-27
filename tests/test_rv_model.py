@@ -2,6 +2,8 @@ from pathlib import Path
 
 import numpy as np
 
+import pytest
+
 from pyseshat.io.orbit_parser import (
     parse_orbit_file
 )
@@ -13,6 +15,16 @@ from pyseshat.orbit.rv_model import (
 
 # ------------------------------------------------------
 # Benchmark datasets
+#
+# NOTE: this only checks internal self-consistency of the
+# RV model (finite output, non-trivial variation, and that
+# compute_rv_model's per-component dispatch reproduces
+# compute_rv_orbit called directly). It does NOT validate
+# which physical star (primary/secondary) the K1 vs K2 sign
+# convention actually corresponds to against a literature
+# SB2 solution -- see docs/project_decisions.md, "RV K1/K2
+# sign-convention audit finding", for why that is currently
+# an open question rather than something asserted here.
 # ------------------------------------------------------
 
 ROOT = Path("validation/benchmark_systems")
@@ -24,19 +36,13 @@ benchmark_files = [
     ROOT / "GL765" / "GL765.inp"
 ]
 
-# ------------------------------------------------------
-# Run tests
-# ------------------------------------------------------
 
-for filepath in benchmark_files:
-
-    print()
-
-    print("=" * 60)
-
-    print(filepath.name)
-
-    print("=" * 60)
+@pytest.mark.parametrize(
+    "filepath",
+    benchmark_files,
+    ids=[f.name for f in benchmark_files]
+)
+def test_rv_model_self_consistency(filepath):
 
     parsed = parse_orbit_file(
         str(filepath)
@@ -46,21 +52,19 @@ for filepath in benchmark_files:
 
     rv_data = parsed["rv_data"]
 
-    # --------------------------------------------------
-    # Skip systems without RV data
-    # --------------------------------------------------
-
     if len(rv_data) == 0:
 
-        print("No RV data.")
+        pytest.skip(
+            f"{filepath.name} has no RV data."
+        )
 
-        continue
+    t = rv_data[:, 0]
 
-    t = rv_data[:,0]
+    component = rv_data[:, 3].astype(int)
 
-    # --------------------------------------------------
-    # Primary RV
-    # --------------------------------------------------
+    # ----------------------------------------------
+    # Primary/secondary RV, evaluated directly
+    # ----------------------------------------------
 
     rv1 = compute_rv_orbit(
         t,
@@ -68,83 +72,78 @@ for filepath in benchmark_files:
         component=0
     )
 
-    print()
-
-    print("Primary RV finite:")
-
-    print(
-        np.all(np.isfinite(rv1))
-    )
-
-    print(
-        f"RV1 range: "
-        f"{rv1.min():.3f} "
-        f"to "
-        f"{rv1.max():.3f}"
-    )
-
-    # --------------------------------------------------
-    # Secondary RV
-    # --------------------------------------------------
-
     rv2 = compute_rv_orbit(
         t,
         elements,
         component=1
     )
 
-    print()
+    assert np.all(np.isfinite(rv1))
 
-    print("Secondary RV finite:")
+    assert np.all(np.isfinite(rv2))
 
-    print(
-        np.all(np.isfinite(rv2))
-    )
+    # A real spectroscopic orbit varies with phase; a
+    # constant model output usually means K1/K2 == 0 or the
+    # ephemeris collapsed (e.g. P == 0), either of which is a
+    # parsing/model regression worth catching here.
 
-    print(
-        f"RV2 range: "
-        f"{rv2.min():.3f} "
-        f"to "
-        f"{rv2.max():.3f}"
-    )
+    if elements.K1 != 0.0:
 
-    # --------------------------------------------------
-    # Mixed RV model
-    # --------------------------------------------------
+        assert np.ptp(rv1) > 0.0
+
+    if elements.K2 != 0.0:
+
+        assert np.ptp(rv2) > 0.0
+
+    # ----------------------------------------------
+    # compute_rv_model must reproduce compute_rv_orbit
+    # component-by-component, for whichever component
+    # encoding (0/1 or 1/2) this file actually uses.
+    # ----------------------------------------------
 
     rv_model = compute_rv_model(
         rv_data,
         elements
     )
 
-    print()
+    assert rv_model.shape == t.shape
 
-    print("Mixed RV finite:")
+    assert np.all(np.isfinite(rv_model))
 
-    print(
-        np.all(np.isfinite(rv_model))
+    has_zero = np.any(component == 0)
+
+    primary_label, secondary_label = (
+        (0, 1) if has_zero else (1, 2)
     )
 
-    print()
+    mask_primary = component == primary_label
 
-    print("Mixed RV shape:")
+    mask_secondary = component == secondary_label
 
-    print(rv_model.shape)
+    if np.any(mask_primary):
 
-    # --------------------------------------------------
-    # Component counts
-    # --------------------------------------------------
+        np.testing.assert_allclose(
 
-    component = rv_data[:,3].astype(int)
+            rv_model[mask_primary],
 
-    print()
+            compute_rv_orbit(
+                t[mask_primary],
+                elements,
+                component=0
+            )
 
-    print(
-        f"Primary observations: "
-        f"{np.sum(component == 0)}"
-    )
+        )
 
-    print(
-        f"Secondary observations: "
-        f"{np.sum(component == 1)}"
-    )
+    if np.any(mask_secondary):
+
+        np.testing.assert_allclose(
+
+            rv_model[mask_secondary],
+
+            compute_rv_orbit(
+                t[mask_secondary],
+                elements,
+                component=1
+            )
+
+        )

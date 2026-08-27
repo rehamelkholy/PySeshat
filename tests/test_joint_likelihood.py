@@ -117,3 +117,66 @@ def test_joint_log_likelihood_requires_problem():
             joint_problem=None,
 
         )
+
+
+def test_joint_log_likelihood_raises_for_evolution_constraints(
+    monkeypatch,
+):
+    """
+    Regression guard: `joint_log_likelihood` must raise
+    `NotImplementedError` when evolution constraints are
+    present, consistent with
+    `joint_log_likelihood_from_parameters`, rather than
+    silently contributing 0.0 and dropping the constraint.
+    """
+
+    class DummyOrbitProblem:
+        pass
+
+    class DummyPhotometricProblem:
+        pass
+
+    problem = JointInferenceProblem(
+
+        orbit_problem=DummyOrbitProblem(),
+
+        photometric_problem=DummyPhotometricProblem(),
+
+        # Any non-None value marks evolution constraints as
+        # present -- the real contract for this field is not
+        # yet defined (see joint_likelihood.py).
+        evolution_context=object(),
+
+    )
+
+    monkeypatch.setattr(
+
+        "pyseshat.inference.joint_likelihood."
+        "log_likelihood_from_problem",
+
+        lambda fitted_values, problem: -1.0,
+
+    )
+
+    monkeypatch.setattr(
+
+        "pyseshat.inference.joint_likelihood."
+        "photometric_log_likelihood_from_problem",
+
+        lambda problem: -1.0,
+
+    )
+
+    with pytest.raises(
+
+        NotImplementedError
+
+    ):
+
+        joint_log_likelihood(
+
+            orbit_fitted_values=[1.0],
+
+            joint_problem=problem,
+
+        )

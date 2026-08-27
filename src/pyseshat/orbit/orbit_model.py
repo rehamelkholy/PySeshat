@@ -113,6 +113,21 @@ def compute_visual_orbit(t, elements: OrbitalElements):
         theta
         E
         nu
+
+    Notes
+    -----
+    The Cartesian convention used throughout the visual-orbit
+    fitting infrastructure is
+
+        X = rho cos(theta)
+        Y = rho sin(theta)
+
+    where theta is the position angle measured from the
+    positive X direction toward the positive Y direction.
+
+    Therefore the inverse transformation is
+
+        theta = atan2(Y, X).
     """
 
     t = np.asarray(t)
@@ -146,27 +161,69 @@ def compute_visual_orbit(t, elements: OrbitalElements):
     # ------------------------------------------------------
 
     Xorb = np.cos(E) - elements.e
-    Yorb = np.sqrt(1 - elements.e**2) * np.sin(E)
+
+    Yorb = (
+        np.sqrt(
+            1 - elements.e**2
+        )
+        *
+        np.sin(E)
+    )
 
     # ------------------------------------------------------
     # Thiele-Innes projection
     # ------------------------------------------------------
 
-    A, B, F, G = thiele_innes(elements)
+    A, B, F, G = thiele_innes(
+        elements
+    )
 
-    X = A * Xorb + F * Yorb
-    Y = B * Xorb + G * Yorb
+    X = (
+        A * Xorb
+        +
+        F * Yorb
+    )
+
+    Y = (
+        B * Xorb
+        +
+        G * Yorb
+    )
 
     # ------------------------------------------------------
     # Polar coordinates
     # ------------------------------------------------------
 
-    rho = np.sqrt(X**2 + Y**2)
+    rho = np.sqrt(
+        X**2
+        +
+        Y**2
+    )
 
-    # TODO: check match with atan2 convention
-    theta = np.rad2deg(np.arctan2(X, Y))
+    # The project's visual-coordinate convention is:
+    #
+    #     X = rho cos(theta)
+    #     Y = rho sin(theta)
+    #
+    # Therefore:
+    #
+    #     theta = atan2(Y, X)
+    #
+    # This is also the convention used by the ORBIT3
+    # visual model and by the Cartesian conversion in the
+    # visual residual functions.
 
-    theta = np.mod(theta, 360.0)
+    theta = np.rad2deg(
+        np.arctan2(
+            Y,
+            X
+        )
+    )
+
+    theta = np.mod(
+        theta,
+        360.0
+    )
 
     return {
         "X": X,
@@ -176,6 +233,7 @@ def compute_visual_orbit(t, elements: OrbitalElements):
         "E": E,
         "nu": nu
     }
+
 
 # ==========================================================
 # Smooth orbit sampling for visualization
@@ -213,8 +271,16 @@ def sample_visual_orbit(
     # Convert to synthetic epochs
     # ------------------------------------------------------
 
-    t = elements.T0 + (
-        elements.P * M / (2 * np.pi)
+    t = (
+        elements.T0
+        +
+        (
+            elements.P
+            *
+            M
+            /
+            (2 * np.pi)
+        )
     )
 
     return compute_visual_orbit(

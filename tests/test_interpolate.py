@@ -64,6 +64,36 @@ def test_interp_outside_range():
         )
 
 
+def test_interp_unsorted_xp_raises():
+    """
+    Regression guard: np.interp silently returns wrong
+    values for an unsorted xp, so _interp must reject it
+    rather than pass it through.
+    """
+
+    with pytest.raises(ValueError):
+        _interp(
+            1.5,
+            [2.0, 1.0],
+            [20.0, 10.0],
+        )
+
+
+def test_interp_non_monotonic_xp_raises():
+    """
+    A repeated/non-increasing xp value (e.g. a track with a
+    blue-loop segment) must also be rejected, not just a
+    fully reversed array.
+    """
+
+    with pytest.raises(ValueError):
+        _interp(
+            1.5,
+            [1.0, 2.0, 2.0, 3.0],
+            [10.0, 20.0, 15.0, 30.0],
+        )
+
+
 def test_sample_track():
 
     sample = sample_track(

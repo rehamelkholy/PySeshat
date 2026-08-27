@@ -20,9 +20,14 @@ from pyseshat.inference.photometric_likelihood import (
     photometric_log_likelihood_from_problem,
 )
 
-from pyseshat.inference.evolution_likelihood import (
-    evolution_log_likelihood,
-)
+# NOTE: `pyseshat.inference.evolution_likelihood.evolution_log_likelihood`
+# is a real, working Gaussian likelihood for a single stellar-evolution
+# sample (see that module). It is deliberately NOT called from here yet:
+# `JointInferenceProblem.evolution_context` is currently typed `Any` with
+# no defined contract for how per-component EvolutionSample/
+# StellarObservables pairs would be attached, so there is nothing well
+# -defined to pass it. Wire it in once that contract exists -- don't
+# reach for this function just to silence the NotImplementedError below.
 
 
 def joint_log_likelihood(
@@ -94,11 +99,15 @@ def joint_log_likelihood(
     if joint_problem.has_evolution_constraints:
 
         #
-        # Evolution likelihood integration will be added
-        # in the next step once the evolution context is
-        # fully defined.
+        # Silently contributing 0.0 here would let a real
+        # evolution constraint be dropped from the likelihood
+        # with no signal at all -- raise instead, consistent
+        # with joint_log_likelihood_from_parameters below.
         #
-        pass
+        raise NotImplementedError(
+            "Evolution likelihood integration "
+            "is not yet implemented."
+        )
 
     return (
 

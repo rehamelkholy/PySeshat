@@ -23,6 +23,8 @@ from pyseshat.triple.triple_bounds import (
 
 
 from pyseshat.triple.triple_elements import (
+    LEGACY_TRIPLE_PARAMETER_ORDER,
+    ORBIT3_PARAMETER_ORDER,
     TripleOrbitalElements
 )
 
@@ -40,57 +42,17 @@ from pyseshat.triple.triple_residuals import (
 # ==========================================================
 # Parameter orders
 # ==========================================================
-
-LEGACY_TRIPLE_PARAMETER_ORDER = [
-
-    "P",
-    "T0",
-    "e",
-    "a",
-    "Omega",
-    "omega",
-    "i",
-
-    "P2",
-    "T02",
-    "e2",
-    "a2",
-    "Omega2",
-    "omega2",
-    "i2",
-
-    "B",
-
-]
+#
+# LEGACY_TRIPLE_PARAMETER_ORDER and ORBIT3_PARAMETER_ORDER
+# are imported from triple_elements.py, the single canonical
+# source of both orderings. Both are re-exported here for
+# backward compatibility with existing imports.
 
 
-ORBIT3_PARAMETER_ORDER = [
-
-    "P",
-    "T0",
-    "e",
-    "a",
-    "Omega",
-    "omega",
-    "i",
-
-    "K1",
-    "K2",
-    "f",
-
-    "P2",
-    "T02",
-    "e2",
-    "a2",
-    "Omega2",
-    "omega2",
-    "i2",
-
-    "K3",
-    "K4",
-    "V0",
-
-]
+# ORBIT3_PARAMETER_ORDER is imported from triple_elements.py,
+# which is the single canonical source of this ordering. It
+# is re-exported here (and from triple_parameters.py) for
+# backward compatibility with existing imports.
 
 
 # ==========================================================
@@ -209,6 +171,26 @@ def array_to_triple(
         outer=outer,
 
         inner=inner,
+
+        # The legacy 15-parameter ORBITT2 vector does not
+        # carry K1, K2, f, K3, K4, or V0 -- those belong to
+        # the modern ORBIT3 spectroscopic/wobble formalism.
+        # They must be carried over from the template rather
+        # than left at the TripleOrbitalElements defaults,
+        # otherwise a legacy-only fit silently zeroes out any
+        # ORBIT3-relevant state the object was carrying.
+
+        K1=template.K1,
+
+        K2=template.K2,
+
+        f=template.f,
+
+        K3=template.K3,
+
+        K4=template.K4,
+
+        V0=template.V0,
 
         B=p[14],
 

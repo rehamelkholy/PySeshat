@@ -7,6 +7,94 @@ from pyseshat.orbit.orbital_elements import (
 )
 
 
+# ==========================================================
+# Canonical legacy ORBITT2 parameter order
+# ==========================================================
+#
+# Single source of truth for the 15-parameter legacy
+# ORBITT2 ordering used by triple_fit.py, triple_bounds.py,
+# and triple_parameters.py. Defined here (rather than in
+# triple_fit.py, which is otherwise the "home" of the legacy
+# formalism) specifically so that triple_bounds.py can import
+# it without a circular import: triple_fit.py already imports
+# triple_bounds.build_triple_bounds, so triple_bounds.py
+# cannot import back from triple_fit.py.
+
+LEGACY_TRIPLE_PARAMETER_ORDER = [
+
+    # Outer orbit
+
+    "P",
+    "T0",
+    "e",
+    "a",
+    "Omega",
+    "omega",
+    "i",
+
+    # Inner orbit
+
+    "P2",
+    "T02",
+    "e2",
+    "a2",
+    "Omega2",
+    "omega2",
+    "i2",
+
+    # Legacy scale parameter
+
+    "B"
+]
+
+
+# ==========================================================
+# Canonical modern ORBIT3 parameter order
+# ==========================================================
+#
+# This is the single source of truth for the 20-parameter
+# ORBIT3 ordering used throughout the triple/ package
+# (triple_fit.py, triple_parameters.py, orbit3_bounds.py,
+# and this dataclass's own methods below). It must not be
+# redefined independently elsewhere -- import it from here
+# instead.
+
+ORBIT3_PARAMETER_ORDER = [
+
+    # Inner orbit
+
+    "P",
+    "T0",
+    "e",
+    "a",
+    "Omega",
+    "omega",
+    "i",
+
+    # Inner spectroscopy / wobble
+
+    "K1",
+    "K2",
+    "f",
+
+    # Outer orbit
+
+    "P2",
+    "T02",
+    "e2",
+    "a2",
+    "Omega2",
+    "omega2",
+    "i2",
+
+    # Outer spectroscopy
+
+    "K3",
+    "K4",
+    "V0"
+]
+
+
 @dataclass
 class TripleOrbitalElements:
     """
@@ -158,37 +246,10 @@ class TripleOrbitalElements:
 
         return np.array([
 
-            # Inner orbit
+            self.fit_flags[name]
 
-            self.fit_flags["P"],
-            self.fit_flags["T0"],
-            self.fit_flags["e"],
-            self.fit_flags["a"],
-            self.fit_flags["Omega"],
-            self.fit_flags["omega"],
-            self.fit_flags["i"],
-
-            # Inner spectroscopy / wobble
-
-            self.fit_flags["K1"],
-            self.fit_flags["K2"],
-            self.fit_flags["f"],
-
-            # Outer orbit
-
-            self.fit_flags["P2"],
-            self.fit_flags["T02"],
-            self.fit_flags["e2"],
-            self.fit_flags["a2"],
-            self.fit_flags["Omega2"],
-            self.fit_flags["omega2"],
-            self.fit_flags["i2"],
-
-            # Outer spectroscopy
-
-            self.fit_flags["K3"],
-            self.fit_flags["K4"],
-            self.fit_flags["V0"]
+            for name
+            in ORBIT3_PARAMETER_ORDER
 
         ], dtype=bool)
 
@@ -202,48 +263,13 @@ class TripleOrbitalElements:
         parameter-vector order.
         """
 
-        names = [
-
-            # Inner orbit
-
-            "P",
-            "T0",
-            "e",
-            "a",
-            "Omega",
-            "omega",
-            "i",
-
-            # Inner spectroscopy / wobble
-
-            "K1",
-            "K2",
-            "f",
-
-            # Outer orbit
-
-            "P2",
-            "T02",
-            "e2",
-            "a2",
-            "Omega2",
-            "omega2",
-            "i2",
-
-            # Outer spectroscopy
-
-            "K3",
-            "K4",
-            "V0"
-        ]
-
         mask = self.fitted_mask()
 
         return [
             name
             for name, fitted
             in zip(
-                names,
+                ORBIT3_PARAMETER_ORDER,
                 mask
             )
             if fitted
@@ -259,40 +285,9 @@ class TripleOrbitalElements:
         Return the complete ORBIT3 parameter ordering.
         """
 
-        return [
-
-            # Inner orbit
-
-            "P",
-            "T0",
-            "e",
-            "a",
-            "Omega",
-            "omega",
-            "i",
-
-            # Inner spectroscopy / wobble
-
-            "K1",
-            "K2",
-            "f",
-
-            # Outer orbit
-
-            "P2",
-            "T02",
-            "e2",
-            "a2",
-            "Omega2",
-            "omega2",
-            "i2",
-
-            # Outer spectroscopy
-
-            "K3",
-            "K4",
-            "V0"
-        ]
+        return list(
+            ORBIT3_PARAMETER_ORDER
+        )
 
     # ==========================================================
     # Legacy compatibility

@@ -437,7 +437,7 @@ def test_build_orbit3_bounds_respects_fit_flags():
 
             1e-12,
             0.0,
-            0.0,
+            -np.inf,
             1e-12,
             0.0,
             -np.inf,

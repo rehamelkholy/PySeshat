@@ -59,7 +59,8 @@ def log_jeffreys_prior(
     upper
 ):
     """
-    Jeffreys prior for a positive scale parameter.
+    Jeffreys (log-uniform) prior for a positive scale
+    parameter.
 
     Parameters
     ----------
@@ -114,9 +115,11 @@ def log_isotropic_prior(
     """
 
     if inclination_deg < 0.0:
+
         return -np.inf
 
     if inclination_deg > 180.0:
+
         return -np.inf
 
     inclination = np.deg2rad(
@@ -127,19 +130,21 @@ def log_isotropic_prior(
         inclination
     )
 
-    # Guard against floating-point roundoff at
-    # exactly 0° and 180°.
+    # Guard against floating-point roundoff at exactly
+    # 0 degrees and 180 degrees.
 
     if np.isclose(
         s,
         0.0,
         atol=1e-15
     ):
+
         return -np.inf
 
     return np.log(
         s
     )
+
 
 # ==========================================================
 # Default Keplerian prior
@@ -149,7 +154,7 @@ def log_prior(
     elements
 ):
     """
-    Default Bayesian prior for a Keplerian orbit.
+    Default Bayesian prior for an elliptic Keplerian orbit.
 
     Parameters
     ----------
@@ -158,7 +163,29 @@ def log_prior(
     Returns
     -------
     float
-        Sum of the log-priors for all orbital parameters.
+        Sum of the log-priors for the orbital parameters
+        participating in the current inference problem.
+
+    Notes
+    -----
+    The eccentricity support is restricted to
+
+        0 <= e <= 0.99
+
+    to remain consistent with the physical bounds used by
+    the deterministic orbit optimizer and with the elliptic
+    Keplerian orbit model implemented by PySeshat.
+
+    Radial-velocity semi-amplitudes K1 and K2 are subject to
+    positive support only when they are fitted parameters.
+
+    Fixed K1 and K2 values do not contribute to the prior.
+    This is necessary for visual-only inference, where the
+    radial-velocity parameters are not part of the fitted
+    parameter vector.
+
+    The systemic velocity V0 is a signed location parameter
+    and is therefore unrestricted.
     """
 
     logp = 0.0
@@ -185,12 +212,15 @@ def log_prior(
 
     # ------------------------------------------------------
     # Eccentricity
+    #
+    # The orbit model is elliptic and the optimizer currently
+    # uses an upper bound of 0.99.
     # ------------------------------------------------------
 
     logp += log_uniform_prior(
         elements.e,
         0.0,
-        1.0
+        0.99
     )
 
     # ------------------------------------------------------
@@ -231,7 +261,43 @@ def log_prior(
         360.0
     )
 
+    # ------------------------------------------------------
+    # Radial-velocity semi-amplitudes
+    #
+    # K1 and K2 are positive parameters when they participate
+    # in the current fit.
+    #
+    # Fixed values are deliberately ignored so that visual-
+    # only inference is unaffected by the default RV values.
+    # ------------------------------------------------------
+
+    if elements.fit_flags.get(
+        "K1",
+        False
+    ):
+
+        if elements.K1 <= 0.0:
+
+            return -np.inf
+
+    if elements.fit_flags.get(
+        "K2",
+        False
+    ):
+
+        if elements.K2 <= 0.0:
+
+            return -np.inf
+
+    # ------------------------------------------------------
+    # Systemic velocity
+    #
+    # V0 is a signed location parameter and remains
+    # unrestricted.
+    # ------------------------------------------------------
+
     return logp
+
 
 # ==========================================================
 # Default photometric prior
