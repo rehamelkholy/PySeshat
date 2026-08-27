@@ -64,8 +64,27 @@ def total_mass_from_elements(
     parallax_mas
 ):
     """
-    Compute total mass directly from
-    OrbitalElements.
+    Compute the system's total dynamical mass (Kepler's third
+    law) directly from a fitted visual-orbit ``OrbitalElements``
+    and the system's parallax.
+
+    Convenience wrapper around ``compute_total_mass()`` that pulls
+    ``period_years``/``semimajor_axis_arcsec`` straight off
+    ``elements`` instead of the caller unpacking them by hand.
+
+    Parameters
+    ----------
+    elements : OrbitalElements
+        Must have a fitted (not astrometric-only) semimajor axis
+        ``a`` in arcsec -- see ``compute_total_mass()``'s docstring
+        for the parallax-to-distance conversion this assumes.
+    parallax_mas : float
+        System parallax, milliarcseconds.
+
+    Returns
+    -------
+    float
+        Total mass, solar masses.
     """
 
     return compute_total_mass(
@@ -325,8 +344,23 @@ def component_masses_from_elements(
     elements
 ):
     """
-    Compute component masses from
-    OrbitalElements.
+    Compute each component's individual mass from a
+    double-lined (SB2) visual+RV orbit's ``OrbitalElements``.
+
+    Requires both ``K1`` and ``K2`` to be set (i.e. both
+    components' RV semi-amplitudes were fit) -- for an SB1
+    system with only one RV curve, use
+    ``minimum_secondary_mass_from_elements()`` instead, which
+    returns only the ``sin(i)``-degenerate minimum companion mass.
+
+    Parameters
+    ----------
+    elements : OrbitalElements
+
+    Returns
+    -------
+    dict
+        ``{"M1": ..., "M2": ...}``, solar masses.
     """
 
     return compute_component_masses(
@@ -413,7 +447,29 @@ def minimum_secondary_mass_from_elements(
     primary_mass
 ):
     """
-    SB1 minimum companion mass.
+    Compute the sin(i)-degenerate minimum secondary mass for a
+    single-lined spectroscopic binary (SB1), given an assumed
+    primary mass.
+
+    For an SB1, only ``K1`` (the visible component's RV
+    semi-amplitude) is measured, so the true secondary mass is
+    degenerate with the (unknown) inclination -- this returns the
+    ``i = 90 deg`` lower bound, obtained by numerically inverting
+    the binary mass function for ``M2`` at fixed ``primary_mass``.
+
+    Parameters
+    ----------
+    elements : OrbitalElements
+        Must have ``K1`` set (``K2`` is not required/used).
+    primary_mass : float
+        Assumed primary mass, solar masses (typically from an
+        independent source -- spectral type, evolutionary track,
+        etc., since an SB1 orbit alone cannot constrain it).
+
+    Returns
+    -------
+    float
+        Minimum secondary mass, solar masses.
     """
 
     fm = compute_mass_function(

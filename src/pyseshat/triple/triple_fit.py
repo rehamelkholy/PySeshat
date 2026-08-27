@@ -105,8 +105,33 @@ def array_to_triple(
     template: TripleOrbitalElements
 ):
     """
-    Build a TripleOrbitalElements object from the legacy
-    15-parameter ORBITT2 vector.
+    Build a ``TripleOrbitalElements`` object from the legacy
+    15-parameter ORBITT2 parameter vector, using ``template`` for
+    every field the 15-parameter vector doesn't cover.
+
+    ``template`` supplies the fields ``p`` does not carry
+    (notably ``K1``/``K2``/``f``/``K3``/``K4``/``V0``, which are
+    ORBIT3-only quantities with no ORBITT2 equivalent) --
+    ``template``'s own values for those fields are preserved
+    unchanged in the returned object, not zeroed. Parameter
+    ordering for ``p`` follows ``LEGACY_TRIPLE_PARAMETER_ORDER``
+    in ``triple_elements.py`` (the single source of truth for this
+    ordering; see docs/project_decisions.md's "triple/ORBIT3
+    parameter-vector consolidation" entry for the real data-loss
+    bug this consolidation fixed -- multiple duplicate copies of
+    this ordering used to exist and had drifted out of sync,
+    silently resetting K1/K2/f/K3/K4/V0 to 0.0 on every call).
+
+    Parameters
+    ----------
+    p : array_like, shape (15,)
+        Legacy ORBITT2 parameter vector.
+    template : TripleOrbitalElements
+        Supplies every non-ORBITT2 field's value.
+
+    Returns
+    -------
+    TripleOrbitalElements
     """
 
     p = np.asarray(

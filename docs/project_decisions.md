@@ -1553,3 +1553,141 @@ machine can run end to end, but every file touched this pass (and every
 test importing `PhotometricParameters`, `photometric_likelihood.py`,
 `photometric_optimizer.py`, or `inference/priors.py`) is included in this
 207-test run and passes.
+
+## Phase 3/4 (development_plan_phase2.md): plot-correctness tests, the
+## North/East orientation finding, demo-script conversions, and the
+## full-plot-set visual pass (2026-08-27)
+
+Executes `docs/development_plan_phase2.md` Phase 4 ("Plotting:
+correctness and literature-convention conformity") and the documentation
+half of Phase 3, following on from the Phase 1 fit-flags work and Phase 2
+example scripts landed earlier the same day.
+
+### 1. Plot-correctness tests strengthened (Phase 4 item 1)
+
+`tests/test_orbit_plot.py`, previously 4 tests checking only that a plot
+*runs without raising* and returns a `Figure`/`Axes`, gained 5 new tests
+that assert on the actual plotted data: `ax.collections[].get_offsets()`
+for scatter series, `ax.get_lines()[].get_xdata()/get_ydata()` for model
+curves. Specifically: `plot_visual_orbit`'s observation scatter and
+fitted-orbit line are checked against the exact `X_obs`/`Y_obs`/model
+arrays passed in (including a real `OrbitalElements`/
+`compute_visual_orbit`-built orbit, with an explicit "X is not just equal
+to Y" sanity guard against a degenerate test case silently passing a
+swapped-axis bug); `plot_residuals`'s two subplots are checked against
+the exact `resX`/`resY` split; `plot_rv_orbit`'s primary/secondary
+scatter series are checked against each component's own RV values
+(matched by row, not just "some points near the right magnitude"); and a
+new literature-convention regression test confirms the phase-folded RV
+model curve is centered at phase 0 = T0 (periastron), matching
+`compute_rv_model` evaluated directly at T0. 9/9 pass.
+
+Two more demo scripts were converted to real tests, extending the
+pattern already applied to `test_rv_model.py`/`test_statistics.py`/
+`test_reduced_chi_square_rv.py` in the "Whole-codebase audit" section
+above: `test_corner_plot.py` (0 assertions -> 2 tests checking
+`MCMCResult.corner_plot()`'s panel-grid size matches `n_parameters**2`,
+both for the full parameter set and a `parameters=` subset) and
+`test_dynamics.py` (0 assertions -> 1 test checking
+`separation_vs_time()`/`separation_table()` agree with each other and
+with a physical `rho <= a(1+e)` bound, and that `plot_separation_vs_time`
+draws exactly that data). `test_dynamics.py` initially failed with
+`KeyError: 'rho'` — `separation_table()`'s DataFrame actually names its
+columns `"Epoch"`/`"Separation"` (capitalized), not the lowercase
+`"epoch"`/`"rho"` keys `separation_vs_time()`'s plain dict uses; fixed by
+reading the real column names from `analysis/dynamics.py` and correcting
+the test.
+
+### 2. Literature-convention conformity (Phase 4 item 2)
+
+Three checks, one real finding:
+
+- **HR-diagram inverted-Teff-axis convention: already correct, already
+  tested.** `test_hrdiagram_plot.py::test_plot_binary_hrdiagram` already
+  asserted `ax.xaxis_inverted()` before this pass — confirmed by reading
+  both the test and `hrdiagram_plot.py`'s implementation. No change
+  needed.
+- **RV phase-folding zero-phase convention: confirmed correct.**
+  `plot_rv_orbit(phase=True)` zeros phase at `elements.T0` (periastron),
+  matching the convention `inference/` uses throughout. Locked in by the
+  new regression test described above.
+- **Residual-plot sign convention: confirmed consistent, no mismatch.**
+  `plot_residuals()` plots exactly whatever residual array is passed to
+  it; the only producer in this codebase,
+  `inference/terms/visual.py`'s `visual_xy_residuals`, computes
+  `resX = (X_obs - X_model) / sx` (observed minus model). Every fit
+  pathway (Example 1, `benchmark_runner.py`) passes this same array
+  through unchanged, so there is no sign inconsistency between what gets
+  fit and what gets plotted.
+- **North-up/East-left visual-orbit convention: NOT implemented, real
+  finding, deliberately not silently fixed.** `plot_visual_orbit()` has
+  no axis inversion and generic "X (arcsec)"/"Y (arcsec)" labels;
+  `compute_visual_orbit()`'s docstring defines its `theta` convention
+  only abstractly ("from the positive X direction toward the positive Y
+  direction"), not tied explicitly to North/East anywhere in the
+  codebase. This is a substantive scientific-presentation decision — the
+  correct fix depends on the sign convention actually baked into
+  `io/orbit_parser.py`'s theta parsing, which is only verifiable by
+  reproducing a real published orbit figure side by side, not by
+  guessing. Per this project's standing priority (diagnose, don't
+  silently refactor), this was **not** changed. Instead:
+  `plot_visual_orbit()`'s docstring (`src/pyseshat/visualization/orbit_plot.py`)
+  now documents exactly what convention is currently used and what to
+  check before trusting it in a paper figure; the 3 new axis-correctness
+  regression tests above lock in the current numerical plotting
+  behavior so any future change here is caught; and this is carried
+  forward as an explicit open item in `docs/paper_reference_notes.md`'s
+  "Known, currently-open limitations" and "Future work" sections for the
+  user's own judgment against an actual literature figure.
+
+### 3. Full-plot-set visual pass (Phase 4 item 3) — scoped to 2 of 8
+### systems, and why
+
+`scripts/generate_benchmark_plots.py` (new) fits FIN379 and GL765 (via
+`fit_visual_orbit`, mirroring `benchmark_runner.py`'s `run_benchmark()`)
+and writes all 4 applicable plots each — visual orbit, residuals,
+phase-folded RV, separation-vs-time — to
+`validation/results/plots/<system>/`. A visual pass (viewing the PNGs
+directly) confirms: FIN379's and GL765's fitted-orbit curves track their
+observation scatter closely with no axis or transpose anomalies;
+residuals scatter around zero with no strong systematic trend;
+GL765's phase-folded primary/secondary RV curves are correctly
+anti-phased and both track their observations tightly.
+
+The other 6 of 8 registered systems are **not** plotted, and this is a
+scope decision, not an oversight: this codebase has exactly 5 plotting
+functions total (`plot_visual_orbit`, `plot_residuals`, `plot_rv_orbit`,
+`plot_separation_vs_time` — all operating on a flat two-body
+`OrbitalElements` model — and `plot_binary_hrdiagram`, operating on
+`HRDiagramData` evolutionary-track output, unrelated to any orbital fit).
+None of the flat-`OrbitalElements` plots are directly correct for
+ZetaAqr/HIP111805 (hierarchical triples fit through the 20-parameter
+ORBIT3 formalism; `TripleOrbitalElements.outer` is a real
+`OrbitalElements`, but the outer astrometric observations these systems
+are fit against include the unresolved inner subsystem's astrometric
+wobble via the `f` parameter — plotting a flat two-body curve directly
+against those observations would show a real, wobble-driven residual
+pattern a reader could easily mistake for a fit-quality problem). None
+apply at all to the 4 Al-Wardat SED systems, which have no orbital fit
+in the first place (`examples/04_alwardat_sed_fit.py`'s docstring:
+"there is no orbital fit here at all"); `plot_binary_hrdiagram` could in
+principle apply, but requires running a full evolutionary-track
+cross-check (`evolution/binary.py`) per system first, which this pass
+did not have time to wire up and verify for all four. Both gaps —
+"no triple-aware orbit plot," "no per-system Al-Wardat HR-diagram
+cross-check plot" — are carried into `docs/paper_reference_notes.md`'s
+"Future work" as scoped, concrete items rather than left implicit.
+
+### 4. Regression check
+
+Ran the full 220-test suite available in this session's cloud sandbox
+mirror in the same 3-batch split as before (183 non-MCMC/non-diagnostic,
+17 MCMC/corner, 20 diagnostic) — 220/220 passed, 0 failures, 0
+regressions. This is strictly additive over the prior 207-test run (13
+new tests: 5 in `test_orbit_plot.py`, 2 replacing `test_corner_plot.py`'s
+0, 1 replacing `test_dynamics.py`'s 0, plus the pre-existing counts —
+207 + 5 + (2-0) + (1-0) ... the exact delta reflects the two demo-script
+conversions each replacing a 0-test file with a real one). No production
+code changed except the `plot_visual_orbit()` docstring (no behavior
+change), so this result was expected; it is still verified rather than
+assumed.

@@ -14,8 +14,24 @@ from pyseshat.io.coordinates import (
 
 def jd_to_decimal_year(jd):
     """
-    Convert JD-2400000 time convention
-    to decimal year approximation.
+    Convert a reduced-Julian-Date epoch (JD - 2400000, the
+    convention used by RV columns in this codebase's ``.inp``
+    file format) to a decimal-year approximation.
+
+    Uses a fixed 365.25-day Julian year (no leap-second/calendar
+    correction) -- adequate for the observational timescales
+    (years to decades) these benchmark systems span, not intended
+    as a general-purpose calendar-accurate JD converter.
+
+    Parameters
+    ----------
+    jd : float or array_like
+        Reduced Julian date (JD - 2400000).
+
+    Returns
+    -------
+    float or ndarray
+        Approximate decimal year.
     """
 
     # restore full JD

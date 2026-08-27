@@ -37,6 +37,39 @@ def plot_visual_orbit(
 
     title : str
         Plot title
+
+    Orientation convention (read before using this plot in a
+    publication)
+    --------------------------------------------------------
+    X is plotted horizontally (increasing right) and Y
+    vertically (increasing up), exactly as passed in, with NO
+    axis inversion applied here. X/Y themselves come from
+    whatever `theta`/`rho` convention the calling code used to
+    build them (typically `rho * cos(theta)`, `rho * sin(theta)`
+    from a parsed `.inp` file's position-angle column -- see
+    `io/orbit_parser.py`), and `compute_visual_orbit()`'s
+    docstring defines its own `X`/`Y` only abstractly, as "the
+    positive X direction" and "the positive Y direction," without
+    tying either explicitly to North or East.
+
+    The standard visual-binary-orbit convention in the literature
+    is North up, East left, with position angle measured from
+    North through East (i.e. counterclockwise as conventionally
+    drawn). This function does not verify or enforce that
+    convention -- it plots X/Y exactly as given. Whether the
+    result already matches the standard convention depends on the
+    sign/axis convention baked into the upstream `theta`->(X, Y)
+    conversion, which has NOT been checked against a published
+    figure. Regression tests in `tests/test_orbit_plot.py` lock in
+    the current numerical behavior (so a future change here would
+    be caught), but they do not assert North-up/East-left is
+    correct. Before using this plot in a paper figure, reproduce
+    one published orbit (e.g. from `wardat_2002.pdf`,
+    `wardat_2012.pdf`, or `Tokovinin_2016_ApJ_831_151.pdf`) side by
+    side with this function's output and confirm the position-
+    angle sense matches -- see docs/project_decisions.md and
+    docs/paper_reference_notes.md for the full writeup of this
+    open item.
     """
 
     X_model = orbit["X"]
@@ -193,8 +226,38 @@ def plot_rv_orbit(
     show=True
 ):
     """
-    Plot observed and modeled radial
-    velocity curves.
+    Plot observed and modeled radial velocity curves for both
+    components of a spectroscopic binary.
+
+    Parameters
+    ----------
+    rv_data : ndarray, shape (N, 4)
+        Rows of ``(t, rv, sigma_rv, component)``, where
+        ``component`` is 0 for the primary and 1 for the
+        secondary (the same layout ``io.orbit_parser`` produces
+        and ``inference.terms.radial_velocity`` consumes).
+    elements : OrbitalElements
+        Orbital elements (including ``K1``/``K2``/``V0``) used to
+        draw the smooth model curve for each component.
+    title : str
+        Plot title.
+    phase : bool
+        If True, fold both the observations and the model curve
+        on orbital phase (0-1), with phase 0 at ``elements.T0``
+        (periastron) -- the standard literature convention; see
+        ``tests/test_orbit_plot.py::test_plot_rv_orbit_phase_folded_model_is_centered_at_zero_phase``.
+        If False, plot against raw time/epoch instead.
+    show : bool
+        If True, call ``plt.show()`` before returning.
+
+    Returns
+    -------
+    (Figure, Axes)
+
+    Raises
+    ------
+    ValueError
+        If ``rv_data`` is empty -- there is nothing to plot.
     """
 
     if len(rv_data) == 0:

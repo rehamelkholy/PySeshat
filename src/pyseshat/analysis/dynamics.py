@@ -52,7 +52,24 @@ def separation_table(
     epochs
 ):
     """
-    Separation table.
+    Tabulate projected separation vs. epoch as a pandas
+    DataFrame, for CSV export or notebook display.
+
+    Thin wrapper around ``separation_vs_time()`` -- same values,
+    reshaped into a two-column ``DataFrame`` with columns
+    ``"Epoch"`` and ``"Separation"`` (note the capitalization:
+    these differ from ``separation_vs_time()``'s own dict keys
+    ``"epoch"``/``"rho"``).
+
+    Parameters
+    ----------
+    elements : OrbitalElements
+    epochs : array_like
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns ``"Epoch"`` and ``"Separation"`` (arcsec).
     """
 
     data = separation_vs_time(

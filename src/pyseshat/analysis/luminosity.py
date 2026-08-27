@@ -59,7 +59,26 @@ def compute_log_luminosity(
     temperature_kelvin
 ):
     """
-    Compute log10(L/Lsun).
+    Compute log10(L/Lsun) from radius and effective temperature
+    via the Stefan-Boltzmann law, normalized to solar units.
+
+    Thin log10-wrapping convenience around
+    ``compute_luminosity()`` -- used wherever a log-luminosity is
+    needed directly (e.g. building ``HRDiagramData``/
+    ``StellarObservables`` for an evolutionary-track comparison),
+    to avoid every caller repeating ``np.log10(compute_luminosity(...))``.
+
+    Parameters
+    ----------
+    radius_solar : float
+        Stellar radius, solar radii.
+    temperature_kelvin : float
+        Effective temperature, Kelvin.
+
+    Returns
+    -------
+    float
+        log10(L / L_sun).
     """
 
     luminosity = compute_luminosity(
