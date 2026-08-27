@@ -122,8 +122,20 @@ def compute_visual_orbit(t, elements: OrbitalElements):
         X = rho cos(theta)
         Y = rho sin(theta)
 
-    where theta is the position angle measured from the
-    positive X direction toward the positive Y direction.
+    where theta is the position angle as read from a parsed
+    `.inp` file's PA column, i.e. the standard astronomical/WDS
+    position angle: measured from North (0 deg), turning positive
+    toward increasing right ascension (East) -- per the IAU's own
+    definition and Washington Double Star Catalog usage (settled
+    2026-08-27, see docs/project_decisions.md). Since theta is
+    measured FROM North, `X = rho*cos(theta)` is therefore the
+    North (declination) offset and `Y = rho*sin(theta)` is the
+    East (right-ascension*cos(declination)) offset -- NOT
+    arbitrary "positive X"/"positive Y" directions with no
+    physical tie. `visualization.orbit_plot.plot_visual_orbit`
+    uses this fact to render the standard North-up/East-left
+    orbit figure (North on the vertical axis, East on the
+    horizontal axis with it inverted).
 
     Therefore the inverse transformation is
 

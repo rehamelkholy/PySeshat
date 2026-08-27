@@ -1,0 +1,108 @@
+{
+  "system_name": "AlphaCenAB",
+  "aliases": [
+    "alpha Centauri",
+    "HD 128620/128621"
+  ],
+  "fitting_path": "alwardat_sed",
+  "supported": true,
+  "reference": "Heiter et al. 2015, A&A 582, A49 (Teff/L); Kervella et al. 2017, A&A 597, A137 (R/logg)",
+  "data_provenance": "SYNTHETIC measurements: combined-light magnitudes are generated from this file's own literature Teff/R/logg via PySeshat's own synthetic_binary_magnitudes(), plus Gaussian noise at an ASSUMED 0.03 mag representative precision -- a forward-model self-consistency check, not a comparison to independently-observed sky photometry (alpha Cen A/B are individually resolved in reality, so real combined-light photometry isn't the natural observable for this pair -- see scripts/build_joint_benchmarks.py module docstring). [M/H]=0.0 (ckp00) is used as the nearest available grid point to the literature's slightly metal-rich estimate, not itself a literature value.",
+  "distance_pc": {
+    "value": 1.3318948868555294,
+    "source": "Akeson et al. 2021 (system parallax)"
+  },
+  "metallicity": {
+    "value": 0.0,
+    "source": "nearest available CK04 grid point"
+  },
+  "primary_logg": {
+    "value": 4.3117,
+    "source": "Kervella et al. 2017"
+  },
+  "secondary_logg": {
+    "value": 4.5431,
+    "source": "Kervella et al. 2017"
+  },
+  "atmosphere_files": [
+    "ckp00/ckp00_4750.fits",
+    "ckp00/ckp00_5000.fits",
+    "ckp00/ckp00_5250.fits",
+    "ckp00/ckp00_5500.fits",
+    "ckp00/ckp00_5750.fits",
+    "ckp00/ckp00_6000.fits",
+    "ckp00/ckp00_6250.fits"
+  ],
+  "measurements": [
+    {
+      "passband": "Johnson U",
+      "magnitude": 0.3733,
+      "uncertainty": 0.03
+    },
+    {
+      "passband": "Johnson B",
+      "magnitude": 0.4638,
+      "uncertainty": 0.03
+    },
+    {
+      "passband": "Johnson V",
+      "magnitude": -0.3308,
+      "uncertainty": 0.03
+    },
+    {
+      "passband": "Johnson R",
+      "magnitude": -0.7912,
+      "uncertainty": 0.03
+    },
+    {
+      "passband": "Stromgren v",
+      "magnitude": 0.6736,
+      "uncertainty": 0.03
+    },
+    {
+      "passband": "Stromgren b",
+      "magnitude": 0.0655,
+      "uncertainty": 0.03
+    },
+    {
+      "passband": "Stromgren y",
+      "magnitude": -0.3072,
+      "uncertainty": 0.03
+    },
+    {
+      "passband": "Tycho BT",
+      "magnitude": 0.5776,
+      "uncertainty": 0.03
+    },
+    {
+      "passband": "Tycho VT",
+      "magnitude": -0.2166,
+      "uncertainty": 0.03
+    }
+  ],
+  "initial_parameters": {
+    "primary_temperature": 5618.24,
+    "secondary_temperature": 5387.93,
+    "primary_radius": 1.16223,
+    "secondary_radius": 0.90636,
+    "ebv": 0.0
+  },
+  "free_parameters": [
+    "primary_temperature",
+    "secondary_temperature",
+    "primary_radius",
+    "secondary_radius",
+    "ebv"
+  ],
+  "literature_component_parameters": {
+    "primary": {
+      "teff_K": 5792.0,
+      "radius_Rsun": 1.2234
+    },
+    "secondary": {
+      "teff_K": 5231.0,
+      "radius_Rsun": 0.8632
+    }
+  },
+  "radius_prior_note": "10% relative sigma Gaussian prior on each component's radius, tied to the literature value -- same convention as the other Al-Wardat systems."
+}

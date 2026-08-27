@@ -25,12 +25,16 @@ def plot_visual_orbit(
     show=True
 ):
     """
-    Plot observed and modeled visual binary orbit.
+    Plot observed and modeled visual binary orbit, in the
+    standard astronomical North-up/East-left orientation.
 
     Parameters
     ----------
     X_obs, Y_obs : ndarray
-        Observed Cartesian coordinates
+        Observed Cartesian coordinates, in this codebase's
+        internal convention ``X = rho*cos(theta)`` (North/Dec
+        offset), ``Y = rho*sin(theta)`` (East/RA*cos(Dec) offset)
+        -- see `Orientation convention` below.
 
     orbit : dict
         Output from compute_visual_orbit()
@@ -38,38 +42,41 @@ def plot_visual_orbit(
     title : str
         Plot title
 
-    Orientation convention (read before using this plot in a
-    publication)
+    Orientation convention (settled 2026-08-27; see
+    docs/project_decisions.md for the full derivation and sources)
     --------------------------------------------------------
-    X is plotted horizontally (increasing right) and Y
-    vertically (increasing up), exactly as passed in, with NO
-    axis inversion applied here. X/Y themselves come from
-    whatever `theta`/`rho` convention the calling code used to
-    build them (typically `rho * cos(theta)`, `rho * sin(theta)`
-    from a parsed `.inp` file's position-angle column -- see
-    `io/orbit_parser.py`), and `compute_visual_orbit()`'s
-    docstring defines its own `X`/`Y` only abstractly, as "the
-    positive X direction" and "the positive Y direction," without
-    tying either explicitly to North or East.
+    This codebase's internal `X = rho*cos(theta)`,
+    `Y = rho*sin(theta)` convention (see
+    `orbit.orbit_model.compute_visual_orbit`'s docstring) uses
+    `theta` as the position angle read directly from `.inp`
+    files' PA column, which follows the standard astronomical/WDS
+    definition: measured from North (0 deg), turning positive
+    toward increasing right ascension (East) -- confirmed via the
+    IAU's own definition ("the angle measured relative to the
+    north celestial pole, turning positive into the direction of
+    the right ascension") and the Washington Double Star
+    Catalog's own usage (PA=180 deg = "due south"). Since `theta`
+    is measured FROM North, `cos(theta)` is by construction the
+    North-component coefficient and `sin(theta)` the
+    East-component coefficient: this codebase's `X` is the North
+    (Dec) offset, `Y` is the East (RA*cos(Dec)) offset.
 
-    The standard visual-binary-orbit convention in the literature
-    is North up, East left, with position angle measured from
-    North through East (i.e. counterclockwise as conventionally
-    drawn). This function does not verify or enforce that
-    convention -- it plots X/Y exactly as given. Whether the
-    result already matches the standard convention depends on the
-    sign/axis convention baked into the upstream `theta`->(X, Y)
-    conversion, which has NOT been checked against a published
-    figure. Regression tests in `tests/test_orbit_plot.py` lock in
-    the current numerical behavior (so a future change here would
-    be caught), but they do not assert North-up/East-left is
-    correct. Before using this plot in a paper figure, reproduce
-    one published orbit (e.g. from `wardat_2002.pdf`,
-    `wardat_2012.pdf`, or `Tokovinin_2016_ApJ_831_151.pdf`) side by
-    side with this function's output and confirm the position-
-    angle sense matches -- see docs/project_decisions.md and
-    docs/paper_reference_notes.md for the full writeup of this
-    open item.
+    The standard published convention for a visual-binary-orbit
+    figure is North up, East left (used uniformly across the
+    field -- e.g. the `orbitize` package's own documented
+    convention, and every WDS/speckle-astrometry orbit figure).
+    With `X` = North and `Y` = East as derived above, that means:
+    North (`X`) goes on the vertical axis, unmodified; East (`Y`)
+    goes on the horizontal axis with the axis *inverted* (not
+    negated -- axis labels still show the true East-offset value,
+    matching standard practice, e.g. how a plotted RA axis is
+    conventionally inverted) so that increasing East appears to
+    the left. This is exactly the transformation implemented
+    below. `tests/test_orbit_plot.py` regression-tests both the
+    axis-inversion call and the counterclockwise PA sense this
+    produces (a point at PA=90 deg, due East, plots to the left of
+    the origin, matching the IAU's own statement that PA increases
+    counterclockwise when North is up).
     """
 
     X_model = orbit["X"]
@@ -79,11 +86,15 @@ def plot_visual_orbit(
 
     # ------------------------------------------------------
     # Observations
+    #
+    # North (X) is plotted on the vertical axis, East (Y) on
+    # the horizontal axis (with the axis inverted below) -- see
+    # the "Orientation convention" note above.
     # ------------------------------------------------------
 
     ax.scatter(
-        X_obs,
         Y_obs,
+        X_obs,
         s=40,
         label="Observations"
     )
@@ -93,8 +104,8 @@ def plot_visual_orbit(
     # ------------------------------------------------------
 
     ax.plot(
-        X_model,
         Y_model,
+        X_model,
         linewidth=2,
         label="Fitted Orbit"
     )
@@ -115,8 +126,12 @@ def plot_visual_orbit(
     # Formatting
     # ------------------------------------------------------
 
-    ax.set_xlabel("X (arcsec)")
-    ax.set_ylabel("Y (arcsec)")
+    ax.set_xlabel("East (arcsec)")
+    ax.set_ylabel("North (arcsec)")
+
+    # East increases to the left, per the standard North-up/
+    # East-left convention -- see the docstring above.
+    ax.invert_xaxis()
 
     ax.set_title(title)
 
@@ -143,7 +158,7 @@ def plot_residuals(
     show=True
 ):
     """
-    Plot X and Y residuals versus time.
+    Plot X (North) and Y (East) residuals versus time.
 
     Parameters
     ----------
@@ -153,6 +168,17 @@ def plot_residuals(
     residuals : ndarray
         Concatenated residual vector:
             [resX, resY]
+        In this codebase's internal convention (settled
+        2026-08-27, see `plot_visual_orbit`'s docstring and
+        docs/project_decisions.md), `resX` is the North
+        (declination) residual and `resY` the East
+        (right-ascension*cos(declination)) residual -- the same
+        `(observed - model) / sigma` values
+        `inference.terms.visual.visual_xy_residuals` computes.
+        Unlike `plot_visual_orbit`, this is two independent
+        time-series subplots rather than a 2D spatial plot, so no
+        North-up/East-left axis transform applies here -- both
+        panels simply plot residual value vs. epoch.
     """
 
     n = len(t)
@@ -181,7 +207,7 @@ def plot_residuals(
         linestyle="--"
     )
 
-    axes[0].set_ylabel("X Residuals")
+    axes[0].set_ylabel("North Residuals")
 
     axes[0].grid(True)
 
@@ -199,7 +225,7 @@ def plot_residuals(
         linestyle="--"
     )
 
-    axes[1].set_ylabel("Y Residuals")
+    axes[1].set_ylabel("East Residuals")
 
     axes[1].set_xlabel("Epoch")
 

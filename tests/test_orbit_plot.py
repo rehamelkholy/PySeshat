@@ -45,8 +45,8 @@ def test_plot_visual_orbit():
 
     assert fig is not None
     assert ax is not None
-    assert ax.get_xlabel() == "X (arcsec)"
-    assert ax.get_ylabel() == "Y (arcsec)"
+    assert ax.get_xlabel() == "East (arcsec)"
+    assert ax.get_ylabel() == "North (arcsec)"
 
     plt.close(fig)
 
@@ -56,6 +56,14 @@ def test_plot_visual_orbit_draws_the_actual_observations():
     # Distinct, easy-to-mis-transpose-or-swap X/Y values so a
     # swapped-axis or transposed-data regression would be
     # caught, not just "some points near the right place."
+    #
+    # X_obs/Y_obs are this codebase's internal North/East
+    # convention (X=North, Y=East -- settled 2026-08-27, see
+    # docs/project_decisions.md and plot_visual_orbit's own
+    # docstring). The standard North-up/East-left display swaps
+    # them onto the screen axes: North (X) plotted vertically,
+    # East (Y) plotted horizontally (with the axis inverted, but
+    # the *plotted data itself* is un-negated -- see below).
 
     X_obs = np.array([0.10, 0.25, -0.30, -0.15])
     Y_obs = np.array([0.40, -0.05, 0.20, -0.35])
@@ -82,14 +90,20 @@ def test_plot_visual_orbit_draws_the_actual_observations():
         scatter.get_offsets()
     )
 
+    # Horizontal (matplotlib x) data is East (Y_obs); vertical
+    # (matplotlib y) data is North (X_obs). The axis itself is
+    # inverted (checked separately below) rather than the data
+    # negated, matching standard practice for a plotted East/RA
+    # axis.
+
     np.testing.assert_allclose(
         plotted_offsets[:, 0],
-        X_obs,
+        Y_obs,
     )
 
     np.testing.assert_allclose(
         plotted_offsets[:, 1],
-        Y_obs,
+        X_obs,
     )
 
     # The fitted-orbit curve is the first Line2D.
@@ -98,13 +112,45 @@ def test_plot_visual_orbit_draws_the_actual_observations():
 
     np.testing.assert_allclose(
         line.get_xdata(),
-        orbit["X"],
+        orbit["Y"],
     )
 
     np.testing.assert_allclose(
         line.get_ydata(),
-        orbit["Y"],
+        orbit["X"],
     )
+
+    plt.close(fig)
+
+
+def test_plot_visual_orbit_is_north_up_east_left():
+
+    # Literature-convention regression test (settled 2026-08-27,
+    # see docs/project_decisions.md): the plot must show North up
+    # (unmodified on the vertical axis) and East left (horizontal
+    # axis inverted). A point at PA=90 deg (due East: X=North=0,
+    # Y=East=rho) must render to the LEFT of the origin -- matching
+    # the IAU's own definition that PA increases counterclockwise
+    # when North is up.
+
+    X_obs = np.array([0.0])   # North component
+    Y_obs = np.array([1.0])   # East component (PA = 90 deg)
+
+    orbit = {"X": np.array([0.0]), "Y": np.array([0.0])}
+
+    fig, ax = plot_visual_orbit(X_obs, Y_obs, orbit, show=False)
+
+    assert ax.xaxis_inverted()
+
+    # Data coordinates are un-negated (East's true value, 1.0,
+    # still sits on the x-data axis) -- inversion is what actually
+    # moves it to the left on screen, not a sign flip of the data.
+
+    scatter = ax.collections[0]
+    plotted_offsets = np.asarray(scatter.get_offsets())
+
+    assert plotted_offsets[0, 0] == pytest.approx(1.0)
+    assert plotted_offsets[0, 1] == pytest.approx(0.0)
 
     plt.close(fig)
 
@@ -113,8 +159,9 @@ def test_plot_visual_orbit_axes_are_not_swapped_for_a_real_orbit():
 
     # Regression guard against a transposed-axis bug: build a
     # real orbit model from OrbitalElements and confirm
-    # compute_visual_orbit's own X/Y (not some permutation of
-    # them) is exactly what lands on the plot's x/y axes.
+    # compute_visual_orbit's own X (North)/Y (East) -- not some
+    # other permutation of them -- is exactly what lands on the
+    # plot's vertical/horizontal axes respectively.
 
     elements = OrbitalElements(
         P=10.0, T0=0.0, e=0.3, a=1.0,
@@ -134,8 +181,8 @@ def test_plot_visual_orbit_axes_are_not_swapped_for_a_real_orbit():
 
     line = ax.get_lines()[0]
 
-    np.testing.assert_allclose(line.get_xdata(), orbit["X"])
-    np.testing.assert_allclose(line.get_ydata(), orbit["Y"])
+    np.testing.assert_allclose(line.get_xdata(), orbit["Y"])
+    np.testing.assert_allclose(line.get_ydata(), orbit["X"])
 
     # Sanity: X and Y are not simply equal to each other (which
     # would pass a swapped-axis bug silently for a degenerate

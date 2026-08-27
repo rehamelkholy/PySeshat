@@ -91,6 +91,15 @@ PLOTS_DIR = REPO_ROOT / "validation" / "results" / "plots"
 BINARY_SYSTEMS = {
     "FIN379": SYSTEMS_DIR / "FIN379" / "FIN379.inp",
     "GL765": SYSTEMS_DIR / "GL765" / "GL765.inp",
+    # Joint orbit+photometry named case studies (2026-08-27, see
+    # scripts/build_joint_benchmarks.py) -- both are plain flat
+    # OrbitalElements binaries, same as FIN379/GL765 above, so the
+    # same fitting/plotting pipeline applies directly.
+    # AlphaCenAB_orbit has no RV data (see its expected_results
+    # JSON's data_provenance note) -- generate_for_system()'s
+    # `if len(rv) > 0` guard already skips the RV plot for it.
+    "Capella_orbit": SYSTEMS_DIR / "Capella_orbit" / "Capella_orbit.inp",
+    "AlphaCenAB_orbit": SYSTEMS_DIR / "AlphaCenAB_orbit" / "AlphaCenAB_orbit.inp",
 }
 
 

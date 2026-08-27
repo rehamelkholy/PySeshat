@@ -47,40 +47,49 @@ Checked against the field's standard conventions, one at a time:
   the only producer, `inference/terms/visual.py`'s
   `visual_xy_residuals`, computes `(observed - model) / sigma`, and
   every fitting pathway passes that same convention through unchanged.
-- **North-up/East-left visual-orbit convention: NOT verified — read
-  before using `plot_visual_orbit()` in a paper figure.**
-  `plot_visual_orbit()` plots X horizontally and Y vertically exactly as
-  passed in, with no axis inversion, and `compute_visual_orbit()`
-  defines its `X`/`Y` only abstractly, without tying either explicitly
-  to North or East anywhere in the codebase. Whether the plotted
-  orientation already matches the standard North-up/East-left,
-  position-angle-from-North-through-East convention depends on the sign
-  convention baked into `io/orbit_parser.py`'s `theta` parsing, which
-  has not been checked against a published figure. This was
-  investigated and deliberately **not** silently "fixed" — the correct
-  answer requires reproducing an actual published orbit figure side by
-  side (e.g. from `wardat_2002.pdf`, `wardat_2012.pdf`, or
-  `Tokovinin_2016_ApJ_831_151.pdf`) and is exactly the kind of
-  presentation decision this project's priorities call for verifying
-  rather than guessing at. `plot_visual_orbit()`'s own docstring in
-  `src/pyseshat/visualization/orbit_plot.py` documents this in full;
-  regression tests lock in the *current* numerical behavior so a future
-  change would be caught, but do not assert the orientation is correct.
-  **Action for the paper**: do this comparison once before using any
-  `plot_visual_orbit()` figure in a publication.
+- **North-up/East-left visual-orbit convention: settled and
+  implemented (2026-08-27) — safe to use `plot_visual_orbit()` output
+  as-is in a paper figure.** Cross-referenced the IAU's own PA
+  definition ("measured relative to the north celestial pole, turning
+  positive into the direction of the right ascension"), the WDS's own
+  usage, the `orbitize` package's documented convention, and a textbook
+  cross-check (Tatum) — all agree: PA from North, turning positive
+  toward East; a published orbit figure is North up, East left.
+  Re-derived from PySeshat's own Thiele-Innes formalism
+  (`X = rho cos(theta)`, `Y = rho sin(theta)`, `theta` = the `.inp` PA
+  column) that this codebase's `X` is the North/Dec offset and `Y` the
+  East/RA*cosDec offset — cross-checked independently by confirming
+  `thiele_innes()`'s A,B,F,G formula matches Gaia DR3's own documented
+  formula exactly. `plot_visual_orbit()` now plots East on the
+  horizontal axis (inverted, so East increases to the left) and North
+  on the vertical, with explicit "East (arcsec)"/"North (arcsec)"
+  labels — data values themselves are not negated, only the axis
+  direction is, matching standard practice for a plotted RA/East axis.
+  `compute_visual_orbit()`'s own docstring states the settled
+  convention and derivation explicitly.
+  `tests/test_orbit_plot.py::test_plot_visual_orbit_is_north_up_east_left`
+  regression-tests both the axis inversion and the counterclockwise PA
+  sense this produces (a PA=90 deg/due-East point plots left of the
+  origin, matching the IAU's own stated sense); visually confirmed
+  against FIN379's, Capella's, and alpha Cen AB's regenerated plots.
+  See `docs/project_decisions.md`'s 2026-08-27 dated entry for the full
+  derivation.
 
 ## Generating the full benchmark plot set
 
-`scripts/generate_benchmark_plots.py` fits FIN379 and GL765 and writes
-their full available plot set (visual orbit, residuals, phase-folded RV,
-separation-vs-time) to `validation/results/plots/<system>/`. It
-deliberately does **not** attempt the other 6 of 8 registered benchmark
-systems — see that script's module docstring for the full reasoning:
-ZetaAqr/HIP111805 (hierarchical triples) have no triple-aware orbit-plot
-function yet (see `triple_systems.md`), and the 4 Al-Wardat SED systems
-have no orbital fit to plot at all, and no per-system HR-diagram
-cross-check has been wired up yet (see `evolutionary_checks.md`). Run
-it with:
+`scripts/generate_benchmark_plots.py` fits FIN379, GL765, and the two
+2026-08-27 joint-benchmark orbits (Capella, alpha Cen AB — the latter
+has no RV, so it gets 3 plots instead of 4) and writes each system's
+full available plot set (visual orbit, residuals, phase-folded RV where
+applicable, separation-vs-time) to `validation/results/plots/<system>/`.
+It deliberately does **not** attempt the other 8 of 12 registered
+benchmark systems — see that script's module docstring for the full
+reasoning: ZetaAqr/HIP111805 (hierarchical triples) have no
+triple-aware orbit-plot function yet (see `triple_systems.md`), and the
+six Al-Wardat-SED-only systems (the original four plus
+Capella/AlphaCenAB's own photometry rows) have no orbital fit to plot at
+all, and no per-system HR-diagram cross-check has been wired up yet (see
+`evolutionary_checks.md`). Run it with:
 
 ```
 MPLBACKEND=Agg python scripts/generate_benchmark_plots.py

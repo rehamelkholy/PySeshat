@@ -1,0 +1,35 @@
+{
+  "system_name": "AlphaCenAB",
+  "aliases": [
+    "alpha Centauri",
+    "HD 128620/128621",
+    "HIP 71683/71681"
+  ],
+  "fitting_path": "binary",
+  "supported": true,
+  "reference": "Akeson et al. 2021, AJ 162, 14, doi:10.3847/1538-3881/abfaff",
+  "cross_check_reference": "Pourbaix & Boffin 2016, A&A 586, A90, doi:10.1051/0004-6361/201527859",
+  "data_provenance": "SYNTHETIC observations: theta/rho rows in AlphaCenAB.inp are generated from this file's own literature elements via PySeshat's own compute_visual_orbit, plus Gaussian noise at an ASSUMED 0.5 mas representative precision -- NOT raw archival measures. No K1/K2 are published (both orbit papers use a combined astrometric-spectroscopic kappa parametrization instead), so this system is fit VISUAL-ASTROMETRY-ONLY, with no synthetic RV rows -- an honest gap, not filled with invented values. See scripts/build_joint_benchmarks.py module docstring.",
+  "initial_parameters": {
+    "P": 79.762,
+    "T0": 1955.564,
+    "e": 0.51947,
+    "a": 17.493,
+    "Omega": 205.073,
+    "omega": 231.519,
+    "i": 79.243
+  },
+  "parallax_mas": {
+    "value": 750.81,
+    "source": "Akeson et al. 2021"
+  },
+  "distance_pc": {
+    "value": 1.3318948868555294,
+    "source": "Akeson et al. 2021"
+  },
+  "component_masses_Msun": {
+    "primary": 1.0788,
+    "secondary": 0.9092,
+    "source": "Akeson et al. 2021 Table 8"
+  }
+}

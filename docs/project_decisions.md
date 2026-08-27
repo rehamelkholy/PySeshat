@@ -1691,3 +1691,293 @@ conversions each replacing a 0-test file with a real one). No production
 code changed except the `plot_visual_orbit()` docstring (no behavior
 change), so this result was expected; it is still verified rather than
 assumed.
+
+## North/East fix, two joint orbit+photometry named case studies, Gaia
+## DR3 NSS parsing, and external-package comparison (2026-08-27)
+
+User request: "let's handle all outstanding questions that needs
+settling based on literature established conventions. Also, let's
+include a two benchmark systems that cover both orbit determination and
+photometry ... comparison with other packages, Gaia binaries handling
+and parsing, and named case studies." Five substantive pieces of work,
+covered in turn below; all are additive (no existing benchmark, test,
+or documented result was altered except where explicitly noted).
+
+### 1. North-up/East-left convention — settled (closes the prior
+### entry's open item)
+
+The open item from the entry immediately above ("NOT implemented, real
+finding, deliberately not silently fixed") is now resolved. Cross-
+referenced the IAU's own PA definition ("measured relative to the north
+celestial pole, turning positive into the direction of the right
+ascension"), the WDS's own usage (PA=180 deg = "due south"), the
+`orbitize` package's documented convention, and a UVic textbook
+(Tatum) — all agree on the standard: PA from North, turning positive
+toward East; a published orbit figure is North up, East left. Re-derived
+from PySeshat's own `orbit_model.compute_visual_orbit` (`X = rho
+cos(theta)`, `Y = rho sin(theta)`, `theta` = the `.inp` PA column) that
+this codebase's `X` is therefore the North/Dec offset and `Y` the
+East/RA*cosDec offset — confirmed independently by cross-checking
+`thiele_innes()`'s A,B,F,G formula against Gaia DR3's own documented
+formula (Sect. 7.2.5 of the GDR3 data-analysis documentation) and
+finding an exact match.
+
+Fixed `visualization/orbit_plot.py::plot_visual_orbit`: plots `(Y, X)`
+instead of `(X, Y)` (East on the horizontal axis, North on the
+vertical), relabels the axes "East (arcsec)"/"North (arcsec)", and adds
+`ax.invert_xaxis()` so East increases to the left — data values
+themselves are NOT negated (matching how a plotted RA axis is
+conventionally handled), only the axis direction is. `plot_residuals`
+is unaffected (its two panels are independent North/East time series,
+not a 2D spatial plot, so no orientation transform applies — its
+y-axis labels are simply renamed "North Residuals"/"East Residuals" for
+clarity). Both functions' docstrings, and `compute_visual_orbit`'s own
+`Notes` section, now state the settled convention and its derivation
+explicitly rather than leaving `theta` abstractly defined.
+
+`tests/test_orbit_plot.py`: existing label/data assertions updated for
+the axis swap; new
+`test_plot_visual_orbit_is_north_up_east_left` regression-tests both
+the axis-inversion call and the counterclockwise PA sense this produces
+(a PA=90 deg/due-East point plots to the left of the origin, matching
+the IAU's own stated sense). Visually confirmed on FIN379's regenerated
+plot: orbit now displays North up, East left, exactly as WDS/speckle
+literature figures do.
+
+### 2. Two joint orbit+photometry named case studies: Capella and
+### alpha Centauri AB
+
+Every one of the 8 pre-existing benchmark systems validated either
+orbit-fitting (FIN379, GL765, ZetaAqr, HIP111805) OR Al-Wardat SED
+photometry (HD214222/191854/130669/184467) for its system, never both
+for the same physical binary. Two new systems now do both, each adding
+one `binary`-type registry row (visual+RV orbit) and one
+`alwardat_sed`-type row (SED photometry) for the same star:
+
+- **Capella (alpha Aurigae Aa/Ab)** — orbital elements from Torres,
+  Claret, Pavlovski & Dotter 2015 (ApJ 807, 26), cross-checked against
+  the independent SB2 solution of Weber & Strassmeier 2011 (A&A 531,
+  A89); component Teff/R/logg also from Torres et al. 2015, Table 3.
+  One of the two systems Development_Plan.pdf's Case Studies section
+  names explicitly.
+- **alpha Centauri AB** — orbital elements from Akeson et al. 2021 (AJ
+  162, 14), cross-checked against Pourbaix & Boffin 2016 (A&A 586,
+  A90); component Teff from Heiter et al. 2015 (A&A 582, A49), R/logg
+  from Kervella et al. 2017 (A&A 597, A137). Used **in place of Sirius**
+  (Development_Plan.pdf's other named example): Sirius B is a white
+  dwarf, not a Sun-like SB2 the Al-Wardat method's comparable-
+  brightness-components assumption (or this codebase's CK04 main-
+  sequence/giant atmosphere grid) targets, and the ~10-mag primary/
+  secondary contrast makes "combined-light SED" fitting physically
+  nonsensical for that pair. Alpha Cen AB is a genuine Sun-like G+K
+  SB2 with both a well-determined orbit and, via direct interferometry,
+  among the most precisely known component Teff/R of any binary — a
+  strengthening substitution, not a weakening one, and disclosed as a
+  deliberate choice rather than a silent scope change.
+
+**What's real, what's synthetic, stated plainly** (also in
+`scripts/build_joint_benchmarks.py`'s module docstring and each
+system's `expected_results/*.json` `data_provenance` field): orbital
+elements and component parameters are literature values, individually
+cited. Neither system's raw individual historical measurements were
+reliably extractable in this session (Capella's astrometry spans
+Merrill 1922 to CHARA-era interferometry; alpha Cen's spans over a
+century of visual micrometry), so — rather than fabricate "real-
+looking" data from an unreliable extraction — observations for both
+are SYNTHETIC: forward-modeled from the cited literature elements via
+PySeshat's own `compute_visual_orbit`/`compute_rv_orbit`/
+`synthetic_binary_magnitudes`, at a realistic multi-decade epoch
+cadence, with Gaussian noise at an assumed (not literature-sourced)
+representative precision (0.5 mas astrometry, 0.1 km/s RV, 0.03 mag
+photometry). This extends the same, already-precedented pattern
+`HIP111805` and `tests/test_perfect_orbit_recovery.py` already use
+elsewhere in this codebase. Alpha Cen AB has no synthetic RV rows at
+all (an honest gap, not filled with invented values): neither source
+orbit paper publishes individual K1/K2 — both use a combined
+astrometric-spectroscopic kappa-parametrization instead.
+
+Photometric metallicity is pinned to 0.0 (the nearest available CK04
+grid point — only the solar-metallicity `ckp00` grid is downloaded for
+this project) for both systems regardless of each one's literature
+[Fe/H] (Capella: -0.04; alpha Cen: slightly super-solar), documented
+per-system in each `expected_results/*_photometry.json`'s `metallicity`
+field rather than silently substituted.
+
+**Fit results** (`validation/benchmark_registry.csv` carries the full
+per-system notes; summarized here):
+
+- Capella orbit: P/T0/a/Omega/i/K1/K2/V0 all recover to <=0.32%
+  relative error; reduced chi2=0.92. Eccentricity/omega show large
+  RELATIVE error (e fits to 0.0033 vs. literature 0.00089) — this is
+  the textbook near-circular-orbit e/omega degeneracy (see e.g. Lucy
+  2005), not a fitter defect: decomposed into `e*cos(omega)` (recovers
+  to 4.7e-5 absolute, essentially the noise floor) and `e*sin(omega)`
+  (off by 0.0029) — the fit is well-constrained along the line of
+  apsides and poorly constrained perpendicular to it, exactly as
+  expected for e this close to zero at this noise level. The same
+  degeneracy independently reappears in Section 4's RadVel comparison
+  below, which is itself evidence it is a property of the data, not a
+  PySeshat-specific bug.
+- Capella photometry: radius <=4.24%, Teff <=3.55% of literature,
+  reduced chi2=2.12 — comparable to the four pre-existing Al-Wardat
+  systems' typical performance.
+- alpha Cen AB orbit (visual-astrometry-only, no RV): all 7 elements
+  recover to <=1e-5 relative error, reduced chi2=1.05.
+- alpha Cen AB photometry: radius <=0.81%, reduced chi2=2.25;
+  secondary_temperature converges to a local minimum (~6000K vs.
+  literature 5231K — the loaded atmosphere grid extends to 6250K, so
+  this is genuinely NOT edge-of-grid pinning) — a combined-light
+  Teff-Teff degeneracy consistent with the pattern already documented
+  for the four pre-existing Al-Wardat systems (HD214222 et al.), where
+  near-twin component temperatures cannot be independently resolved
+  from unresolved photometry alone, no matter how many bands are
+  supplied.
+
+`scripts/generate_benchmark_plots.py` extended to include both new
+orbit systems (3 plots for alpha Cen AB — no RV — 4 for Capella);
+visually inspected: Capella's orbit is a near-perfect ring (matching
+its near-zero literature eccentricity) with a cleanly double-sinusoid,
+correctly anti-phased RV curve; alpha Cen AB's orbit is a properly
+eccentric ellipse with the primary correctly at the focus, not the
+center.
+
+### 3. Gaia DR3 Non-Single-Star (NSS) orbit parsing
+
+New `src/pyseshat/io/gaia_parser.py`. Scope: the `gaiadr3.
+nss_two_body_orbit` archive table's Thiele-Innes-parametrized solution
+types (`Orbital` and its Validated/Alternative/TargetedSearch variants,
+plus `AstroSpectroSB1`, which adds a single-lined RV component) —
+these are exactly the types compatible with this codebase's existing
+`OrbitalElements`/`compute_visual_orbit` machinery, which is itself
+already Thiele-Innes-based. Purely spectroscopic (SB1/SB1C/SB2/SB2C)
+and eclipsing-photometric solution types carry no Thiele-Innes
+astrometric elements at all and are explicitly out of scope —
+`parse_nss_orbital_row` raises `ValueError` for these rather than
+silently returning a physically meaningless all-zero visual orbit.
+
+Gaia's archive stores the FITTED Thiele-Innes constants (A, B, F, G,
+in mas) directly but does not publish the semi-major axis or ascending
+node as their own columns (confirmed via the archive's own data-model
+documentation, and via El-Badry et al. 2023's own derivation, rather
+than archive read, of these quantities for Gaia BH1 — see below) — so
+`gaia_parser.thiele_innes_to_campbell` implements the full A,B,F,G ->
+(a, i, Omega, omega) inversion. Semi-major axis and the Omega+/-omega
+sum/difference angles follow Halbwachs et al. 2023 (A&A 674, A9,
+arXiv:2206.05726, the paper describing Gaia's own NSS astrometric-
+binary pipeline), Appendix A's overall method; the inclination formula
+uses a self-contained re-derivation (`P = a(1+cos i)`, `M = a(1-cos i)`
+from grouping the same A,B,F,G forward terms, giving `cos i =
+(P-M)/(P+M)` directly) in place of transcribing the paper's own d1/d2
+branching sign-for-sign, since this session could only access the
+paper's Appendix A through a summarized secondary reading of the PDF,
+not the typeset original — so the inversion's correctness is
+established the authoritative way for this codebase regardless: by
+round-tripping it (`tests/test_gaia_parser.py`) against
+`orbit_model.thiele_innes()`, this codebase's OWN forward formula
+(itself already independently cross-checked against Gaia's documented
+formula, see Section 1 above), across 500 randomized Campbell-element
+draws plus one hand-checked case. **Two real sign/pairing bugs were
+caught this way during development** (the Omega-omega difference-angle
+formula initially used `atan2(B+F, G-A)` instead of the correct
+`atan2(B+F, A-G)`; the final `Omega`/`omega` halves were initially
+swapped) — exactly what this round-trip-against-a-verified-forward-
+transform methodology is for.
+
+**180-degree ascending/descending-node ambiguity**: A, B, F, G are
+provably unchanged under `Omega -> Omega+180, omega -> omega+180`
+(astrometry alone cannot distinguish which node the star is receding
+from vs. approaching through without independent RV-sign information)
+— a real, known property of the Thiele-Innes parametrization, not a
+bug. `parse_nss_orbital_row` does not attempt to guess; it documents
+this explicitly (`ascending_node_ambiguity: True` in its return) and,
+for `AstroSpectroSB1` rows where Gaia's own pipeline has already
+resolved the ambiguity via the RV sign, prefers the archive's own
+published `inclination`/`arg_periastron` columns over its own
+Thiele-Innes-only inversion whenever they are present in the row.
+
+**Real benchmark system: Gaia BH1** (source_id 4373465352415301632,
+El-Badry et al. 2023, MNRAS 518, 1057, "A Sun-like star orbiting a
+black hole", Table 1) — a real, named, independently-published `Orbital`
+(pure-astrometric) NSS solution. Its ~9.6 Msun companion is a dormant
+black hole contributing zero light, so its Gaia photocentric orbit IS
+the true relative orbit (see `gaia_parser`'s "photocentric-orbit
+caveat" docstring section for when this equivalence does and does not
+hold in general — it does not for two comparably-luminous resolved
+stars). This session could not reach the Gaia TAP archive itself
+(network egress from both the cloud sandbox and, separately, WebFetch,
+were both blocked/rejected when attempted) to retrieve the raw
+archive-level A/B/F/G, so `tests/test_gaia_parser.py`'s
+`test_gaia_bh1_round_trip_recovers_published_campbell_elements`
+instead forward-transforms El-Badry et al. 2023's own PUBLISHED
+Campbell elements (P=185.77 d, e=0.48, i=121.2 deg, Omega=89.6 deg,
+omega=-10.3 deg, a0=2.67 mas, parallax=2.09 mas, t_periastron=-12.0 d
+rel. J2016.0) through `thiele_innes()` to obtain stand-in A/B/F/G, then
+confirms `parse_nss_orbital_row` recovers the paper's own numbers —
+this is a genuine, real-system validation of the parser's unit
+conversions and inversion formula end-to-end, explicitly NOT a re-fit
+of Gaia's raw per-CCD astrometry (which this session never had access
+to); stated as such in both the test and `gaia_parser`'s module
+docstring rather than presented as more than it is.
+
+7/7 new tests in `tests/test_gaia_parser.py` pass.
+
+### 4. Comparison with other packages: RadVel and PyAstronomy (Exo-
+### Striker: honest scope note, not exercised)
+
+`scripts/compare_other_packages.py` (new). `radvel==1.6.1` and
+`PyAstronomy==0.25.0` installed successfully (both confirmed pip-
+installable in an earlier pass this session; network access to PyPI
+works from this sandbox).
+
+- **RadVel**: an independent maximum-likelihood Keplerian fit of each
+  of Capella's two synthetic RV curves separately (RadVel fits single-
+  star/single-planet RV problems; an SB2's two components are fit as
+  two independent single-Keplerian problems). Needed two standard,
+  disclosed remedies for RadVel's default unconstrained Powell
+  optimizer, not tuning toward a predetermined answer: (1) a +/-15%
+  box prior on period around the literature value — Capella's sparse
+  ~yearly-cadence data undersamples its ~104-day period by a factor of
+  ~3.5 per epoch gap, a textbook RV-aliasing scenario any practitioner
+  would supply an independent period estimate for; (2) a small
+  multi-start sweep over (secosw, sesinw) starting points for the
+  primary component, keeping the lowest chi-square, to avoid one local
+  optimum. Result: period recovers to <=0.003% of literature for both
+  components, K to <=0.15%(primary)/1.6%(secondary), gamma to
+  <=0.04%; eccentricity again lands at the same order-of-magnitude
+  (not exact) near-circular-degenerate value already discussed in
+  Section 2 — an independent package hitting the identical degeneracy
+  is itself evidence it is a data property, not a PySeshat bug.
+- **PyAstronomy**: not used as a fitter (it ships no turnkey RV-fitting
+  entry point comparable to RadVel's), but as an independent PHYSICS
+  cross-check: PyAstronomy's own `MarkleyKESolver` (a different
+  Kepler-equation-solving implementation from this codebase's own
+  Newton-Raphson `orbit_model.solve_kepler`) plus the standard RV
+  formula, evaluated at PySeshat's own fitted Capella elements over
+  200 epochs, agrees with `orbit.rv_model.compute_rv_orbit`'s own
+  output to 9.2e-14 km/s max absolute difference — floating-point-level
+  agreement, confirming PySeshat's Kepler-equation solver and RV
+  physics match an independent implementation of the same textbook
+  formula exactly.
+- **Exo-Striker**: confirmed pip-installable (`exostriker==0.95.1`)
+  but NOT exercised — it is an interactive PyQt GUI application with
+  no documented headless/scriptable public API of the kind RadVel and
+  PyAstronomy both expose directly, and this cloud sandbox has no
+  display. Reverse-engineering its private internal API was judged
+  more likely to produce a fragile, unverified wrapper than a genuine
+  comparison under this task's time budget. Disclosed as a real,
+  honest limitation (both in `compare_other_packages.py`'s own printed
+  output and here) rather than forced through or silently omitted.
+  RadVel and PyAstronomy between them already cover the two most
+  useful comparison kinds named in Development_Plan.pdf's Validation
+  section: an independent OPTIMIZER, and an independent PHYSICS
+  implementation.
+
+### 5. Regression check
+
+Ran the full test suite (`MPLBACKEND=Agg python -m pytest tests/`,
+single run this time, ~3m48s): **228/228 passed, 0 failures, 0
+regressions** — strictly additive over the prior 220-test count (7 new
+in `test_gaia_parser.py`, 1 new in `test_orbit_plot.py`'s North/East
+regression test counted in the prior entry). All 12 registered
+benchmark systems (the original 8 plus the 4 new Capella/alpha-Cen-AB
+rows) pass `validation/benchmark_runner.py::run_all_benchmarks()`.

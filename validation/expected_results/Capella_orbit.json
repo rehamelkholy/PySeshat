@@ -1,0 +1,35 @@
+{
+  "system_name": "Capella",
+  "aliases": [
+    "alpha Aurigae",
+    "HD 34029",
+    "HIP 24608"
+  ],
+  "fitting_path": "binary",
+  "supported": true,
+  "reference": "Torres, Claret, Pavlovski & Dotter 2015, ApJ 807, 26, doi:10.1088/0004-637X/807/1/26",
+  "cross_check_reference": "Weber & Strassmeier 2011, A&A 531, A89, doi:10.1051/0004-6361/201116885",
+  "data_provenance": "SYNTHETIC observations: theta/rho/RV rows in Capella.inp are generated from this file's own literature elements via PySeshat's own compute_visual_orbit/compute_rv_orbit, plus Gaussian noise at an ASSUMED 0.5 mas (astrometry) / 0.1 km/s (RV) representative precision -- NOT raw archival measures. See scripts/build_joint_benchmarks.py module docstring for the full statement.",
+  "initial_parameters": {
+    "P": 0.28479474332648874,
+    "T0": 1990.7,
+    "e": 0.00089,
+    "a": 0.056442,
+    "Omega": 40.522,
+    "omega": 342.6,
+    "i": 137.156,
+    "K1": 25.9611,
+    "K2": 26.86,
+    "V0": 29.9387
+  },
+  "parallax_mas": {
+    "value": 75.994,
+    "source": "Torres et al. 2015"
+  },
+  "distance_pc": {
+    "value": 13.159,
+    "source": "Torres et al. 2015"
+  },
+  "orbit_type": "binary",
+  "paper_table_row": null
+}
