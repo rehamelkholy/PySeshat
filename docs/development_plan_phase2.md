@@ -35,39 +35,49 @@ window hits the same wall.
 This phase is nearly free (one script run) but gates real validation
 numbers for 3 of 8 benchmark systems, so it should happen first.
 
-## Phase 1 — Close the remaining Al-Wardat scientific gaps
+## Phase 1 — Close the remaining Al-Wardat scientific gaps (RESOLVED 2026-08-27)
 
-Two concrete, well-scoped items came out of this pass's root-cause
+Two concrete, well-scoped items came out of an earlier pass's root-cause
 investigation (`docs/project_decisions.md`, "CK04 grid completion,
-root-cause of the HD214222 residual, and expanded photometry"):
+root-cause of the HD214222 residual, and expanded photometry"); both are
+now resolved — full writeup in `docs/project_decisions.md`,
+"`PhotometricParameters` fit-flags/prior mechanism, Al-Wardat
+measurement-uncertainty reassessment, and Stromgren u disposition
+(2026-08-27)".
 
-1. **A calibrated Stromgren u zero point.** The naive SVO Vega-convolution
-   zero point for this one band disagrees with real data by ~1.7 mag — a
-   known, documented quirk of the classical Crawford & Barnes (1970)
-   uvbybeta calibration, not a bug. Sourcing the correct system-specific
-   zero point (from a Stromgren-photometry-specific reference, e.g.
-   Crawford & Barnes 1970 or a modern re-calibration such as Gray 1998)
-   and re-including Stromgren u would restore the 10th real measurement
-   per system.
-2. **A fit-flags/prior mechanism for `PhotometricParameters`.** Radius
-   was confirmed degenerate when freed — twice now, first with 4
-   measurements and again with 10 — so this isn't a data problem, it's
-   architectural: `PhotometricParameters` has no way to express "hold
-   this parameter near an external prior" the way `OrbitalElements.fit_flags`
-   does. The correct long-term fix mirrors that pattern: extend
-   `PhotometricContext`/`PhotometricParameters` with fit flags plus an
-   optional Gaussian prior term (e.g. radius tied to a mass +
-   mass-radius relation, or an interferometric angular diameter when
-   available) rather than the current bounds-pinning workaround in
-   `benchmark_runner.py`. Scope: `photometric_problem.py`,
-   `photometric_context.py`, `photometric_likelihood.py`,
-   `photometric_optimizer.py`, `photometric_mcmc.py`, plus new tests
-   mirroring the existing `test_triple_fit_flags.py` pattern. This is a
-   real, contained refactor (not a redesign) — estimate 1–2 focused
-   sessions given the existing `OrbitalElements` precedent to mirror.
+1. **A calibrated Stromgren u zero point — investigated, NOT restored.**
+   The original framing ("a known, documented quirk of the classical
+   Crawford & Barnes (1970) uvbybeta calibration, not a bug") did not
+   survive scrutiny: no literature source (SVO Filter Profile Service,
+   Gray et al. 2011) supports a correction anywhere near the required
+   ~1.7 mag, and direct inspection of the source paper confirmed its
+   Table 4 magnitudes are that paper's own *synthetic* model output, not
+   real catalog photometry — so the anomaly is most likely a
+   pipeline-internal zero-point convention difference, not a historical
+   calibration quirk. Reverse-fitting an empirical correction from the
+   benchmark data itself was considered and rejected as fabrication.
+   Stromgren u stays excluded; this item is closed with an honest
+   negative result, not a restored 10th measurement.
+2. **A fit-flags/prior mechanism for `PhotometricParameters` —
+   implemented.** `PhotometricParameters` now mirrors
+   `OrbitalElements.fit_flags` (fit flags plus an optional Gaussian
+   prior, e.g. radius tied to the system's literature value with an
+   assumed 10% relative sigma), replacing the old bounds-pinning
+   workaround in `benchmark_runner.py`, across exactly the scope
+   originally called out: `photometric_likelihood.py`,
+   `photometric_optimizer.py`, `inference/priors.py` (`photometric_problem.py`/
+   `photometric_context.py`/`photometric_mcmc.py` needed no changes —
+   already compatible), plus a new `tests/test_photometric_fit_flags.py`
+   mirroring `test_triple_fit_flags.py`.
 
-Both are independent of Phase 0 and can proceed in parallel once
-scheduled.
+Combined with a third finding made while validating these two (the
+Al-Wardat benchmark's assumed 0.02 mag per-measurement uncertainty
+rested on the same false "real catalog photometry" premise as item 1,
+and was corrected to 0.30 mag) and a fourth (a genuine, now-documented
+near-twin-component-temperature degeneracy affecting three of the four
+systems), all four registered Al-Wardat SED systems now reach a good
+literature match: radius errors ≤1.10%, Teff errors 0.64%–6.37%, reduced
+χ² 0.107–0.152.
 
 ## Phase 2 — Example workflows for users
 

@@ -1,0 +1,87 @@
+C ============================================================
+C Annotated template for PySeshat's Tokovinin ORBIT-format
+C visual/RV input file. Copy this file, replace every value
+C below with your own system's, and parse it the same way
+C Example 1 (examples/01_visual_rv_binary_fit.py) parses
+C FIN379.inp:
+C
+C     from pyseshat.io.orbit_parser import parse_orbit_file
+C     parsed = parse_orbit_file("your_orbit.inp")
+C
+C Lines starting with "C" (like this one) are comments --
+C parse_orbit_file() skips them entirely. Blank lines are
+C also skipped. Column parsing is done by
+C src/pyseshat/io/orbit_parser.py; this template mirrors
+C exactly what it recognizes (see that file's docstring for
+C the authoritative reference).
+C ============================================================
+
+C --- Metadata (optional, informational only -- not used by
+C     the fit itself) -----------------------------------------
+Object:  Your System Name
+RA:      12.3456
+Dec:    -45.6789
+
+C --- Starting orbital elements ------------------------------
+C Tag   Value           Meaning
+C P     period (years)
+C T     epoch of periastron passage (decimal year)
+C e     eccentricity (0 <= e < 1)
+C a     angular semi-major axis (arcsec)
+C W     Omega, longitude of ascending node (degrees)
+C w     omega, argument of periastron (degrees)
+C i     inclination (degrees)
+C K1    primary RV semi-amplitude (km/s) -- omit if no RV data
+C K2    secondary RV semi-amplitude (km/s) -- omit if no RV data
+C V0    systemic velocity (km/s) -- omit if no RV data
+C
+C Prefix any tag with "*" (e.g. "*i") to hold it FIXED at the
+C given value instead of letting the optimizer vary it --
+C parse_orbit_file() reads this into elements.fit_flags
+C automatically.
+
+P        10.0000
+T        2015.000
+e        0.300
+a        0.200
+W        45.0
+w        90.0
+i        60.0
+K1       12.00
+K2       15.00
+V0        5.00
+
+C --- Visual astrometric observations ------------------------
+C A line is read as a visual observation whenever it contains
+C the literal token "I1" somewhere on the line. The first four
+C whitespace-separated tokens are read as:
+C
+C     epoch  theta(deg)  rho(arcsec)  sigma(arcsec)
+C
+C epoch may be a decimal year (<=3000) or JD-2400000 (>3000);
+C parse_orbit_file() normalizes either automatically, even
+C mixed within the same file. Extra trailing columns (quality
+C flag, reference code, etc.) are allowed and ignored -- see
+C FIN379.inp in validation/benchmark_systems/ for a real
+C example with several such extra columns.
+
+  2016.500   50.00   0.180   0.003  I1
+  2018.200  140.00   0.190   0.003  I1
+  2020.100  230.00   0.175   0.003  I1
+
+C --- Radial-velocity observations ----------------------------
+C A line is read as an RV observation whenever it contains the
+C literal token "Va" (primary) or "Vb" (secondary). The first
+C two tokens are read as:
+C
+C     epoch  RV(km/s)
+C
+C the sigma column position is not fixed by tag position (only
+C "Va"/"Vb" is matched, wherever it appears), so keep the
+C convention epoch, RV, sigma, ... Va/Vb consistent with your
+C other rows.
+
+  2016.500   14.20   0.30  Va
+  2016.500   -2.10   0.30  Vb
+  2018.200    9.80   0.30  Va
+  2018.200    1.90   0.30  Vb

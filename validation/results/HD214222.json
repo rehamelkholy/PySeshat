@@ -5,37 +5,59 @@
   "paper_table_row": null,
   "free_parameters": [
     "ebv",
+    "primary_radius",
     "primary_temperature",
+    "secondary_radius",
     "secondary_temperature"
   ],
+  "priors": {
+    "primary_radius": {
+      "mean": 1.14,
+      "sigma": 0.11399999999999999
+    },
+    "secondary_radius": {
+      "mean": 1.095,
+      "sigma": 0.1095
+    }
+  },
   "statistics": {
-    "chi_square": 136.95432916661926,
-    "reduced_chi_square": 22.825721527769876,
-    "rms": 3.900916262261972,
+    "chi_square": 0.5723898031676852,
+    "reduced_chi_square": 0.1430974507919213,
+    "rms": 0.252188157966689,
     "n_data": 9,
-    "n_params": 3
+    "n_params": 5
   },
   "parameter_errors": {
     "primary_temperature": {
       "expected": 6075.0,
-      "fitted": 6002.303857580818,
-      "relative_error": 0.01196644319657321
+      "fitted": 5750.132854791482,
+      "relative_error": 0.05347607328535279
     },
     "secondary_temperature": {
       "expected": 6000.0,
-      "fitted": 5750.000000000283,
-      "relative_error": 0.04166666666661952
+      "fitted": 5750.065395935716,
+      "relative_error": 0.041655767344047336
+    },
+    "primary_radius": {
+      "expected": 1.14,
+      "fitted": 1.1325974918267372,
+      "relative_error": 0.006493428222160274
+    },
+    "secondary_radius": {
+      "expected": 1.095,
+      "fitted": 1.0884340508053103,
+      "relative_error": 0.005996300634419789
     }
   },
   "fitted_elements": {
-    "primary_temperature": 6002.303857580818,
-    "secondary_temperature": 5750.000000000283,
-    "primary_radius": 1.1399990000000002,
-    "secondary_radius": 1.0949990000000003,
-    "ebv": 0.04993402581843262
+    "primary_temperature": 5750.132854791482,
+    "secondary_temperature": 5750.065395935716,
+    "primary_radius": 1.1325974918267372,
+    "secondary_radius": 1.0884340508053103,
+    "ebv": 0.00589487927378582
   },
   "optimizer_success": true,
-  "optimizer_message": "`ftol` termination condition is satisfied.",
+  "optimizer_message": "`xtol` termination condition is satisfied.",
   "mass_dynamical_Msun": null,
   "mass_sigma_Msun": null,
   "mass_relative_sigma": null

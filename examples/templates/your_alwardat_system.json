@@ -1,0 +1,85 @@
+{
+  "_comment": "Annotated template for an Al-Wardat-style unresolved-binary photometric SED system, in the schema validation/expected_results/*.json uses (see HD214222.json for a real, fully-populated example). JSON has no native comment syntax, so every explanatory field here is prefixed '_comment' -- delete all '_comment*' keys once you've filled in the real fields; they are not read by any PySeshat code. Load and fit this schema the same way Example 4 (examples/04_alwardat_sed_fit.py) loads HD214222.json.",
+
+  "system_name": "Your System Name",
+
+  "_comment_atmosphere_files": "CK04 (Castelli-Kurucz) atmosphere-grid FITS files this system's fit needs, relative to validation/atmosphere_models/. MUST bracket BOTH components' expected Teff, not just one -- validation/expected_results/HD130669.json and HD184467.json both hit 'ValueError: Initial guess is outside of provided bounds' from exactly this mistake early on (see docs/project_decisions.md). List every file the interval [min(both Teff), max(both Teff)] needs, at [M/H]=0.0 (the only metallicity in this repo's local grid; see the metallicity field below).",
+  "atmosphere_files": [
+    "ckp00/ckp00_5750.fits",
+    "ckp00/ckp00_6000.fits",
+    "ckp00/ckp00_6250.fits"
+  ],
+
+  "_comment_measurements": "Real (passband, magnitude, uncertainty) photometric measurements of the COMBINED (unresolved) system light -- not per-component. Supported passband names are exactly the keys PASSBAND_FILES/ZERO_POINTS define in examples/04_alwardat_sed_fit.py (Johnson U/B/V/R, Stromgren u/v/b/y, Tycho BT/VT). On the assumed uncertainty: do not default to a tiny value like 0.02 mag unless you have a genuine per-measurement error bar from your source -- see docs/project_decisions.md's measurement-uncertainty reassessment for why the original 0.02 mag assumption across all four registered systems here was wrong by over 10x (their magnitude source turned out to be another pipeline's synthetic output, not real catalog photometry) and was corrected to 0.30 mag; pick a value you can actually justify from your source's stated precision.",
+  "measurements": [
+    {
+      "passband": "Johnson B",
+      "magnitude": 0.0,
+      "uncertainty": 0.02,
+      "note": "replace with your real value and a real justification for the uncertainty"
+    },
+    {
+      "passband": "Johnson V",
+      "magnitude": 0.0,
+      "uncertainty": 0.02,
+      "note": "replace with your real value and a real justification for the uncertainty"
+    }
+  ],
+
+  "_comment_initial_parameters": "Starting guess for the optimizer -- ideally your literature Teff/R/E(B-V) values, since PhotometricParameters' fit is local (scipy least_squares), not global.",
+  "initial_parameters": {
+    "primary_temperature": 6000.0,
+    "secondary_temperature": 5800.0,
+    "primary_radius": 1.0,
+    "secondary_radius": 0.9,
+    "ebv": 0.0
+  },
+
+  "_comment_free_parameters": "Which of the 5 photometric parameters the optimizer actually varies -- everything else in initial_parameters stays fixed at its stated value (via PhotometricParameters.fit_flags; see src/pyseshat/photometry/parameters.py). With only a handful of bands, freeing radius WITHOUT an independent constraint reproduces a genuine (Teff, R) degeneracy (see Example 5's own radius result and docs/project_decisions.md) -- either fix radius outright (omit it here) or free it WITH a Gaussian prior the way Example 4 does (see literature_component_parameters and radius_prior_note below).",
+  "free_parameters": [
+    "primary_temperature",
+    "secondary_temperature",
+    "primary_radius",
+    "secondary_radius",
+    "ebv"
+  ],
+
+  "_comment_literature_component_parameters": "Independently-published per-component Teff/L/R/M, used both as the comparison target (Example 4's 'literature' column) and, if radius is freed, as the Gaussian prior mean (see examples/04_alwardat_sed_fit.py's RADIUS_PRIOR_RELATIVE_SIGMA).",
+  "literature_component_parameters": {
+    "primary": {
+      "teff_K": 6000.0,
+      "luminosity_Lsun": 1.0,
+      "radius_Rsun": 1.0,
+      "mass_Msun": 1.0
+    },
+    "secondary": {
+      "teff_K": 5800.0,
+      "luminosity_Lsun": 0.7,
+      "radius_Rsun": 0.9,
+      "mass_Msun": 0.9
+    }
+  },
+
+  "_comment_loggs": "Fixed (not fitted) surface gravities -- derive from literature mass+radius via logg = 4.4377 + log10(M/Msun) - 2*log10(R/Rsun) if not stated directly, and say so in the note (see HD214222.json for a worked example).",
+  "primary_logg": {
+    "value": 4.4,
+    "note": "how you derived this"
+  },
+  "secondary_logg": {
+    "value": 4.4,
+    "note": "how you derived this"
+  },
+
+  "_comment_metallicity": "Fixed. Must be 0.0 ([M/H]=solar) unless you download additional CK04 grid files at another metallicity (scripts/download_ck04_grid.py) -- this repo's local grid is [M/H]=0.0 only.",
+  "metallicity": {
+    "value": 0.0,
+    "note": "solar, matching the local CK04 grid"
+  },
+
+  "_comment_distance": "Fixed distance in parsecs -- from an orbital or trigonometric parallax, ideally with its own sigma for downstream uncertainty propagation.",
+  "distance_pc": {
+    "value": 50.0,
+    "sigma": 1.0,
+    "source": "e.g. 'orbital parallax 20.0+-0.4 mas, d=1000/plx'"
+  }
+}

@@ -300,8 +300,67 @@ def log_prior(
 
 
 # ==========================================================
+# Gaussian prior
+# ==========================================================
+
+def log_gaussian_prior(
+    value,
+    mean,
+    sigma
+):
+    """
+    Gaussian (normal) prior.
+
+    Parameters
+    ----------
+    value : float
+
+    mean : float
+
+    sigma : float
+        Standard deviation. Must be positive.
+
+    Returns
+    -------
+    float
+    """
+
+    if sigma <= 0.0:
+
+        raise ValueError(
+
+            f"Gaussian prior sigma must be positive "
+            f"(got {sigma})."
+
+        )
+
+    z = (value - mean) / sigma
+
+    return (
+
+        -0.5 * z * z
+
+        -
+        np.log(
+            sigma * np.sqrt(2.0 * np.pi)
+        )
+
+    )
+
+
+# ==========================================================
 # Default photometric prior
 # ==========================================================
+
+_PHOTOMETRIC_BOUND_PRIORS = {
+    # name: (kind, lower, upper) -- "uniform" or "jeffreys"
+    "primary_temperature": ("uniform", 2500.0, 50000.0),
+    "secondary_temperature": ("uniform", 2500.0, 50000.0),
+    "primary_radius": ("jeffreys", 0.01, 100.0),
+    "secondary_radius": ("jeffreys", 0.01, 100.0),
+    "ebv": ("uniform", 0.0, 10.0),
+}
+
 
 def log_photometric_prior(
     parameters
@@ -317,59 +376,90 @@ def log_photometric_prior(
     Returns
     -------
     float
-        Sum of the log-priors for all photometric parameters.
+        Sum of the log-priors for all CURRENTLY-FITTED
+        photometric parameters' physical bounds, plus any
+        Gaussian priors in ``parameters.priors`` (which may
+        apply to fitted or fixed parameters alike).
+
+    Notes
+    -----
+    A fixed parameter's bound-prior is skipped, mirroring
+    ``log_prior``'s treatment of K1/K2 above ("Fixed values are
+    deliberately ignored so that ... inference is unaffected by
+    the default ... values") -- a fixed parameter isn't being
+    explored, so its bound-prior would only ever contribute a
+    constant offset to every point in parameter space, which
+    doesn't affect the posterior shape and is dropped for
+    simplicity. ``PhotometricParameters`` objects predating the
+    2026-08-27 fit-flags mechanism have no ``fit_flags``/
+    ``priors`` attributes at all; ``getattr(..., None)`` below
+    treats that the same as "everything fitted, no priors" so
+    this function stays backward compatible with any such
+    caller.
     """
 
     logp = 0.0
 
-    # ------------------------------------------------------
-    # Primary effective temperature
-    # ------------------------------------------------------
-
-    logp += log_uniform_prior(
-        parameters.primary_temperature,
-        2500.0,
-        50000.0
+    fit_flags = getattr(
+        parameters,
+        "fit_flags",
+        None
     )
 
+    for name, (kind, lower, upper) in (
+        _PHOTOMETRIC_BOUND_PRIORS.items()
+    ):
+
+        if (
+            fit_flags is not None
+            and not fit_flags.get(name, True)
+        ):
+
+            continue
+
+        value = getattr(
+            parameters,
+            name
+        )
+
+        if kind == "jeffreys":
+
+            logp += log_jeffreys_prior(
+                value,
+                lower,
+                upper
+            )
+
+        else:
+
+            logp += log_uniform_prior(
+                value,
+                lower,
+                upper
+            )
+
     # ------------------------------------------------------
-    # Secondary effective temperature
+    # Gaussian priors (e.g. radius tied to an independently
+    # published literature value)
     # ------------------------------------------------------
 
-    logp += log_uniform_prior(
-        parameters.secondary_temperature,
-        2500.0,
-        50000.0
-    )
+    priors = getattr(
+        parameters,
+        "priors",
+        None
+    ) or {}
 
-    # ------------------------------------------------------
-    # Primary radius
-    # ------------------------------------------------------
+    for name, (mean, sigma) in priors.items():
 
-    logp += log_jeffreys_prior(
-        parameters.primary_radius,
-        0.01,
-        100.0
-    )
+        value = getattr(
+            parameters,
+            name
+        )
 
-    # ------------------------------------------------------
-    # Secondary radius
-    # ------------------------------------------------------
-
-    logp += log_jeffreys_prior(
-        parameters.secondary_radius,
-        0.01,
-        100.0
-    )
-
-    # ------------------------------------------------------
-    # Reddening
-    # ------------------------------------------------------
-
-    logp += log_uniform_prior(
-        parameters.ebv,
-        0.0,
-        10.0
-    )
+        logp += log_gaussian_prior(
+            value,
+            mean,
+            sigma
+        )
 
     return logp

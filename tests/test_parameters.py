@@ -90,9 +90,35 @@ def test_fitted_parameters():
 
 def test_fitted_parameter_names():
 
+    # ``fitted_parameter_names()`` became an INSTANCE method
+    # (like ``OrbitalElements.fitted_parameter_names()``) on
+    # 2026-08-27, when PhotometricParameters gained a per-
+    # instance ``fit_flags`` mechanism -- which parameters count
+    # as "fitted" is now instance state, not fixed for the whole
+    # class, so the old unbound
+    # ``PhotometricParameters.fitted_parameter_names()``
+    # class-level call no longer applies (it would raise
+    # TypeError: missing 'self'). A default-constructed instance
+    # (all fit_flags True) still returns exactly the original
+    # all-five-parameters list.
+
+    parameters = PhotometricParameters(
+
+        primary_temperature=6000.0,
+
+        secondary_temperature=5000.0,
+
+        primary_radius=1.0,
+
+        secondary_radius=0.8,
+
+        ebv=0.1
+
+    )
+
     assert (
 
-        PhotometricParameters.fitted_parameter_names()
+        parameters.fitted_parameter_names()
 
         ==
 
@@ -192,11 +218,19 @@ def test_update_parameters_invalid_length():
 
     )
 
+    # Message changed from a hardcoded "exactly five" to a
+    # fit_flags-derived count on 2026-08-27 (update_parameters()
+    # now validates against the number of currently-FITTED
+    # parameters, not a hardcoded 5) -- with this parameters
+    # object's default all-True fit_flags that count still is
+    # five, so the match string below is unchanged in substance,
+    # just phrased to match the new dynamic message.
+
     with pytest.raises(
 
         ValueError,
 
-        match="exactly five"
+        match="exactly 5 values"
 
     ):
 

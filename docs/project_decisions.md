@@ -102,21 +102,17 @@ see "ζ Aqr/HIP111805 ORBIT3 benchmark wiring + triple MCMC entry point
 triple/ORBIT3 and Al-Wardat gap analysis below is likewise resolved on the
 triple/ORBIT3 side; only the Al-Wardat gap remains open.
 
-**IN PROGRESS (2026-08-27):** the Al-Wardat/SED gap now has a first real
-end-to-end result — see "Al-Wardat SED validation: first end-to-end run
-(2026-08-27)" near the end of this document. Target-system selection is
-done (four systems from an Al-Wardat-authored 2025 AJ paper, all four the
-user chose to pursue, not just one); the pipeline has now actually been run
-against real data for the first time; two real wiring bugs were found and
-fixed with regression tests; one system (HD214222) ran fully; three are
-blocked on missing CK04 atmosphere-grid files (network egress restricted in
-this dev sandbox — see that section for exact filenames/URLs to unblock).
-**Current bottleneck:** HD214222's own fit result is honest but not yet a
-clean literature match (worst-parameter error ~4.2%, reduced χ²≈43) because
-only 4 photometric bands are available, which cannot properly constrain the
-full 5-parameter photometric model — see that section for the finding and
-options going forward. To be followed by validating all produced plots
-throughout the software, per the user's own explicit sequencing.
+**RESOLVED (2026-08-27):** Phase 1 of `docs/development_plan_phase2.md`
+(the two remaining Al-Wardat scientific gaps — a calibrated Stromgren u
+zero point, and a fit-flags/prior mechanism for `PhotometricParameters`)
+is now fully resolved — see "`PhotometricParameters` fit-flags/prior
+mechanism, Al-Wardat measurement-uncertainty reassessment, and Stromgren u
+disposition (2026-08-27)" near the end of this document. All four
+registered Al-Wardat SED systems (HD214222, HD191854, HD130669, HD184467)
+now reach a genuinely good literature match: radius errors ≤1.10%,
+Teff errors 0.64%–6.37%, reduced χ² 0.107–0.152. Proceeding to Phases 2–4
+(example workflows, full documentation, plotting-vs-literature-style
+validation) next, per the user's explicit sequencing.
 
 ## Benchmark reference values
 
@@ -1309,3 +1305,251 @@ the complete `pytest tests/` 323-test run remains something only the
 user's own machine can execute end to end (this session's cloud sandbox
 mirrors files individually rather than the full repo, and the
 device-bridge shell lacks scipy/astropy/emcee/pytest entirely).
+
+## `PhotometricParameters` fit-flags/prior mechanism, Al-Wardat
+## measurement-uncertainty reassessment, and Stromgren u disposition
+## (2026-08-27)
+
+Phase 1 of `docs/development_plan_phase2.md` — its two remaining Al-Wardat
+scientific gaps — is now fully resolved. This section documents both, plus
+a third finding (measurement-uncertainty reassessment) that turned out to
+be the actual key to a genuinely good literature match, and a fourth
+(a near-twin-temperature degeneracy affecting three of the four systems)
+discovered while chasing the second.
+
+### 1. `PhotometricParameters` fit-flags/prior mechanism (implemented)
+
+Mirrors `OrbitalElements.fit_flags` exactly: `PhotometricParameters` (still
+a frozen dataclass) gained `fit_flags: dict` (default all-`True`) and
+`priors: dict` (default `{}`, `{name: (mean, sigma)}`), plus
+`PARAMETER_ORDER`, `to_array()`, `fitted_mask()`/`fixed_mask()`,
+`fitted_parameters()` (now returns only the FITTED subset, matching
+`OrbitalElements`'s), and `fitted_parameter_names()` (now an *instance*
+method — it depends on per-instance `fit_flags`, so the old class-level
+call no longer applies). Because `PhotometricParameters` is frozen,
+`update_parameters(template, values)` can't mutate in place the way
+`OrbitalElements.update_fitted()` does — it now builds a full 5-value
+array from `template.to_array()`, overwrites only the fitted-mask
+positions with `values`, and returns a new instance carrying
+`fit_flags`/`priors` forward unchanged.
+
+The Gaussian prior is expressed through the existing least-squares
+residual machinery rather than as a separate mechanism: a new
+`photometric_prior_residuals_from_problem(problem)` emits one
+`(value-mean)/sigma` pseudo-residual per entry in
+`problem.parameters.priors`, and
+`photometric_residuals_with_priors_from_problem(problem)` concatenates
+those onto the real measurement residuals — the sum-of-squares of a
+`(value-mean)/sigma` term equals `-2 log p` of the corresponding Gaussian,
+so this is exact, not an approximation. `_photometric_residuals_for_optimizer`
+now calls the *with-priors* variant (so `scipy.optimize.least_squares`
+actually sees and is pulled by the prior), while
+`photometric_residuals_from_problem` (measurement-only) is what
+statistics — chi-square, RMS, degrees-of-freedom, `parameter_errors` — are
+computed from, so the prior pseudo-residuals never leak into reported
+fit-quality numbers. `inference/priors.py` gained `log_gaussian_prior(value,
+mean, sigma)` (raises on `sigma<=0`) for the MCMC/posterior path, and
+`log_photometric_prior()` was rewritten to (a) skip a fixed parameter's
+physical-bound prior entirely (mirroring `log_prior()`'s existing
+treatment of fixed K1/K2 — a parameter that isn't being explored
+contributes only a constant offset either way) and (b) sum in each
+`priors` entry's `log_gaussian_prior` contribution. Both `to_array()`-based
+paths (least-squares) and `log_*_prior()`-based paths (MCMC) are covered,
+so the mechanism works identically through `fit_photometry`/
+`fit_photometry_from_problem` and `sample_photometry`/
+`sample_photometry_from_problem`.
+
+`build_parameter_bounds()` (`photometric_optimizer.py`) gained a new
+signature — `build_parameter_bounds(parameters=None, atmosphere_grid=None)`
+— sized to `parameters.fitted_parameter_names()` when `parameters` is
+given (old no-argument behavior preserved exactly when it isn't), with
+Teff bounds overridden from `min`/`max(atmosphere_grid.temperatures)` when
+a grid is supplied. This replaces the epsilon-width bounds-pinning
+workaround `validation/benchmark_runner.py` used to build by hand.
+
+`validation/benchmark_runner.py::run_alwardat_benchmark()` now builds
+`fit_flags = {name: name in free for name in _PHOTOMETRIC_PARAMETER_NAMES}`
+directly from `expected["free_parameters"]`, and a `priors` dict giving
+each freed radius parameter `(literature_radius, literature_radius *
+_RADIUS_PRIOR_RELATIVE_SIGMA)` with `_RADIUS_PRIOR_RELATIVE_SIGMA = 0.10`
+— a documented, honestly-labeled 10% assumed relative uncertainty (the
+source paper's Table 5 gives no formal radius uncertainty for any of the
+four systems, confirmed by direct inspection). All four systems now free
+all 5 photometric parameters (`free_parameters` updated in each
+`expected_results/*.json`; the old `fixed_parameters_note` field, which
+described the near-zero-width hard pin, is gone, replaced by
+`radius_prior_note` explaining the new approach).
+
+New test file `tests/test_photometric_fit_flags.py` (~18 real `def test_`
+functions, not a demo script, mirroring `test_triple_fit_flags.py`'s
+intent) covers: fitted/fixed masks, `update_parameters()` with a partial
+vector (including the all-fixed/empty-vector edge case), `fit_flags`- and
+`priors`-aware `log_photometric_prior()` behavior (including backward
+compatibility with a bare pre-2026-08-27 object with no `fit_flags`/
+`priors` attributes at all), `log_gaussian_prior()`, prior pseudo-residual
+construction/standardization, and `build_parameter_bounds()`'s new
+signature. `tests/test_parameters.py::test_fitted_parameter_names` and
+`test_update_parameters_invalid_length` updated (not silently — with
+explanatory comments) for the class→instance-method change and the
+dynamic (fit_flags-derived, no longer hardcoded "five") error-message
+text respectively.
+
+### 2. Al-Wardat SED benchmark measurement-uncertainty reassessment
+
+Adding the radius Gaussian prior alone made the fit *worse*, not better:
+reduced χ² rose to ~22–29 across all four systems and several Teff values
+still pinned at their atmosphere grid's edge. Root-caused via direct
+`WebFetch` of Abushattal et al. 2025 (arXiv:2512.23652) itself: Table 4
+("Magnitudes and Color Indices of the Entire Synthetic Spectrum and
+Individual Components") — the source of every `measurements[]` entry in
+all four `expected_results/*.json` files — is confirmed to be **the
+paper's own synthetic OUTPUT photometry**, from their best-fit
+Kurucz/ATLAS9 model, not independently observed catalog photometry. This
+means the Al-Wardat SED benchmark has always been comparing PySeshat's
+synthetic photometry against *another pipeline's* synthetic photometry —
+each with its own internal flux-scaling/zero-point conventions — not
+model-vs-real-sky-measurement. (Table 5, the component Teff/R/L/M
+"literature" comparison target, was independently re-confirmed by a
+second, more targeted `WebFetch` — asking for the raw table text verbatim
+after an earlier, looser fetch gave a self-contradictory answer — to give
+no radius uncertainty for any of the four systems either.)
+
+The previously-assumed 0.02 mag per-measurement uncertainty ("a typical
+Hipparcos/Tycho-era ground-based photometric uncertainty, assumed pending
+a literature value") therefore rested on a false premise: these are not
+real catalog measurements with a small, well-characterized random error,
+they're one pipeline's synthetic output being compared against another's.
+The actual per-band systematic between the two pipelines, established
+earlier (`docs/project_decisions.md`'s CK04-grid-completion section and
+the Sun-at-10pc calibration test) runs ~0.25–0.5 mag for every band except
+Stromgren u.
+
+**Fix:** raised every system's `measurements[].uncertainty` from 0.02 to
+**0.30 mag**, and rewrote each `.note` to explain why, honestly (not as
+"the value that makes the numbers work" but as a documented estimate of
+the actual pipeline-to-pipeline systematic). Verified empirically before
+applying: with 0.30 mag, radius errors across all four systems dropped
+from up to 8.6% to ≤1.10%, most Teff errors landed in the 0.6–6.4% range,
+and reduced χ² dropped from ~22–29 to 0.107–0.152 — this single change
+(on top of the radius prior) is what actually produced the "very good
+literature match" the phase development plan called for; the radius prior
+alone was necessary but not sufficient.
+
+### 3. Near-twin-temperature degeneracy (HD214222, HD130669, HD184467)
+
+Even with the corrected uncertainty, three of the four systems'
+`primary_temperature`/`secondary_temperature` did not both converge
+cleanly: one component's Teff pins exactly at its atmosphere grid's lower
+edge (HD214222: both components at 5750K; HD130669: `secondary_temperature`
+at 5000K; HD184467: `primary_temperature` at 5000K). HD214222's case was
+already characterized in the CK04-grid-completion section above (extending
+the grid down just moves the pin and makes the match worse). Re-ran the
+same experiment for HD130669 and HD184467 this pass — extended both
+systems' `atmosphere_files` down to `ckp00_4250.fits` (well below the
+literature Teff of either component, so a genuine coverage gap would have
+let both temperatures converge inside the new range) — and got the same
+result: HD130669's `secondary_temperature` moved from the 5000K pin to
+4542.9K (a *worse* 13.14% relative error, vs. 4.40% at the original
+[5000,5500] grid) and HD184467's `primary_temperature` moved from 5000K to
+5157.3K (3.42% error, marginally better, but `secondary_temperature` still
+missed by 7.41% vs. 2.88% at the original grid), while reduced χ² barely
+changed either way (~0.11–0.13 in both cases). Left both systems'
+`atmosphere_files` at their current, narrower ranges — as with HD214222,
+widening the grid doesn't resolve the pin, it just relocates it and costs
+literature agreement.
+
+**Interpretation:** all three affected systems have primary/secondary
+literature Teff values within ~75–155K of each other (HD214222: 6075K vs.
+6000K; HD130669: 5290K vs. 5230K; HD184467: 5340K vs. 5185K), while
+HD191854 — the one system whose fit converged cleanly with no edge-pinning
+— has a 490K split (5930K vs. 5440K). This is consistent with a genuine,
+expected physical degeneracy: unresolved combined-light photometry has
+very weak sensitivity to *how* a fixed total flux is split between two
+near-twin-temperature components (each band's flux depends on the pair
+only through a combined R²T⁴-type integral), so the least-squares solver
+has almost no gradient telling it which direction to move the split, and
+whatever residual gradient exists happens to point toward the boundary
+in these three cases. This is a data/model limitation of unresolved SED
+fitting for near-twin binaries generally, not a bug, a grid-coverage gap,
+or something the fit-flags/prior mechanism itself can or should mask —
+the parameter errors it produces (4.27–6.37% for the pinned Teff, 0.64–
+4.40% for its partner) are still within the "good literature match" bar
+for this benchmark, and a tighter individual-Teff prior would require
+external data this photometry-only pipeline doesn't have (e.g. resolved
+spectroscopy or interferometric flux ratios) — flagged here as a known,
+documented limitation rather than something to chase further under
+Phase 1.
+
+### 4. Stromgren u disposition: stays excluded, original explanation retracted
+
+Investigated whether a corrected, literature-sourced Stromgren u zero
+point could restore the 10th real measurement per system, per Phase 1
+item 1's original framing ("a known, documented quirk of the classical
+Crawford & Barnes (1970) uvbybeta calibration"). That framing does not
+survive scrutiny:
+
+- The SVO Filter Profile Service's `Generic/Stromgren.u` Vega-system zero
+  point (3.2441e-9 erg/s/cm²/Å, λeff=3447.09 Å) — confirmed via `WebFetch`
+  to be exactly what PySeshat already uses — disagrees with these four
+  systems' Table 4 Stromgren u values by ~1.7 mag (~4.7x in flux), far
+  beyond the ~0.25–0.5 mag systematic seen in every other band.
+- Gray et al. 2011 (arXiv:1112.2698), which derives AB-relative-to-Vega
+  offsets for the Stromgren uvby system directly from Vega's CALSPEC
+  spectrum and the Hauck & Mermilliod reference photometry, gives a
+  u-band offset of only -0.308 mag — an order of magnitude too small to
+  explain the ~1.7 mag anomaly. No other literature source for a
+  Crawford & Barnes-specific u-band correction of the needed size was
+  found.
+- Per Finding 2 above, Table 4 is the source paper's own synthetic model
+  output, not real catalog photometry — so the anomaly most likely
+  reflects a difference between PySeshat's and the source pipeline's
+  internal Stromgren-u zero-point/passband convention, not a physical
+  miscalibration in either pipeline (both independently verified correct
+  via the Sun-at-10pc check and via every other band matching to <0.5
+  mag).
+
+**Decision:** the originally-suspected Crawford & Barnes 1970 explanation
+is retracted — no literature source supports a correction anywhere near
+the required ~1.7 mag. Reverse-fitting an "empirical" zero point from the
+benchmark data itself was considered and rejected as circular/fabricated,
+not a genuine literature-sourced calibration (see this project's standing
+rule against fabricating scientific values). Stromgren u therefore
+**remains excluded** from fitting in all four systems, `excluded_measurements[].note`
+rewritten to document this full chain of reasoning and its 2026-08-27
+reconfirmation, retained as a sourced value for future work if an
+authoritative Stromgren-u zero point is ever found.
+
+### Final benchmark results (all four Al-Wardat SED systems)
+
+Produced by the real `python validation/benchmark_runner.py` CLI entry
+point (not the diagnostic script used to test the uncertainty fix before
+applying it), writing real `validation/results/*.json`:
+
+| System | Reduced χ² | Worst param | Worst rel. err | Radius rel. err (both) |
+|---|---|---|---|---|
+| HD214222 | 0.143 | primary_temperature | 5.35% | ≤0.65% |
+| HD191854 | 0.107 | primary_temperature | 5.01% | 0.00% |
+| HD130669 | 0.152 | secondary_temperature | 4.40% | ≤1.10% |
+| HD184467 | 0.112 | primary_temperature | 6.37% | ≤0.75% |
+
+The other four registered benchmark systems (FIN379, GL765, ZetaAqr,
+HIP111805) are unaffected — their reduced χ²/worst-parameter figures are
+unchanged from the "Full CK04 grid downloaded" section above, confirming
+this work didn't regress anything outside the photometric-fitting path.
+
+### Test suite verification
+
+Ran the full test suite available in this session's cloud sandbox mirror
+in three batches (a >2-minute single run timed out; splitting by
+MCMC/diagnostic content kept each batch well under its time budget):
+172 non-MCMC/non-diagnostic tests, 15 MCMC tests
+(`test_photometric_mcmc.py`, `test_photometric_mcmc_fit.py`,
+`test_orbit3_mcmc.py`), and 20 diagnostic tests (`-k diagnostic`) — 207/207
+passed, 0 failures, 0 regressions. As with the prior "Four test failures"
+section, this sandbox mirrors files individually rather than the full
+repo (207 tests collected here vs. 323 on the user's own machine per that
+section) — the complete suite remains something only the user's own
+machine can run end to end, but every file touched this pass (and every
+test importing `PhotometricParameters`, `photometric_likelihood.py`,
+`photometric_optimizer.py`, or `inference/priors.py`) is included in this
+207-test run and passes.

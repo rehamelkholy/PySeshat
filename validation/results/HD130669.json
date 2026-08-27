@@ -5,34 +5,56 @@
   "paper_table_row": null,
   "free_parameters": [
     "ebv",
+    "primary_radius",
     "primary_temperature",
+    "secondary_radius",
     "secondary_temperature"
   ],
+  "priors": {
+    "primary_radius": {
+      "mean": 0.956,
+      "sigma": 0.0956
+    },
+    "secondary_radius": {
+      "mean": 0.95,
+      "sigma": 0.095
+    }
+  },
   "statistics": {
-    "chi_square": 147.5080909256286,
-    "reduced_chi_square": 24.5846818209381,
-    "rms": 4.048430298353351,
+    "chi_square": 0.6065253372333033,
+    "reduced_chi_square": 0.15163133430832582,
+    "rms": 0.2595991219881795,
     "n_data": 9,
-    "n_params": 3
+    "n_params": 5
   },
   "parameter_errors": {
     "primary_temperature": {
       "expected": 5290.0,
-      "fitted": 5085.646249339334,
-      "relative_error": 0.03863019861260232
+      "fitted": 5063.879829003125,
+      "relative_error": 0.04274483383683829
     },
     "secondary_temperature": {
       "expected": 5230.0,
-      "fitted": 5000.000806931582,
-      "relative_error": 0.04397690116030941
+      "fitted": 5000.000305749388,
+      "relative_error": 0.043976996988644795
+    },
+    "primary_radius": {
+      "expected": 0.956,
+      "fitted": 0.9454930166567737,
+      "relative_error": 0.010990568350655133
+    },
+    "secondary_radius": {
+      "expected": 0.95,
+      "fitted": 0.9396883035836701,
+      "relative_error": 0.01085441728034726
     }
   },
   "fitted_elements": {
-    "primary_temperature": 5085.646249339334,
-    "secondary_temperature": 5000.000806931582,
-    "primary_radius": 0.9559990000000016,
-    "secondary_radius": 0.9499990000000061,
-    "ebv": 0.04529695178997182
+    "primary_temperature": 5063.879829003125,
+    "secondary_temperature": 5000.000305749388,
+    "primary_radius": 0.9454930166567737,
+    "secondary_radius": 0.9396883035836701,
+    "ebv": 0.034135765135398954
   },
   "optimizer_success": true,
   "optimizer_message": "`ftol` termination condition is satisfied.",

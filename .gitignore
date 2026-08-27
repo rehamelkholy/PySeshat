@@ -9,3 +9,4 @@ __pycache__/
 # docs/project_decisions.md, "FIN379 files stranded at repo root"
 # (2026-08-27).
 tests/artifacts/
+examples/output/

@@ -11,6 +11,7 @@ from pyseshat.inference.base_fit_result import (
 from pyseshat.inference.photometric_likelihood import (
     photometric_residuals,
     photometric_residuals_from_problem,
+    photometric_residuals_with_priors_from_problem,
 )
 
 from pyseshat.photometry.parameters import (
@@ -78,7 +79,7 @@ def _photometric_residuals_for_optimizer(
 
     )
 
-    return photometric_residuals_from_problem(
+    return photometric_residuals_with_priors_from_problem(
         trial_problem
     )
 
@@ -86,41 +87,117 @@ def _photometric_residuals_for_optimizer(
 # ==========================================================
 # Physical parameter bounds
 # ==========================================================
+#
+# Default (generic) physical bounds per parameter name. Used for
+# every FITTED parameter that doesn't have a more specific range
+# supplied. Temperature bounds default to these generic limits
+# too, but ``build_parameter_bounds()`` will use an
+# ``atmosphere_grid``'s actual loaded Teff range instead when one
+# is given -- the optimizer's initial guess must always fall
+# inside its own bounds, and a problem's atmosphere_grid is
+# almost always a small subset of the full CK04 grid (see
+# validation/benchmark_runner.py), not the full 2500-50000K
+# range.
 
-def build_parameter_bounds():
+_DEFAULT_PHYSICAL_BOUNDS = {
+    "primary_temperature": (2500.0, 50000.0),
+    "secondary_temperature": (2500.0, 50000.0),
+    "primary_radius": (0.01, 100.0),
+    "secondary_radius": (0.01, 100.0),
+    "ebv": (0.0, 10.0),
+}
+
+
+def build_parameter_bounds(
+    parameters=None,
+    atmosphere_grid=None,
+):
     """
-    Construct physically reasonable bounds for the
-    photometric inference parameters.
+    Construct physically reasonable bounds for the photometric
+    inference parameters.
+
+    Parameters
+    ----------
+    parameters : PhotometricParameters, optional
+        If given, bounds are built ONLY for
+        ``parameters.fitted_parameter_names()``, in that order --
+        matching the shape of ``parameters.fitted_parameters()``,
+        which is what ``run_least_squares`` actually receives as
+        ``initial_parameters``. If omitted (the pre-fit-flags
+        default), bounds are built for all five parameters, in
+        canonical order -- the original, unconditional behavior.
+
+    atmosphere_grid : AtmosphereGrid, optional
+        If given, ``primary_temperature``/``secondary_temperature``
+        bounds are taken from this grid's own loaded
+        ``min(temperatures)``/``max(temperatures)`` instead of the
+        generic 2500-50000K physical range, so a fitted
+        temperature's initial guess (the system's literature
+        value) is guaranteed to fall inside its own bounds. This
+        replaces the equivalent ad hoc ``teff_min``/``teff_max``
+        logic that used to live in
+        ``validation/benchmark_runner.py::run_alwardat_benchmark()``.
 
     Returns
     -------
     tuple(ndarray, ndarray)
-        Lower and upper parameter bounds.
+        Lower and upper parameter bounds, sized and ordered to
+        match ``parameters.fitted_parameters()`` (or all five
+        parameters, canonical order, if ``parameters`` is
+        omitted).
     """
 
-    lower = np.array(
-        [
-            2500.0,
-            2500.0,
-            0.01,
-            0.01,
-            0.0,
-        ],
-        dtype=float,
-    )
+    if parameters is None:
 
-    upper = np.array(
-        [
-            50000.0,
-            50000.0,
-            100.0,
-            100.0,
-            10.0,
-        ],
-        dtype=float,
-    )
+        names = list(
+            _DEFAULT_PHYSICAL_BOUNDS.keys()
+        )
 
-    return lower, upper
+    else:
+
+        names = parameters.fitted_parameter_names()
+
+    if atmosphere_grid is not None:
+
+        teff_bounds = (
+            float(min(atmosphere_grid.temperatures)),
+            float(max(atmosphere_grid.temperatures)),
+        )
+
+    else:
+
+        teff_bounds = None
+
+    lower = []
+
+    upper = []
+
+    for name in names:
+
+        if (
+            teff_bounds is not None
+            and name in (
+                "primary_temperature",
+                "secondary_temperature",
+            )
+        ):
+
+            bound_lower, bound_upper = teff_bounds
+
+        else:
+
+            bound_lower, bound_upper = (
+                _DEFAULT_PHYSICAL_BOUNDS[name]
+            )
+
+        lower.append(bound_lower)
+
+        upper.append(bound_upper)
+
+    return (
+        np.array(lower, dtype=float),
+        np.array(upper, dtype=float),
+    )
 
 
 # ==========================================================
@@ -143,7 +220,10 @@ def fit_photometry_from_problem(
     parameters = problem.parameters
 
     if bounds is None:
-        bounds = build_parameter_bounds()
+        bounds = build_parameter_bounds(
+            parameters,
+            atmosphere_grid=problem.context.atmosphere_grid,
+        )
 
     return run_least_squares(
 

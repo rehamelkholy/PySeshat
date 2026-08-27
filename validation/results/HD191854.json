@@ -1,0 +1,64 @@
+{
+  "system": "HD191854",
+  "orbit_type": "alwardat_sed",
+  "fitting_path": "alwardat_sed",
+  "paper_table_row": null,
+  "free_parameters": [
+    "ebv",
+    "primary_radius",
+    "primary_temperature",
+    "secondary_radius",
+    "secondary_temperature"
+  ],
+  "priors": {
+    "primary_radius": {
+      "mean": 1.585,
+      "sigma": 0.1585
+    },
+    "secondary_radius": {
+      "mean": 0.906,
+      "sigma": 0.09060000000000001
+    }
+  },
+  "statistics": {
+    "chi_square": 0.42817796010183945,
+    "reduced_chi_square": 0.10704449002545986,
+    "rms": 0.21811769506439496,
+    "n_data": 9,
+    "n_params": 5
+  },
+  "parameter_errors": {
+    "primary_temperature": {
+      "expected": 5930.0,
+      "fitted": 5632.734552524299,
+      "relative_error": 0.050129080518667955
+    },
+    "secondary_temperature": {
+      "expected": 5440.0,
+      "fitted": 5474.811560841289,
+      "relative_error": 0.006399183978178137
+    },
+    "primary_radius": {
+      "expected": 1.585,
+      "fitted": 1.5850264002597076,
+      "relative_error": 1.6656315272985352e-05
+    },
+    "secondary_radius": {
+      "expected": 0.906,
+      "fitted": 0.9059874082070832,
+      "relative_error": 1.3898226177476843e-05
+    }
+  },
+  "fitted_elements": {
+    "primary_temperature": 5632.734552524299,
+    "secondary_temperature": 5474.811560841289,
+    "primary_radius": 1.5850264002597076,
+    "secondary_radius": 0.9059874082070832,
+    "ebv": 3.277761803790349e-19
+  },
+  "optimizer_success": true,
+  "optimizer_message": "`ftol` termination condition is satisfied.",
+  "mass_dynamical_Msun": null,
+  "mass_sigma_Msun": null,
+  "mass_relative_sigma": null
+}

@@ -56,27 +56,38 @@ def photometric_residuals_from_problem(
 
         )
 
-    parameters = (
+    # ------------------------------------------------------
+    # Read the FULL current parameter state directly off the
+    # PhotometricParameters instance, not
+    # ``problem.parameters.fitted_parameters()``.
+    #
+    # ``fitted_parameters()`` returns only the currently-FITTED
+    # subset (as of the fit-flags mechanism added 2026-08-27,
+    # see photometry/parameters.py) -- it exists purely to talk
+    # to the optimizer/sampler (initial guess, trial-vector
+    # shape), the same way OrbitalElements.fitted_parameters()
+    # is never used to build the physical orbit model directly
+    # (the residual functions in inference/likelihood.py always
+    # read elements.<name> attributes instead). A FIXED
+    # parameter still has a real, current value that must
+    # participate in the synthetic-photometry model -- it's just
+    # not part of the vector the optimizer is exploring -- so
+    # building the model from fitted_parameters() alone would
+    # silently drop every fixed parameter's contribution the
+    # moment fewer than all 5 are fitted.
+    # ------------------------------------------------------
 
-        problem
-        .parameters
-        .fitted_parameters()
+    p = problem.parameters
 
-    )
+    primary_temperature = p.primary_temperature
 
-    (
+    secondary_temperature = p.secondary_temperature
 
-        primary_temperature,
+    primary_radius = p.primary_radius
 
-        secondary_temperature,
+    secondary_radius = p.secondary_radius
 
-        primary_radius,
-
-        secondary_radius,
-
-        ebv
-
-    ) = parameters
+    ebv = p.ebv
 
     context = problem.context
 
@@ -167,6 +178,121 @@ def photometric_residuals_from_problem(
         dtype=float
 
     )
+
+
+# ==========================================================
+# Gaussian-prior pseudo-residuals (least-squares path)
+# ==========================================================
+#
+# scipy.optimize.least_squares only ever minimizes a sum of
+# squared residuals -- it has no separate concept of a Bayesian
+# prior the way the MCMC path's log-posterior does (see
+# inference.priors.log_photometric_prior, which already picks up
+# ``parameters.priors`` directly). To give a Gaussian prior
+# (mean, sigma) the same *(value - mean) / sigma)^2* contribution
+# to the least-squares objective that it would contribute to
+# -2*log-posterior, this appends one extra "pseudo-residual"
+# per parameter with a prior, standard practice for expressing
+# Tikhonov/Gaussian regularization inside a nonlinear
+# least-squares solve. These are NOT real photometric data --
+# see photometric_residuals_with_priors_from_problem()'s
+# docstring for how callers should keep the two apart when
+# reporting chi-square/degrees-of-freedom.
+
+def photometric_prior_residuals_from_problem(
+    problem
+):
+    """
+    Calculate the Gaussian-prior pseudo-residual vector for a
+    canonical photometric inference problem's
+    ``parameters.priors``.
+
+    Parameters
+    ----------
+    problem : PhotometricInferenceProblem
+
+    Returns
+    -------
+    numpy.ndarray
+        One entry per ``(name, (mean, sigma))`` in
+        ``problem.parameters.priors``, each
+        ``(value - mean) / sigma``. Empty when there are no
+        priors.
+    """
+
+    parameters = problem.parameters
+
+    residuals = []
+
+    for name, (mean, sigma) in parameters.priors.items():
+
+        if sigma <= 0.0:
+
+            raise ValueError(
+
+                f"Prior sigma for '{name}' must be positive "
+                f"(got {sigma})."
+
+            )
+
+        value = getattr(
+            parameters,
+            name
+        )
+
+        residuals.append(
+            (value - mean) / sigma
+        )
+
+    return np.asarray(
+
+        residuals,
+
+        dtype=float
+
+    )
+
+
+def photometric_residuals_with_priors_from_problem(
+    problem
+):
+    """
+    Calculate the combined residual vector actually minimized by
+    the least-squares photometric optimizer: the real
+    photometric measurement residuals followed by any Gaussian-
+    prior pseudo-residuals.
+
+    This is deliberately a SEPARATE function from
+    ``photometric_residuals_from_problem()`` (which stays
+    measurement-only) rather than folding prior residuals into
+    it directly, so that callers who need a clean, literature-
+    comparable data chi-square/RMS/degrees-of-freedom (e.g.
+    ``validation/benchmark_runner.py``'s per-system statistics)
+    can always recompute pure measurement residuals fresh via
+    ``photometric_residuals_from_problem(fitted_problem)``,
+    independent of whatever this function's optimizer-facing
+    vector happened to include.
+
+    Parameters
+    ----------
+    problem : PhotometricInferenceProblem
+
+    Returns
+    -------
+    numpy.ndarray
+    """
+
+    return np.concatenate(
+        (
+            photometric_residuals_from_problem(
+                problem
+            ),
+            photometric_prior_residuals_from_problem(
+                problem
+            ),
+        )
+    )
+
 
 def photometric_residuals(
     parameters,

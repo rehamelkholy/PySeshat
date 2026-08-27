@@ -68,7 +68,12 @@ from pyseshat.photometry.parameters import (
 )
 
 from pyseshat.inference.photometric_optimizer import (
-    fit_photometry
+    fit_photometry,
+    build_parameter_bounds,
+)
+
+from pyseshat.inference.photometric_likelihood import (
+    photometric_residuals_from_problem,
 )
 
 from metrics import (
@@ -609,11 +614,22 @@ _PHOTOMETRIC_PARAMETER_NAMES = (
     "ebv",
 )
 
-_PHOTOMETRIC_PHYSICAL_BOUNDS = {
-    "primary_radius": (0.01, 100.0),
-    "secondary_radius": (0.01, 100.0),
-    "ebv": (0.0, 10.0),
-}
+# Assumed relative uncertainty for each system's literature
+# radius (Table 5 of the source paper gives no formal
+# uncertainty on R for any of the four systems -- confirmed by
+# direct inspection of the paper, 2026-08-27). 10% is a
+# deliberately conservative (generous) choice: tight enough to
+# keep the fit on the physical branch of the (Teff, R)
+# degeneracy (see run_alwardat_benchmark()'s docstring), loose
+# enough that the real photometric data can still pull radius
+# away from its literature value if it genuinely disagrees,
+# rather than reproducing the old hard-pin's "trivially matches
+# by construction" behavior. Follows this codebase's existing
+# convention of documenting an assumed-pending-a-literature-
+# value uncertainty explicitly rather than silently picking one
+# (see each system's measurements[]["note"] for the analogous
+# assumed 0.02 mag photometric uncertainty).
+_RADIUS_PRIOR_RELATIVE_SIGMA = 0.10
 
 
 def run_alwardat_benchmark(
@@ -625,16 +641,25 @@ def run_alwardat_benchmark(
     and compare the fitted parameters to the system's
     independently-published literature component parameters.
 
-    Only ``expected["free_parameters"]`` are actually varied by
-    the optimizer; every other photometric parameter is pinned
-    at its ``initial_parameters`` value via a near-zero-width
-    bounds range. As of 2026-08-27 all four registered alwardat_sed
-    systems supply 10 real Table-4 measurements (Johnson U/B/V/R,
-    Stromgren u/v/b/y, Tycho BT/VT), enough to free all five
-    photometric parameters (Teff1, Teff2, R1, R2, E(B-V)) at once;
-    ``expected["fixed_parameters_note"]`` documents the earlier,
-    now-superseded 4-measurement/3-free-parameter workaround for
-    historical reference.
+    ``expected["free_parameters"]`` are genuinely varied by the
+    optimizer (via ``PhotometricParameters.fit_flags``); any
+    OTHER photometric parameter is held fixed at its
+    ``initial_parameters`` value. As of 2026-08-27 all four
+    registered alwardat_sed systems free all five photometric
+    parameters (Teff1, Teff2, R1, R2, E(B-V)) -- including
+    radius, which earlier testing confirmed is genuinely
+    degenerate when fit against unresolved photometry ALONE, no
+    matter how many bands are supplied (see
+    ``expected["radius_prior_note"]`` and
+    docs/project_decisions.md, "PhotometricParameters fit-flags/
+    prior mechanism"). Radius is therefore freed WITH a Gaussian
+    prior (``PhotometricParameters.priors``) tying it to this
+    system's independently-published literature value
+    (``expected["literature_component_parameters"]``) instead of
+    the earlier, now-superseded near-zero-width-bounds hard pin
+    -- this lets the photometric data still move radius away
+    from its literature value if it genuinely disagrees, rather
+    than freezing it outright.
     """
 
     validation_dir = _VALIDATION_DIR
@@ -682,15 +707,51 @@ def run_alwardat_benchmark(
     }
 
     # ------------------------------------------------------
-    # Build initial parameters and bounds (free parameters get
-    # the grid's actual Teff range / wide physical bounds;
-    # fixed parameters get a near-zero-width range pinning
-    # them at their initial value).
+    # Build initial parameters, fit_flags, and priors.
+    #
+    # fit_flags[name]=True for every name in
+    # expected["free_parameters"] -- everything else stays
+    # fixed at its initial_parameters value, genuinely absent
+    # from the optimizer's parameter vector (not a near-zero-
+    # width bounds pin).
+    #
+    # A freed radius gets a Gaussian prior tying it to this
+    # system's literature radius (see _RADIUS_PRIOR_RELATIVE_SIGMA
+    # below for the assumed sigma): unresolved-photometry-only
+    # fitting cannot determine (Teff, R) for each component
+    # independently (see expected["radius_prior_note"]), so
+    # freeing radius without some independent constraint just
+    # reproduces that degeneracy.
     # ------------------------------------------------------
 
     initial = expected["initial_parameters"]
 
     free = set(expected["free_parameters"])
+
+    literature = expected["literature_component_parameters"]
+
+    fit_flags = {
+        name: name in free
+        for name in _PHOTOMETRIC_PARAMETER_NAMES
+    }
+
+    priors = {}
+
+    for name, component in (
+        ("primary_radius", "primary"),
+        ("secondary_radius", "secondary"),
+    ):
+
+        if name not in free:
+
+            continue
+
+        literature_radius = literature[component]["radius_Rsun"]
+
+        priors[name] = (
+            literature_radius,
+            literature_radius * _RADIUS_PRIOR_RELATIVE_SIGMA,
+        )
 
     parameters = PhotometricParameters(
         primary_temperature=initial["primary_temperature"],
@@ -698,49 +759,13 @@ def run_alwardat_benchmark(
         primary_radius=initial["primary_radius"],
         secondary_radius=initial["secondary_radius"],
         ebv=initial["ebv"],
+        fit_flags=fit_flags,
+        priors=priors,
     )
 
-    teff_min = min(atmosphere_grid.temperatures)
-
-    teff_max = max(atmosphere_grid.temperatures)
-
-    epsilon = 1.0e-6
-
-    lower = []
-
-    upper = []
-
-    for name in _PHOTOMETRIC_PARAMETER_NAMES:
-
-        value = initial[name]
-
-        if name not in free:
-
-            lower.append(value - epsilon)
-
-            upper.append(value + epsilon)
-
-            continue
-
-        if name in ("primary_temperature", "secondary_temperature"):
-
-            lower.append(teff_min)
-
-            upper.append(teff_max)
-
-        else:
-
-            phys_lower, phys_upper = (
-                _PHOTOMETRIC_PHYSICAL_BOUNDS[name]
-            )
-
-            lower.append(phys_lower)
-
-            upper.append(phys_upper)
-
-    bounds = (
-        np.array(lower, dtype=float),
-        np.array(upper, dtype=float),
+    bounds = build_parameter_bounds(
+        parameters,
+        atmosphere_grid=atmosphere_grid,
     )
 
     # ------------------------------------------------------
@@ -762,9 +787,22 @@ def run_alwardat_benchmark(
 
     fitted = fit_result.elements.parameters
 
-    residuals = np.asarray(
-        fit_result.residuals,
-        dtype=float
+    # ------------------------------------------------------
+    # Recompute PURE measurement residuals fresh from the fitted
+    # solution, rather than trusting fit_result.residuals
+    # directly: when any parameter carries a Gaussian prior,
+    # fit_result.residuals is what the optimizer actually
+    # minimized -- real measurement residuals PLUS trailing
+    # prior pseudo-residuals (see
+    # inference.photometric_likelihood
+    # .photometric_residuals_with_priors_from_problem's
+    # docstring) -- and chi-square/RMS/degrees-of-freedom
+    # reported here should reflect the data-model mismatch only,
+    # for a clean literature comparison.
+    # ------------------------------------------------------
+
+    residuals = photometric_residuals_from_problem(
+        fit_result.elements
     )
 
     n_params = len(free)
@@ -847,6 +885,11 @@ def run_alwardat_benchmark(
         ),
 
         "free_parameters": sorted(free),
+
+        "priors": {
+            name: {"mean": mean, "sigma": sigma}
+            for name, (mean, sigma) in priors.items()
+        },
 
         "statistics": stats,
 
