@@ -27,6 +27,63 @@ from pyseshat.inference.photometric_problem import (
 
 
 # ==========================================================
+# scipy-compatible residual wrapper
+# ==========================================================
+#
+# photometric_residuals_from_problem(problem) takes a single,
+# already-built PhotometricInferenceProblem -- it has no
+# (values, *args) signature, because a "problem" already
+# carries a specific parameter vector, not a trial one. But
+# scipy.optimize.least_squares (via run_least_squares) always
+# calls its residual_function as residual_function(x, *args),
+# where x is the CURRENT trial parameter vector the optimizer
+# is evaluating, and args is whatever was passed as
+# residual_args. Passing photometric_residuals_from_problem
+# straight through as residual_function (as this module
+# previously did) means scipy calls it as
+# photometric_residuals_from_problem(x, problem) -- two
+# positional arguments against a one-argument function -- and
+# every call raises TypeError before a single residual is ever
+# evaluated. This was never caught because nothing exercised
+# fit_photometry_from_problem()/fit_photometry() end-to-end
+# before the Al-Wardat SED validation (see
+# docs/project_decisions.md); every existing photometric test
+# calls photometric_residuals_from_problem() directly with one
+# fixed problem, which is a valid call and never hits this
+# path. This wrapper rebuilds a fresh problem at the optimizer's
+# current trial vector on every call, matching the convention
+# every other residual function in this package already follows
+# (e.g. inference.likelihood.visual_xy_residuals(parameters,
+# elements, ...)).
+
+def _photometric_residuals_for_optimizer(
+    values,
+    problem,
+):
+    """
+    scipy-compatible residual function for photometric
+    least-squares fitting: rebuild the trial
+    PhotometricInferenceProblem at ``values`` and delegate to
+    photometric_residuals_from_problem().
+    """
+
+    trial_problem = PhotometricInferenceProblem(
+
+        parameters=update_parameters(
+            problem.parameters,
+            values,
+        ),
+
+        context=problem.context,
+
+    )
+
+    return photometric_residuals_from_problem(
+        trial_problem
+    )
+
+
+# ==========================================================
 # Physical parameter bounds
 # ==========================================================
 
@@ -92,7 +149,7 @@ def fit_photometry_from_problem(
 
         initial_parameters=parameters.fitted_parameters(),
 
-        residual_function=photometric_residuals_from_problem,
+        residual_function=_photometric_residuals_for_optimizer,
 
         residual_args=(problem,),
 

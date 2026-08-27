@@ -26,6 +26,56 @@ from pyseshat.inference.photometric_problem import (
 
 
 # ==========================================================
+# emcee-compatible log-probability wrapper
+# ==========================================================
+#
+# Same defect as inference.photometric_optimizer's
+# _photometric_residuals_for_optimizer (see that module's
+# comment for the full explanation): emcee's EnsembleSampler
+# always calls log_probability_function(x, *args), where x is
+# the CURRENT walker parameter vector -- but
+# photometric_log_posterior_from_problem(problem) takes a
+# single, already-built PhotometricInferenceProblem, not a raw
+# parameter vector. Passing it straight through as
+# log_probability_function (as this module previously did)
+# means every walker evaluation raised
+#
+#   TypeError: photometric_log_posterior_from_problem() takes
+#   1 positional argument but 2 were given
+#
+# before a single step was ever taken. This wrapper rebuilds a
+# trial PhotometricInferenceProblem at the sampler's current
+# walker position on every call, mirroring
+# _photometric_residuals_for_optimizer.
+
+def _photometric_log_posterior_for_sampler(
+    values,
+    problem,
+):
+    """
+    emcee-compatible log-probability function for photometric
+    MCMC sampling: rebuild the trial PhotometricInferenceProblem
+    at ``values`` and delegate to
+    photometric_log_posterior_from_problem().
+    """
+
+    trial_problem = PhotometricInferenceProblem(
+
+        parameters=update_parameters(
+            problem.parameters,
+            values,
+        ),
+
+        context=problem.context,
+
+    )
+
+    return photometric_log_posterior_from_problem(
+        trial_problem
+    )
+
+
+# ==========================================================
 # Canonical Bayesian photometric inference
 # ==========================================================
 
@@ -52,7 +102,7 @@ def sample_photometry_from_problem(
     result = run_emcee(
 
         log_probability_function=(
-            photometric_log_posterior_from_problem
+            _photometric_log_posterior_for_sampler
         ),
 
         log_probability_args=(

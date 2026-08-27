@@ -151,13 +151,29 @@ def test_sample_photometry(monkeypatch):
 
     )
 
+    # Was "photometric_log_posterior_from_problem" before
+    # 2026-08-27 -- that name was itself the bug this codebase
+    # shipped with: sample_photometry_from_problem() used to
+    # pass photometric_log_posterior_from_problem (a one-
+    # argument function) straight through as emcee's
+    # log_probability_function, which emcee always calls as
+    # fn(x, *args) -- a TypeError on every single walker
+    # evaluation, so no real MCMC run ever completed before
+    # this was found and fixed (see docs/project_decisions.md,
+    # "Al-Wardat SED validation: first end-to-end run"). The
+    # fix wraps it in _photometric_log_posterior_for_sampler(),
+    # which rebuilds a trial problem at each call's parameter
+    # vector and *is* what's actually passed to run_emcee now --
+    # this assertion is checking the corrected wiring, not
+    # reverting to the old, broken one.
+
     assert (
 
         captured["log_probability_function"].__name__
 
         ==
 
-        "photometric_log_posterior_from_problem"
+        "_photometric_log_posterior_for_sampler"
 
     )
 

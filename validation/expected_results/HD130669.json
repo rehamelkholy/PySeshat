@@ -1,0 +1,126 @@
+{
+  "system_name": "HD130669",
+  "aliases": [
+    "HIP 72479"
+  ],
+  "fitting_path": "alwardat_sed",
+  "supported": "yes",
+  "blocked_reason": null,
+  "reference": "Abushattal, Georgakarakos, Al-Wardat, Algnamat, Haboubi, Dewi, Abu-Alrob & Hussein 2025, AJ, in press; arXiv:2512.23652, doi:10.3847/1538-3881/ae0582",
+  "reference_table": "Table 1 (system parameters), Table 4 (Entire-system Johnson/Tycho photometry), Table 5 (component Teff/R/L/M), Table 6 (orbital parallax)",
+  "distance_pc": {
+    "value": 46.3,
+    "sigma": 0.6,
+    "source": "orbital parallax 21.6+-0.3 mas (Table 6), d=1000/plx"
+  },
+  "metallicity": {
+    "value": 0.0,
+    "literature_value": -0.03,
+    "note": "Approximated as solar (0.0) to match the only metallicity currently downloaded in the local CK04 grid (validation/atmosphere_models/ckp00/, [M/H]=0.0); the literature value is retained here for reference and as a documented simplification, not silently dropped."
+  },
+  "primary_logg": {
+    "value": 4.426,
+    "note": "Derived from literature M=0.89 Msun, R=0.956 Rsun via logg=4.4377+log10(M)-2log10(R); not stated directly in the source paper (Table 5 gives only a system-wide range, ~4.37-4.80)."
+  },
+  "secondary_logg": {
+    "value": 4.427,
+    "note": "Derived from literature M=0.88 Msun, R=0.95 Rsun the same way."
+  },
+  "atmosphere_files": [
+    "ckp00/ckp00_5000.fits",
+    "ckp00/ckp00_5250.fits",
+    "ckp00/ckp00_5500.fits"
+  ],
+  "atmosphere_grid_note": "Both components (5290K, 5230K) fall below the previous grid floor (5750K); needed ckp00_5000.fits and ckp00_5250.fits, downloaded 2026-08-27. ckp00_5500.fits was also added 2026-08-27 after the first post-download run failed with 'Initial guess is outside of provided bounds': the primary component's literature Teff (5290K) sits above the 5000-5250K bracket originally listed here (which only bracketed the secondary's 5230K), so the grid must extend to 5500K to bracket both components.",
+  "measurements": [
+    {
+      "passband": "Johnson B",
+      "magnitude": 9.28,
+      "uncertainty": 0.02,
+      "note": "uncertainty not stated in the source paper; 0.02 mag is a typical Hipparcos/Tycho-era ground-based photometric uncertainty, assumed pending a literature value."
+    },
+    {
+      "passband": "Johnson V",
+      "magnitude": 8.42,
+      "uncertainty": 0.02,
+      "note": "uncertainty not stated in the source paper; 0.02 mag is a typical Hipparcos/Tycho-era ground-based photometric uncertainty, assumed pending a literature value."
+    },
+    {
+      "passband": "Tycho BT",
+      "magnitude": 9.52,
+      "uncertainty": 0.02,
+      "note": "uncertainty not stated in the source paper; 0.02 mag is a typical Hipparcos/Tycho-era ground-based photometric uncertainty, assumed pending a literature value."
+    },
+    {
+      "passband": "Tycho VT",
+      "magnitude": 8.51,
+      "uncertainty": 0.02,
+      "note": "uncertainty not stated in the source paper; 0.02 mag is a typical Hipparcos/Tycho-era ground-based photometric uncertainty, assumed pending a literature value."
+    },
+    {
+      "passband": "Johnson U",
+      "magnitude": 9.78,
+      "uncertainty": 0.02,
+      "note": "sourced from Table 4 of the same reference; uncertainty not stated in the source paper, 0.02 mag assumed pending a literature value, consistent with the other measurements for this system."
+    },
+    {
+      "passband": "Johnson R",
+      "magnitude": 7.95,
+      "uncertainty": 0.02,
+      "note": "sourced from Table 4 of the same reference; uncertainty not stated in the source paper, 0.02 mag assumed pending a literature value, consistent with the other measurements for this system."
+    },
+    {
+      "passband": "Stromgren v",
+      "magnitude": 9.76,
+      "uncertainty": 0.02,
+      "note": "sourced from Table 4 of the same reference; uncertainty not stated in the source paper, 0.02 mag assumed pending a literature value, consistent with the other measurements for this system."
+    },
+    {
+      "passband": "Stromgren b",
+      "magnitude": 8.88,
+      "uncertainty": 0.02,
+      "note": "sourced from Table 4 of the same reference; uncertainty not stated in the source paper, 0.02 mag assumed pending a literature value, consistent with the other measurements for this system."
+    },
+    {
+      "passband": "Stromgren y",
+      "magnitude": 8.38,
+      "uncertainty": 0.02,
+      "note": "sourced from Table 4 of the same reference; uncertainty not stated in the source paper, 0.02 mag assumed pending a literature value, consistent with the other measurements for this system."
+    }
+  ],
+  "initial_parameters": {
+    "primary_temperature": 5290.0,
+    "secondary_temperature": 5230.0,
+    "primary_radius": 0.956,
+    "secondary_radius": 0.95,
+    "ebv": 0.0
+  },
+  "free_parameters": [
+    "primary_temperature",
+    "secondary_temperature",
+    "ebv"
+  ],
+  "fixed_parameters_note": "Radius is pinned at its literature value rather than freed alongside Teff1/Teff2/E(B-V): Table 4 of the same reference supplies 10 real entire-system measurements (Johnson U/B/V/R, Stromgren u/v/b/y, Tycho BT/VT) for this system, which is formally enough degrees of freedom to free all 5 photometric parameters (Teff1, Teff2, R1, R2, E(B-V)). Freeing all 5 was tested (2026-08-27) even with the full 10-band dataset and still collapsed to a non-physical solution (one radius pinned at its lower optimizer bound, the other driven to ~2x its literature value) with a far worse chi-square than the 3-free-parameter fit. This confirms the earlier 4-measurement finding was a genuine degeneracy in unresolved-binary photometric SED fitting, not a data-starvation artifact: an unresolved combined-light SED alone cannot uniquely separate two stars' individual (Teff, R) pairs, no matter how many bands are added, because each star's broadband flux depends on Teff and R only through the combination R^2*Teff^4-ish integrated over the passband -- a genuine physical degeneracy axis that only breaks with an independent constraint on radius (e.g. a dynamical-mass + mass-radius relation, or interferometry), which is exactly why the real Al-Wardat method combines SED fitting with evolutionary-track/isochrone cross-checks rather than fitting radius from photometry alone. See docs/project_decisions.md for the full investigation, including the Sun-at-10pc pipeline calibration check that ruled out a synthetic-photometry code bug before reaching this conclusion.",
+  "literature_component_parameters": {
+    "primary": {
+      "teff_K": 5290.0,
+      "luminosity_Lsun": 0.64,
+      "radius_Rsun": 0.956,
+      "mass_Msun": 0.89
+    },
+    "secondary": {
+      "teff_K": 5230.0,
+      "luminosity_Lsun": 0.61,
+      "radius_Rsun": 0.95,
+      "mass_Msun": 0.88
+    }
+  },
+  "excluded_measurements": [
+    {
+      "passband": "Stromgren u",
+      "magnitude": 10.94,
+      "uncertainty": 0.02,
+      "note": "Excluded 2026-08-27: the SVO Filter Profile Service 'Generic/Stromgren.u' Vega-system zero point (3.2441e-9 erg/s/cm2/A) was found to disagree with this system's measured Stromgren u magnitude by ~1.7 mag -- a factor of ~4.7x in flux -- far outside the ~0.25-0.5 mag systematic offset seen consistently across every other band (Johnson U/B/V/R, Stromgren v/b/y, Tycho BT/VT). The same ~1-1.5 mag anomaly, specific to Stromgren u, also showed up independently in a Sun-at-10pc pipeline sanity check. This points to the classical Stromgren uvbybeta system's u-band zero point (as originally calibrated by Crawford & Barnes 1970 against a specific set of standard stars) being offset from a naive Vega-spectrum convolution in a well-documented, system-specific way that a simple SVO Vega zero point does not capture -- not a bug in this pipeline's flux scaling (verified correct via the same Sun-at-10pc check, and via Johnson/Tycho bands all matching literature to <0.1 mag). Excluded from fitting pending a properly-calibrated Stromgren-system zero point; retained here as a documented, sourced literature value for future work."
+    }
+  ]
+}

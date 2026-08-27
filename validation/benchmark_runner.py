@@ -51,6 +51,26 @@ from pyseshat.triple.orbit3_fit import (
     fit_orbit3
 )
 
+from pyseshat.stellar.atmospheres import (
+    load_ck04_grid
+)
+
+from pyseshat.photometry.filters import (
+    load_passband
+)
+
+from pyseshat.photometry.observations import (
+    PhotometricMeasurement
+)
+
+from pyseshat.photometry.parameters import (
+    PhotometricParameters
+)
+
+from pyseshat.inference.photometric_optimizer import (
+    fit_photometry
+)
+
 from metrics import (
     parameter_relative_error
 )
@@ -525,6 +545,335 @@ def run_orbit3_benchmark(
 
 
 # ==========================================================
+# Al-Wardat SED helpers
+#
+# Unlike the binary and ORBIT3 paths, an Al-Wardat SED
+# benchmark has no orbit-observation data file at all: its
+# expected_results/*.json IS the input (fixed distance/logg/
+# metallicity, combined-system photometric measurements) as
+# well as the comparison target (literature component Teff/R/
+# L/M). See docs/project_decisions.md's "Al-Wardat SED
+# validation: first end-to-end run" section for the full
+# derivation of these systems and the two bugs this path's
+# first real run surfaced (both already fixed in
+# inference.photometric_optimizer/photometric_mcmc).
+# ==========================================================
+
+# Vega zero points (erg s^-1 cm^-2 Angstrom^-1) for every
+# passband an alwardat_sed system's "measurements" may name,
+# matching the constants already established and used in
+# tests/test_ck04_photometric_chi_square.py and
+# tests/test_tycho_synthetic_photometry.py.
+
+_ALWARDAT_ZERO_POINTS = {
+    "Johnson U": 3.49719e-9,
+    "Johnson B": 6.72553e-9,
+    "Johnson V": 3.5833e-9,
+    "Johnson R": 1.87529e-9,
+    "Stromgren u": 3.2441e-9,
+    "Stromgren v": 7.27101e-9,
+    "Stromgren b": 5.78663e-9,
+    "Stromgren y": 3.6203e-9,
+    "Tycho BT": 6.50910e-9,
+    "Tycho VT": 3.99504e-9,
+}
+# All ten zero points are SVO Filter Profile Service "Vega system"
+# values (http://svo2.cab.inta-csic.es/theory/fps/), fetched
+# together with the matching transmission curve below for each
+# band, so calibrator (Vega) and target photometry are always
+# integrated through the identical passband shape SVO used to
+# derive the zero point -- see the "Sun @ 10 pc" pipeline check in
+# tests/test_synthetic_photometry_sun_calibration.py, which
+# validates this whole chain (grid interpolation -> (R/d)^2 scaling
+# -> passband integration -> zero point) against the well-known
+# literature value M_V(Sun) = 4.83.
+
+_ALWARDAT_PASSBAND_FILES = {
+    "Johnson U": "johnson_u.dat",
+    "Johnson B": "johnson_b.dat",
+    "Johnson V": "johnson_v.dat",
+    "Johnson R": "johnson_r.dat",
+    "Stromgren u": "stromgren_u.dat",
+    "Stromgren v": "stromgren_v.dat",
+    "Stromgren b": "stromgren_b.dat",
+    "Stromgren y": "stromgren_y.dat",
+    "Tycho BT": "tycho_bt.dat",
+    "Tycho VT": "tycho_vt.dat",
+}
+
+_PHOTOMETRIC_PARAMETER_NAMES = (
+    "primary_temperature",
+    "secondary_temperature",
+    "primary_radius",
+    "secondary_radius",
+    "ebv",
+)
+
+_PHOTOMETRIC_PHYSICAL_BOUNDS = {
+    "primary_radius": (0.01, 100.0),
+    "secondary_radius": (0.01, 100.0),
+    "ebv": (0.0, 10.0),
+}
+
+
+def run_alwardat_benchmark(
+    system_name,
+    expected
+):
+    """
+    Execute an Al-Wardat unresolved-binary photometric SED fit
+    and compare the fitted parameters to the system's
+    independently-published literature component parameters.
+
+    Only ``expected["free_parameters"]`` are actually varied by
+    the optimizer; every other photometric parameter is pinned
+    at its ``initial_parameters`` value via a near-zero-width
+    bounds range. As of 2026-08-27 all four registered alwardat_sed
+    systems supply 10 real Table-4 measurements (Johnson U/B/V/R,
+    Stromgren u/v/b/y, Tycho BT/VT), enough to free all five
+    photometric parameters (Teff1, Teff2, R1, R2, E(B-V)) at once;
+    ``expected["fixed_parameters_note"]`` documents the earlier,
+    now-superseded 4-measurement/3-free-parameter workaround for
+    historical reference.
+    """
+
+    validation_dir = _VALIDATION_DIR
+
+    # ------------------------------------------------------
+    # Load the atmosphere grid and passbands this system's
+    # expected_results file says it needs.
+    # ------------------------------------------------------
+
+    atmosphere_grid = load_ck04_grid([
+        validation_dir / "atmosphere_models" / relative_path
+        for relative_path in expected["atmosphere_files"]
+    ])
+
+    measurements = [
+        PhotometricMeasurement(
+            passband=entry["passband"],
+            magnitude=entry["magnitude"],
+            uncertainty=entry["uncertainty"],
+        )
+        for entry in expected["measurements"]
+    ]
+
+    passband_names = sorted({
+        measurement.passband
+        for measurement in measurements
+    })
+
+    passbands = {
+        name: load_passband(
+            filename=(
+                validation_dir
+                / "photometry"
+                / "passbands"
+                / _ALWARDAT_PASSBAND_FILES[name]
+            ),
+            name=name,
+        )
+        for name in passband_names
+    }
+
+    zero_points = {
+        name: _ALWARDAT_ZERO_POINTS[name]
+        for name in passband_names
+    }
+
+    # ------------------------------------------------------
+    # Build initial parameters and bounds (free parameters get
+    # the grid's actual Teff range / wide physical bounds;
+    # fixed parameters get a near-zero-width range pinning
+    # them at their initial value).
+    # ------------------------------------------------------
+
+    initial = expected["initial_parameters"]
+
+    free = set(expected["free_parameters"])
+
+    parameters = PhotometricParameters(
+        primary_temperature=initial["primary_temperature"],
+        secondary_temperature=initial["secondary_temperature"],
+        primary_radius=initial["primary_radius"],
+        secondary_radius=initial["secondary_radius"],
+        ebv=initial["ebv"],
+    )
+
+    teff_min = min(atmosphere_grid.temperatures)
+
+    teff_max = max(atmosphere_grid.temperatures)
+
+    epsilon = 1.0e-6
+
+    lower = []
+
+    upper = []
+
+    for name in _PHOTOMETRIC_PARAMETER_NAMES:
+
+        value = initial[name]
+
+        if name not in free:
+
+            lower.append(value - epsilon)
+
+            upper.append(value + epsilon)
+
+            continue
+
+        if name in ("primary_temperature", "secondary_temperature"):
+
+            lower.append(teff_min)
+
+            upper.append(teff_max)
+
+        else:
+
+            phys_lower, phys_upper = (
+                _PHOTOMETRIC_PHYSICAL_BOUNDS[name]
+            )
+
+            lower.append(phys_lower)
+
+            upper.append(phys_upper)
+
+    bounds = (
+        np.array(lower, dtype=float),
+        np.array(upper, dtype=float),
+    )
+
+    # ------------------------------------------------------
+    # Run fit
+    # ------------------------------------------------------
+
+    fit_result = fit_photometry(
+        parameters=parameters,
+        atmosphere_grid=atmosphere_grid,
+        passbands=passbands,
+        zero_points=zero_points,
+        measurements=measurements,
+        primary_logg=expected["primary_logg"]["value"],
+        secondary_logg=expected["secondary_logg"]["value"],
+        metallicity=expected["metallicity"]["value"],
+        distance=expected["distance_pc"]["value"],
+        bounds=bounds,
+    )
+
+    fitted = fit_result.elements.parameters
+
+    residuals = np.asarray(
+        fit_result.residuals,
+        dtype=float
+    )
+
+    n_params = len(free)
+
+    n_data = int(residuals.size)
+
+    dof = max(n_data - n_params, 1)
+
+    chi2 = float(np.sum(residuals ** 2))
+
+    stats = _normalize_statistics(
+        {},
+        chi_square=chi2,
+        reduced_chi_square=chi2 / dof,
+        rms=float(np.sqrt(np.mean(residuals ** 2))),
+        n_data=n_data,
+        n_params=n_params,
+    )
+
+    # ------------------------------------------------------
+    # Compare fitted Teff/E(B-V) to the literature component
+    # parameters. Radius is not compared here when it was held
+    # fixed (fixed parameters trivially "match" by construction)
+    # -- parameter_errors instead reports only the parameters
+    # this fit actually solved for.
+    # ------------------------------------------------------
+
+    literature = expected["literature_component_parameters"]
+
+    parameter_errors = {}
+
+    fit_map = {
+        "primary_temperature": (
+            "primary", "teff_K", fitted.primary_temperature
+        ),
+        "secondary_temperature": (
+            "secondary", "teff_K", fitted.secondary_temperature
+        ),
+        "primary_radius": (
+            "primary", "radius_Rsun", fitted.primary_radius
+        ),
+        "secondary_radius": (
+            "secondary", "radius_Rsun", fitted.secondary_radius
+        ),
+    }
+
+    for name, (component, key, fitted_value) in fit_map.items():
+
+        if name not in free:
+
+            continue
+
+        literature_value = literature[component][key]
+
+        parameter_errors[name] = {
+
+            "expected": float(literature_value),
+
+            "fitted": float(fitted_value),
+
+            "relative_error": float(
+                abs(fitted_value - literature_value)
+                / abs(literature_value)
+            ),
+        }
+
+    return {
+
+        "system": system_name,
+
+        "orbit_type": expected.get(
+            "orbit_type",
+            "alwardat_sed"
+        ),
+
+        "fitting_path": "alwardat_sed",
+
+        "paper_table_row": expected.get(
+            "paper_table_row"
+        ),
+
+        "free_parameters": sorted(free),
+
+        "statistics": stats,
+
+        "parameter_errors": parameter_errors,
+
+        "fitted_elements": {
+            name: float(getattr(fitted, name))
+            for name in _PHOTOMETRIC_PARAMETER_NAMES
+        },
+
+        "optimizer_success": bool(
+            fit_result.optimizer_result.success
+        ),
+
+        "optimizer_message": str(
+            fit_result.optimizer_result.message
+        ),
+
+        "mass_dynamical_Msun": None,
+
+        "mass_sigma_Msun": None,
+
+        "mass_relative_sigma": None,
+    }
+
+
+# ==========================================================
 # Benchmark execution
 # ==========================================================
 
@@ -559,6 +908,13 @@ def run_benchmark(
         return run_orbit3_benchmark(
             system_name,
             config,
+            expected
+        )
+
+    if expected.get("fitting_path") == "alwardat_sed":
+
+        return run_alwardat_benchmark(
+            system_name,
             expected
         )
 

@@ -1,0 +1,42 @@
+{
+  "system": "HD214222",
+  "orbit_type": "alwardat_sed",
+  "fitting_path": "alwardat_sed",
+  "paper_table_row": null,
+  "free_parameters": [
+    "ebv",
+    "primary_temperature",
+    "secondary_temperature"
+  ],
+  "statistics": {
+    "chi_square": 136.95432916661926,
+    "reduced_chi_square": 22.825721527769876,
+    "rms": 3.900916262261972,
+    "n_data": 9,
+    "n_params": 3
+  },
+  "parameter_errors": {
+    "primary_temperature": {
+      "expected": 6075.0,
+      "fitted": 6002.303857580818,
+      "relative_error": 0.01196644319657321
+    },
+    "secondary_temperature": {
+      "expected": 6000.0,
+      "fitted": 5750.000000000283,
+      "relative_error": 0.04166666666661952
+    }
+  },
+  "fitted_elements": {
+    "primary_temperature": 6002.303857580818,
+    "secondary_temperature": 5750.000000000283,
+    "primary_radius": 1.1399990000000002,
+    "secondary_radius": 1.0949990000000003,
+    "ebv": 0.04993402581843262
+  },
+  "optimizer_success": true,
+  "optimizer_message": "`ftol` termination condition is satisfied.",
+  "mass_dynamical_Msun": null,
+  "mass_sigma_Msun": null,
+  "mass_relative_sigma": null
+}

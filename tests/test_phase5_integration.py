@@ -318,7 +318,14 @@ def test_phase5_orbit_to_evolution_to_consistency():
         0.0
     )
 
-    assert result.primary_luminosity_sigma == pytest.approx(
+    # Was `primary_luminosity_sigma` before 2026-08-27:
+    # BinaryConsistencyResult has no such field; the real field
+    # is `primary_luminosity_z_score`, the dimensionless
+    # (observed - evolutionary) / sigma_observed significance --
+    # see the same fix in test_phase5_fit_results.py and
+    # docs/project_decisions.md.
+
+    assert result.primary_luminosity_z_score == pytest.approx(
         0.0
     )
 
@@ -330,6 +337,9 @@ def test_phase5_orbit_to_evolution_to_consistency():
         -0.10
     )
 
-    assert result.secondary_luminosity_sigma == pytest.approx(
+    # Was `secondary_luminosity_sigma` -- see the comment on
+    # the primary field above.
+
+    assert result.secondary_luminosity_z_score == pytest.approx(
         0.0
     )

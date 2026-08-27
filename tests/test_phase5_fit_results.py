@@ -291,7 +291,16 @@ def test_build_binary_consistency_from_fit_results():
         abs=1e-10,
     )
 
-    assert result.primary_luminosity_sigma == pytest.approx(
+    # Was `primary_luminosity_sigma` before 2026-08-27:
+    # `BinaryConsistencyResult` has no such field (and never
+    # did in this shape -- see its docstring). The actual field
+    # is `primary_luminosity_z_score`, a dimensionless
+    # (observed - evolutionary) / sigma_observed significance,
+    # not a raw sigma; for this deliberately self-consistent
+    # fixture (observed == evolutionary exactly) it evaluates
+    # to 0.0 either way, which is what this assertion checks.
+
+    assert result.primary_luminosity_z_score == pytest.approx(
         0.0,
         abs=1e-10,
     )
@@ -306,7 +315,10 @@ def test_build_binary_consistency_from_fit_results():
         abs=1e-10,
     )
 
-    assert result.secondary_luminosity_sigma == pytest.approx(
+    # Was `secondary_luminosity_sigma` -- see the comment on
+    # the primary field above.
+
+    assert result.secondary_luminosity_z_score == pytest.approx(
         0.0,
         abs=1e-10,
     )

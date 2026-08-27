@@ -2,3 +2,10 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+
+# Demo-script test files (test_ephemeris_result.py, test_fit_result_io.py,
+# test_fit_result_roundtrip.py, test_report_writer.py) regenerate their
+# FIN379 output here on every pytest collection -- see
+# docs/project_decisions.md, "FIN379 files stranded at repo root"
+# (2026-08-27).
+tests/artifacts/

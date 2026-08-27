@@ -22,6 +22,22 @@ from pyseshat.io.report_writer import (
     write_text_report
 )
 
+# This file has no `def test_...` functions and no assertions --
+# a demo script, not a real pytest test (see test_fit_result_io.py
+# for the full explanation). It used to write FIN379_report.txt
+# with a bare relative path, which landed at the repo root -- see
+# docs/project_decisions.md, "FIN379 files stranded at repo root"
+# (2026-08-27). Anchored to this file's own location instead.
+
+ARTIFACTS_DIR = (
+    Path(__file__).resolve().parent / "artifacts"
+)
+
+ARTIFACTS_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
 filepath = Path(
     "validation/benchmark_systems/FIN379/FIN379.inp"
 )
@@ -112,7 +128,7 @@ text = report_to_text(
 
 outfile = write_text_report(
     text,
-    "FIN379_report.txt"
+    str(ARTIFACTS_DIR / "FIN379_report.txt")
 )
 
 print()

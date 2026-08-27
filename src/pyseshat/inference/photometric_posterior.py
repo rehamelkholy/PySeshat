@@ -41,9 +41,38 @@ def photometric_log_posterior_from_problem(
 
         return -np.inf
 
-    ll = photometric_log_likelihood_from_problem(
-        problem
-    )
+    # ======================================================
+    # Treat an out-of-grid model evaluation as zero posterior
+    # probability, not a crash.
+    # ======================================================
+    #
+    # log_photometric_prior()'s temperature bounds are generic
+    # physical limits (2500-50000K), not the range actually
+    # covered by whatever CK04 FITS files a given problem's
+    # atmosphere_grid happens to have loaded (which, in
+    # practice, is almost always a small subset of the full
+    # grid -- see validation/benchmark_runner.py). An MCMC
+    # walker proposing a temperature inside the generic prior
+    # but outside the loaded grid is a physically legitimate
+    # region of parameter space that this problem instance
+    # simply can't evaluate; AtmosphereGrid.interpolate() raises
+    # ValueError for it. The correct Bayesian treatment is the
+    # same as failing the prior: log-posterior = -inf, so the
+    # sampler naturally steers away from it, rather than the
+    # exception propagating up through emcee and killing the
+    # whole run (as it did during real MCMC exploration while
+    # validating the Al-Wardat benchmarks -- see
+    # docs/project_decisions.md, 2026-08-27).
+
+    try:
+
+        ll = photometric_log_likelihood_from_problem(
+            problem
+        )
+
+    except ValueError:
+
+        return -np.inf
 
     return lp + ll
 
