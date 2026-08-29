@@ -26,7 +26,7 @@ stated plainly rather than left implicit.
 | 2 | Residual distribution | `plot_residuals()`; same script writes `.../residuals.png` per system | Done for FIN379/GL765/Capella/AlphaCenAB; not yet generated for the triple or SED-only systems (see `docs/guide/visualization.md` for why) |
 | 3 | Posterior distributions | `MCMCResult.corner_plot()`; `examples/02_mcmc_posterior_exploration.py` | Done — runnable end to end; not pre-rendered to a saved PNG in this repo, since MCMC output depends on the run (seed the RNG, as the example does, for a reproducible figure) |
 | 4 | SED fit | **No dedicated plotting function exists.** `examples/04_alwardat_sed_fit.py` fits and numerically reports the SED comparison (fitted vs. observed magnitude per band) but does not plot it | **Gap.** Building this (fitted model spectrum + measured points per passband, likely a magnitude-vs-wavelength or flux-vs-wavelength plot) is real, concrete future work — see `docs/paper_reference_notes.md`'s "Future work" |
-| 5 | HR diagram placement | `plot_binary_hrdiagram()`; tested with synthetic data in `tests/test_hrdiagram_plot.py` | **Gap for the 4 real Al-Wardat systems specifically** — no evolutionary-track cross-check has been run against any of HD214222/191854/130669/184467 yet (see `docs/guide/evolutionary_checks.md`); the plotting function itself works and is convention-correct, it just has no real-system data plugged in yet |
+| 5 | HR diagram placement | `plot_binary_hrdiagram()`; tested with synthetic data in `tests/test_hrdiagram_plot.py` | **Gap for the 6 real systems specifically (the 4 Al-Wardat SED systems plus Capella/AlphaCenAB)** — no evolutionary-track cross-check has been run against any of them yet (see `docs/guide/evolutionary_checks.md`); the plotting function itself works and is convention-correct, it just has no real-system data plugged in yet. **[2026-08-29]** The grid this would run on is now decided and code-integrated (Girardi et al. 2000, Z=0.019, matching the Al-Wardat SED literature — `evolution/grids.py`'s `"girardi2000"` model); real numeric grid data is not yet sourced (confirmed network blocker — see `docs/project_decisions.md`'s dated entry), so this remains a real, open gap, not a resolved one. |
 | 6 | Pipeline diagram | Not a data-driven plot — a static architecture diagram | `docs/architecture/package_tree.txt`, `class_diagram.puml` (via `architecture_snapshot.py`) give the raw structure to draw from; no finished diagram exists yet |
 
 ## Validated numeric claims (Section 3/"Validation")
@@ -55,7 +55,21 @@ remains:
    step (a specific ADQL query) once archive access is available.
 2. No SED-fit figure (essential figure 4) and no real-system HR-diagram
    figure (essential figure 5) — both are concrete, scoped, buildable
-   future work, not open scientific questions.
+   future work, not open scientific questions. **[2026-08-29]** For
+   figure 5 specifically, the evolutionary-track grid to use is now
+   decided (Girardi et al. 2000, Z=0.019, for direct comparability with
+   the Al-Wardat SED literature) and code-integrated
+   (`evolution/grids.py`'s `"girardi2000"` model,
+   `evolution/parsers/girardi2000.py`), closing the "which grid" part of
+   this gap. What remains is strictly a data-sourcing problem: real
+   Girardi (2000) numeric tracks/isochrones could not be obtained from
+   this development environment (VizieR, the CDS FTP archive, and both
+   the current and legacy Padova CMD web interfaces are all unreachable
+   from this session's network egress, confirmed on the cloud sandbox
+   and independently on the user's own linked device) — see
+   `docs/guide/evolutionary_checks.md`'s 2026-08-29 entry for the full
+   trail and next steps, and `docs/project_decisions.md`'s dated entry
+   for the exact citation/coverage details to use once data is in hand.
 3. Exo-Striker was not exercised (confirmed installable, but a GUI-only
    tool with no documented headless API) — disclosed as an honest
    limitation rather than forced through; see

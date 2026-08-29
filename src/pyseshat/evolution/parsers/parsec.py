@@ -1,3 +1,4 @@
+from io import StringIO
 from pathlib import Path
 
 import numpy as np
@@ -18,6 +19,20 @@ def _load_ascii_table(filename):
 
     Comment lines beginning with '#' are ignored.
 
+    Comment lines are filtered out before parsing, rather than
+    handled via ``numpy.genfromtxt(..., comments="#")``
+    directly: that option only strips the "#" character itself
+    from a line, not the whole line, so a comment line whose
+    remaining text happens to have a different word count than
+    the real header row (e.g. a descriptive
+    "# Girardi et al. 2000 tracks" comment above a 21-column
+    header) makes ``genfromtxt`` misdetect the number of
+    columns and raise on every data row. This was found and
+    fixed 2026-08-29 while adding the first direct tests for
+    this parser (see docs/guide/evolutionary_checks.md and
+    docs/project_decisions.md's dated entry) -- it had never
+    been exercised against a file with any comment line before.
+
     Returns
     -------
     ndarray
@@ -28,9 +43,20 @@ def _load_ascii_table(filename):
     if not filename.exists():
         raise FileNotFoundError(filename)
 
+    lines = [
+        line
+        for line in filename.read_text().splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+
+    if not lines:
+        raise ValueError(
+            f"No data found in {filename} "
+            "(file is empty or contains only comments)."
+        )
+
     return np.genfromtxt(
-        filename,
-        comments="#",
+        StringIO("\n".join(lines)),
         names=True,
         dtype=float,
         autostrip=True,

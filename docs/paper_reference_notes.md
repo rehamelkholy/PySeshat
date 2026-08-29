@@ -650,7 +650,18 @@ implemented — see each item's note for what was done and where.
    the evolution-context contract `inference/joint_likelihood.py`
    currently leaves undefined (`JointInferenceProblem.evolution_context`
    is typed `Any` with no per-component sample/observables contract yet).
-   See `docs/guide/evolutionary_checks.md`.
+   **[PARTIAL 2026-08-29]** The grid this item's evolutionary-track
+   output would come from is now decided and code-integrated: Girardi
+   et al. (2000), Z=0.019, registered as `evolution/grids.py`'s
+   `"girardi2000"` model (`DEFAULT_EVOLUTION_MODEL_NAME`), matching the
+   grid the Al-Wardat SED literature itself uses. Real numeric track/
+   isochrone data is not yet in the repository — sourcing it hit a
+   confirmed network blocker (VizieR, CDS FTP, and both Padova CMD
+   interfaces are unreachable from this development environment's
+   egress, on both the cloud sandbox and the user's own linked device;
+   see `docs/guide/evolutionary_checks.md`'s 2026-08-29 entry for the
+   full trail). The evolution-context-contract design work above is
+   therefore still open regardless. See `docs/guide/evolutionary_checks.md`.
 2. **A properly-sourced Stromgren u zero point.** Would restore the 10th
    real photometric measurement per Al-Wardat system. Requires a
    literature source this project hasn't found yet (checked: SVO Filter
@@ -720,12 +731,19 @@ implemented — see each item's note for what was done and where.
    everything such a plot would need (fitted parameters, per-band
    residuals); it just isn't drawn yet.
 10. **Run a real evolutionary-track cross-check and HR-diagram figure for
-    the four Al-Wardat systems** (essential figure 5;
-    `docs/paper_reproduction_notes.md`, `docs/guide/evolutionary_checks.md`)
-    — `plot_binary_hrdiagram()` itself is convention-correct and tested,
-    but has never been run against real HD214222/191854/130669/184467
-    data; doing so would also directly support future-work item 1 above
-    (an evolutionary-track-derived radius prior).
+    the four Al-Wardat systems (now six, with Capella/alpha Cen AB)**
+    (essential figure 5; `docs/paper_reproduction_notes.md`,
+    `docs/guide/evolutionary_checks.md`) — `plot_binary_hrdiagram()`
+    itself is convention-correct and tested, but has never been run
+    against real HD214222/191854/130669/184467/Capella/AlphaCenAB data.
+    **[PARTIAL 2026-08-29]** The grid to run it on is now decided
+    (Girardi et al. 2000, Z=0.019 — see item 1 above and
+    `docs/project_decisions.md`'s dated entry) and the loader code is in
+    place, but real grid data is not yet sourced (confirmed network
+    blocker); each affected system's `validation/expected_results/*.json`
+    now carries an `evolutionary_track_source` block stating this
+    explicitly. Doing so would also directly support future-work item 1
+    above (an evolutionary-track-derived radius prior).
 11. **Triage the remaining ~150 thin-docstring hits from
     `scripts/audit_docstrings.py`** (§6) not addressed this pass — most
     are simple property getters that likely don't need expansion, but a

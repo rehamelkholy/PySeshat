@@ -7,6 +7,14 @@
   "supported": "yes",
   "blocked_reason": null,
   "reference": "Abushattal, Georgakarakos, Al-Wardat, Algnamat, Haboubi, Dewi, Abu-Alrob & Hussein 2025, AJ, in press; arXiv:2512.23652, doi:10.3847/1538-3881/ae0582",
+  "evolutionary_track_source": {
+    "grid": "Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126",
+    "metallicity_used": 0.019,
+    "metallicity_note": "Z=0.019 (Y=0.273) is the paper's own identified solar-composition value (Sect. 2: \"almost identical to the Z=0.01886 favoured by Anders & Grevesse 1989\"), appropriate for this Sun-like system.",
+    "status": "not yet run",
+    "status_note": "Standardized on 2026-08-29 as this project's default evolutionary-track grid, for direct comparability with the Al-Wardat SED-fitting literature this system benchmarks against (which consistently uses Girardi 2000). Code-level integration (pyseshat.evolution.parsers.girardi2000, pyseshat.evolution.grids's \"girardi2000\" model) is in place, but no real Girardi (2000) numeric track/isochrone data has been sourced into this repository yet -- confirmed network blocker (VizieR, CDS FTP, and the Padova CMD legacy interface are all unreachable from this development environment's egress, including the linked user device; see docs/guide/evolutionary_checks.md's 2026-08-29 entry). No evolutionary consistency check has therefore been run against this system's fitted/literature (Teff, R) yet -- this is an open item, not a result, and no age/mass/evolutionary-stage number should be attributed to this system from this repository until that data is obtained.",
+    "prior_grid": "None -- no evolutionary-track grid (Girardi, PARSEC, or otherwise) had ever been run against this system before this entry; PARSEC parsing infrastructure existed in the codebase but with zero bundled data and zero benchmark wiring."
+  },
   "reference_table": "Table 1 (system parameters), Table 4 (Entire-system Johnson/Tycho photometry), Table 5 (component Teff/R/L/M), Table 6 (orbital parallax)",
   "distance_pc": {
     "value": 70.9,

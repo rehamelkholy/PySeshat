@@ -1981,3 +1981,213 @@ in `test_gaia_parser.py`, 1 new in `test_orbit_plot.py`'s North/East
 regression test counted in the prior entry). All 12 registered
 benchmark systems (the original 8 plus the 4 new Capella/alpha-Cen-AB
 rows) pass `validation/benchmark_runner.py::run_all_benchmarks()`.
+
+## Evolutionary-track grid standardized on Girardi et al. (2000), code integrated, real numeric data blocked by network access (2026-08-29)
+
+### 1. The ask and the audit
+
+The user asked PySeshat's own evolutionary consistency checks to be
+verified/standardized onto the same evolutionary-track grid the
+Al-Wardat SED-fitting literature consistently uses — Girardi et al.
+(2000), A&AS, 141, 371, doi:10.1051/aas:2000126 — ahead of finalizing
+the paper's methods/figures, since comparing PySeshat's own checks
+against that literature (the HD25811, HIP70973/HIP72479, HIP102029
+papers, and by extension Abushattal et al. 2025/arXiv:2512.23652,
+whose four SB2 systems are this project's own SED benchmarks) is only
+meaningful if both sides use the same grid.
+
+Direct inspection of `evolution/binary.py` and
+`photometry/evolution_adapter.py`, plus everything both modules
+import, found: **no evolutionary-track grid — Girardi, PARSEC, or
+otherwise — was wired in with any real data before this change, and no
+prior decision on grid choice existed anywhere in this repo's
+documentation.** `evolution/binary.py`'s functions are, and remain,
+fully grid-agnostic (`EvolutionModel` is an explicit parameter, never
+hardcoded). `photometry/evolution_adapter.py` is, and remains, a pure
+`PhotometricParameters -> StellarObservables` format bridge with no
+grid-selection logic at all. `evolution/grids.py` /
+`evolution/parsers/parsec.py` provided parsing *infrastructure* for
+PARSEC only, with **zero bundled data** — `load_parsec()` requires the
+caller to supply file paths explicitly and this project's own earlier
+"Audit for other missing external files" entry (above, this same
+document) had already confirmed no PARSEC files were referenced or
+needed anywhere. A discrepancy was also found and is worth recording
+plainly: that earlier entry, and `docs/guide/evolutionary_checks.md`,
+both referenced a `tests/test_parsec.py` "exercising the parser
+against synthetic tmp_path-fixture data" — this file does not actually
+exist in the repository and never did; the parsing layer had zero
+direct test coverage of any kind before today. Full details of this
+audit are in `docs/guide/evolutionary_checks.md`'s own 2026-08-29
+entry, which is the canonical, more detailed writeup — this entry
+summarizes it for the decisions log.
+
+Separately, the new request's framing that "there is currently no
+HR-diagram figure wired up at all" was checked against this project's
+own prior documentation before taking any action, since
+`docs/paper_reproduction_notes.md`'s own figure-5 table row (written
+in an earlier session) states `plot_binary_hrdiagram()` already exists
+and is tested with synthetic data. Direct inspection of
+`visualization/hrdiagram_plot.py` and `evolution/hrdiagram.py`
+confirms the earlier documentation was correct: the plotting function
+exists, is fully implemented (inverted log-Teff axis, primary/
+secondary tracks, error-barred observed points, best-fit model points
+— the same points-with-error-bars-over-track-curves convention the
+Al-Wardat papers use), and is already regression-tested
+(`tests/test_hrdiagram_plot.py`). The real, accurate gap — as
+`paper_reproduction_notes.md` already said — is that no real system's
+data has ever been run through it, which is a data problem (see
+below), not a missing-function problem. No changes were made to
+`hrdiagram_plot.py` itself, since nothing about it needed changing.
+
+### 2. Code-level integration: Girardi (2000) added as the new default grid
+
+`evolution/parsers/girardi2000.py` was added, mirroring the PARSEC
+parser's design (a caller-supplied `column_map`, so the parser doesn't
+need to assume a real download's exact CDS column-header spelling) and
+carrying the grid's real citation, metallicity coverage (Z = 0.0004,
+0.001, 0.004, 0.008, 0.019, 0.03; Z=0.019, Y=0.273 is the paper's own
+identified solar value — confirmed by fetching the actual paper PDF,
+not assumed), and mass coverage (0.15-7 Msun, solar-scaled/
+Grevesse & Noels 1993 composition, not alpha-enhanced) transcribed
+directly from the published paper text. `evolution/grids.py` registers
+it as `"girardi2000"` in `load_model()`'s supported-models table
+**alongside** the pre-existing `"parsec"` entry — PARSEC was not
+touched or removed, per the user's own explicit instruction to
+preserve any existing grid as an alternate rather than delete it
+silently (there was, in the end, no real data behind PARSEC to
+preserve either, but the parsing code path itself is untouched and
+still fully functional). `DEFAULT_EVOLUTION_MODEL_NAME = "girardi2000"`
+and a new `load_default_evolution_model()` convenience function were
+added; the latter raises an explicit, informative `FileNotFoundError`
+when (as is the case today) no data has been placed at the
+conventional `data/evolution/girardi2000/` path, rather than returning
+an empty or fabricated grid silently.
+
+While building this, a real, previously-latent bug was found and fixed
+in the shared `_load_ascii_table()` helper (present in both the new
+Girardi parser and the pre-existing PARSEC parser, which copies its
+structure): `numpy.genfromtxt(..., comments="#")` strips only the `#`
+character from a line, not the whole line, so a descriptive comment
+header whose remaining text happens to have a different word count
+than the real data header row (exactly what a real downloaded CDS
+table's comment block looks like) makes column-count detection fail on
+every subsequent data row. Reproduced directly with a two-line
+reproducer before touching any source file, confirmed the fix (filter
+out whole comment lines before handing text to `genfromtxt`) resolves
+it, and applied the identical fix to both parsers. This had never been
+caught because — per the `test_parsec.py` discrepancy noted above —
+neither parser had ever actually been run against any file containing
+a comment line before today.
+
+`tests/test_evolution_grids.py` (26 new tests total, split across this
+file and the one below) now covers: both parsers' track/isochrone
+loading against synthetic fixture files, `load_model()`'s dispatch for
+both `"parsec"` and `"girardi2000"` (case-insensitively), the
+mismatched-metadata-length error paths, the Girardi citation/coverage
+constants (a regression guard on the transcribed paper facts, not a
+re-verification of the paper), and `load_default_evolution_model()`'s
+failure mode both with an explicitly-empty directory and against the
+real repository state today (which has no data placed, so it must
+raise). `tests/test_evolution_binary.py` closes the wider, pre-existing
+gap this audit found in the fitting layer itself — `evolution/search.py`
+(`nearest_track`/`nearest_isochrone`), `evolution/age.py`
+(`fit_track`/`fit_common_age`, including a common-age recovery test on
+coeval synthetic components and a no-overlap error case), and
+`evolution/binary.py` (`fit_binary_tracks`, and an end-to-end
+`fit_binary_evolution_from_orbit()` test exercising the full
+`OrbitalElements -> component masses -> nearest tracks -> common-age
+fit -> BinaryEvolutionSolution` pipeline) — none of which had any
+direct test before this entry. All fixtures are synthetic, built
+in-process; nothing here represents or is derived from any real star,
+consistent with this project's "never fabricate scientific data" rule.
+
+### 3. What was *not* done: no real Girardi (2000) numeric data, no re-run evolutionary checks
+
+Actually sourcing the Girardi (2000) tabulated tracks/isochrones
+requires reaching an external astronomy data service. Every avenue
+available from this development environment was tried, in this order,
+and each is confirmed blocked as of 2026-08-29:
+
+1. Direct network access (`curl`) from the cloud sandbox: blocked at
+   the organization egress-proxy level for `stev.oapd.inaf.it`,
+   `vizier.cds.unistra.fr`, and `vizier.cfa.harvard.edu`
+   (`CONNECT tunnel failed, response 403`) — and, to confirm this is a
+   blanket policy rather than an astronomy-specific block, a plain
+   `google.com`/`arxiv.org`/`cdsarc.cds.unistra.fr` request was also
+   tried and also refused identically.
+2. The same three astronomy hosts, retried via `device_bash` on the
+   user's own linked Windows machine (not just this cloud sandbox):
+   also `403` through that machine's own proxy. This rules out "cloud
+   sandbox egress policy" as the sole explanation — the organization's
+   restriction applies on the user's device too.
+3. `WebFetch` (read-only page fetch+summarize, not a general HTTP
+   client) *does* reach some of these hosts. It confirmed a real,
+   useful fact: the Padova group's current interactive form
+   (`stev.oapd.inaf.it/cgi-bin/cmd`) now offers PARSEC-family tracks
+   only, but the **legacy** CMD 2.7 form
+   (`stev.oapd.inaf.it/cgi-bin/cmd_2.7`) still lists "Girardi et al.
+   (2000) + simplified TP-AGB (for M<=7 Msun) + Bertelli et al.
+   (1994)" as a selectable track/isochrone set — directly contradicting
+   nothing in the user's request, but clarifying that the *current*
+   CMD interface alone would not have sufficed; the legacy form is the
+   right target. `WebFetch` cannot submit that CGI form or retrieve
+   its computed output table, however — it renders/summarizes static
+   page text only.
+4. VizieR (catalog J/A+AS/141/371) refused `WebFetch` with an active
+   bot-detection "Access Denied" page; the CDS FTP archive
+   (`cdsarc.cds.unistra.fr`) refused it via `robots.txt`.
+5. Browser automation (`mcp__claude-in-chrome`) to drive the CMD 2.7
+   form interactively was attempted; the Chrome extension bridge
+   reported "not connected" — no live browser session was available
+   this session.
+
+This is a confirmed, well-tested external blocker — the same category
+of gap already documented for `io/gaia_parser.py`'s inability to reach
+the live Gaia TAP archive (§7 item 14, `docs/paper_reference_notes.md`)
+— not something fixable from within this session by trying harder, and
+specifically not something to work around by approximating or
+inventing grid values: this project's standing rule is that
+scientific/literature data is never fabricated, and a stellar
+evolution grid is thousands of rows of numeric data with no
+prose-summarized shortcut the way a single system's published Campbell
+elements (Gaia BH1's case) had one.
+
+**Consequently: no evolutionary consistency check was re-run for
+HD214222, HD191854, HD130669, HD184467, Capella, or alpha Cen AB, and
+no age/mass/evolutionary-stage placement changed for any of them**,
+because none had ever been computed against a real grid in the first
+place — there is nothing to have shifted from. Each of the six
+relevant `validation/expected_results/*.json` files now carries a new
+`evolutionary_track_source` block recording: the grid now standardized
+on (Girardi 2000, Z=0.019), `"status": "not yet run"`, the reason
+(this exact network blocker), and that no prior grid was ever run
+either — so a reader of those files cannot mistake silence for a
+completed, passing check.
+
+### 4. Regression check
+
+`MPLBACKEND=Agg python -m pytest tests/ -q`, single run
+(`--timeout` not needed; see the run's own reported wall time below):
+**254/254 passed, 0 failures, 0 regressions** — strictly additive over
+the prior 228-test count (26 new: `tests/test_evolution_grids.py` and
+`tests/test_evolution_binary.py`, described above). No existing test
+file, benchmark result, or plot was touched by this change beyond the
+two shared-utility bug fixes in the parser modules themselves (which
+had no callers anywhere in the codebase before today, so nothing else
+could regress from them).
+
+### 5. Exact citation for the paper
+
+Girardi, L., Bressan, A., Bertelli, G., & Chiosi, C. 2000, A&AS, 141,
+371-383, "Evolutionary tracks and isochrones for low- and
+intermediate-mass stars: From 0.15 to 7 Msun, and from Z=0.0004 to
+0.03", doi:10.1051/aas:2000126. Metallicity coverage: Z = 0.0004,
+0.001, 0.004, 0.008, 0.019, 0.03 (Y = 0.23, 0.23, 0.24, 0.25, 0.273,
+0.30 respectively); Z=0.019 (Y=0.273) is the paper's own stated solar
+value and is the metallicity now standardized on for this project's
+Sun-like benchmark components. Mass coverage: 0.15-7 Msun (0.1 Msun
+steps generally, 0.05 Msun below 0.6 Msun, denser near the He-flash
+mass). Composition: solar-scaled (Grevesse & Noels 1993 mixture), not
+alpha-enhanced. These facts were extracted directly from the published
+paper's text (fetched 2026-08-29), not assumed or carried over from
+memory of the paper.

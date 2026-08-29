@@ -55,6 +55,27 @@ Of the 8 registered benchmark systems:
   (``evolution/binary.py``) to be run per system first -- a
   separate, heavier pipeline this pass did not have time to wire
   up and verify for all four systems. Flagged as future work.
+  **[2026-08-29]** The grid that cross-check would run on is now
+  decided and code-integrated -- Girardi et al. (2000), Z=0.019,
+  registered as ``evolution/grids.py``'s ``"girardi2000"`` model,
+  chosen for direct comparability with the Al-Wardat SED-fitting
+  literature these four systems (and Capella/AlphaCenAB's
+  photometry rows) benchmark against. This script still does not
+  generate any HR-diagram figure, deliberately: no real Girardi
+  (2000) numeric track/isochrone data has been sourced into this
+  repository yet (a confirmed network blocker -- VizieR, the CDS
+  FTP archive, and both Padova CMD web interfaces are unreachable
+  from this development environment; see
+  docs/guide/evolutionary_checks.md's 2026-08-29 entry for the
+  full trail). Generating an HR-diagram figure without a real
+  grid would mean plotting synthetic/placeholder track curves
+  against real fitted stellar parameters and presenting the
+  result as this project's HR-diagram figure -- exactly the kind
+  of fabricated-looking output this project's "never fabricate
+  scientific data" rule exists to prevent -- so this remains
+  undone rather than faked. See
+  docs/project_decisions.md's matching dated entry for what was
+  and was not done.
 
 Run
 
