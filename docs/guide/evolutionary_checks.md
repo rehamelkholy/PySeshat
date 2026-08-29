@@ -207,3 +207,136 @@ column semantics), and `evolution/binary.py`'s existing
 grid-agnostic — runs the actual cross-check. This is future work item
 1 in `docs/paper_reference_notes.md`, updated 2026-08-29 with this
 grid-choice context.
+
+## Blocker closed (2026-08-29): real Girardi (2000) data obtained, six-system check run
+
+The network blocker documented above is now closed. The user downloaded
+the two real tables directly from VizieR (not through this session's
+egress-restricted network) and supplied them as attached files:
+
+- `mstracks.tsv` — VizieR catalog **J/A+AS/141/371**, table
+  **mstracks** ("main sequence from ZAMS on"), 13,723 rows.
+- `isochrones.tsv` — same catalog, table **isochron** (isochrones),
+  64,381 rows.
+
+Both files were placed at `data/evolution/girardi2000/` (repo root,
+per this project's `src/`-layout convention — see
+`docs/project_decisions.md`'s dated entry for why this is outside
+`src/pyseshat/`, not inside it). Neither file matched the generic
+`column_map`-based schema the code-level integration above had
+assumed sight-unseen; the actual VizieR ASU-TSV export format,
+column set, and several real-data quirks were inspected directly
+before writing any loader code, and are documented in full in
+`evolution/parsers/girardi2000.py`'s module docstring:
+
+- **File format**: VizieR ASU-TSV — a metadata block of `#`-prefixed
+  lines, then exactly 3 non-`#` lines (tab-separated column header,
+  units row, a dashes/separator row whose first field is literally
+  `-`), then tab-separated data. Located programmatically by finding
+  the dashes row and taking the header 2 lines above it. This is a
+  **different** parsing path from the legacy single-track
+  `_load_ascii_table()`/`numpy.genfromtxt(comments="#")` loader (and
+  its already-documented comment-stripping bug), so that bug does not
+  recur here.
+- **Overshoot column** (0/1): 1 = the grid's full/main set (complete
+  0.15–7.0 Msun coverage, 34 masses at Z=0.019) = the new
+  `DEFAULT_OVERSHOOT = 1`; 0 is a smaller comparison-only subset
+  (1.2–8.0 Msun, 17 masses).
+- **No radius column** in either table. `log_radius` is derived via
+  the Stefan-Boltzmann law from `logL`/`logTeff`, using this
+  codebase's own `SOLAR_EFFECTIVE_TEMPERATURE` constant
+  (`analysis/luminosity.py`) for exact self-consistency with
+  `compute_log_luminosity()`.
+- **`Stage` column** (text, sparse, ~88% blank) cannot populate
+  `EvolutionTrack.phase` (which `interpolate.py` casts via `int(...)`)
+  — `phase=None` for real Girardi data; `Stage` is still looked up
+  and reported separately as a descriptive label only.
+- **Non-monotonic ages**: 12 of 34 mass tracks (Z=0.019,
+  Overshoot=1) have a repeated/decreasing `Age` value late in the
+  track (an AGB thermal-pulse artifact). Each affected track is
+  truncated at its first non-monotonic transition; verified this
+  loses no age range needed by any of the six benchmark systems below.
+- **Duplicate isochrone masses**: 27 of 50 age-slices have duplicate
+  (not decreasing) `Mini` values from blue-loop crossings, handled via
+  `drop_duplicates(subset="Mini", keep="first")` (required since
+  track/isochrone interpolation needs strictly increasing x-values).
+
+`load_girardi2000_vizier_tracks()` / `load_girardi2000_vizier_isochrones()`
+(new, in `evolution/parsers/girardi2000.py`) load these files directly.
+`evolution/grids.py`'s `load_default_evolution_model()` — previously a
+stub raising `FileNotFoundError` — now looks for `mstracks.tsv` /
+`isochrones.tsv` at `data/evolution/girardi2000/` and, when present,
+returns a real, loaded `EvolutionModel` (34 tracks, 50 isochrones,
+Z=0.019). `DEFAULT_EVOLUTION_MODEL_NAME = "girardi2000"` now resolves
+to this real data, closing out this section's "no real numeric grid
+data has been sourced" limitation.
+
+### Six-system results
+
+The evolutionary consistency check (independent per-component
+best-fit age, then a joint common-age fit) was run for all six
+systems that need it — the four Al-Wardat SED systems (HD214222,
+HD191854, HD130669, HD184467) plus the two joint case studies
+(Capella, alpha Cen AB) — via the shared pipeline in
+`evolution/benchmark_checks.py` (`scripts/run_evolutionary_checks.py`
+runs it and writes `validation/results/evolutionary_checks.json`;
+`scripts/generate_benchmark_plots.py`'s `generate_hrdiagrams()` uses
+the exact same fitted objects to build each system's HR-diagram
+figure at `validation/results/plots/<system>/hrdiagram.png`, so the
+plotted points and these numbers cannot drift apart). Component
+masses come directly from `literature_component_parameters` for the
+four HD systems and AlphaCenAB (`AlphaCenAB_orbit.json`'s
+`component_masses_Msun`, Akeson et al. 2021), and are derived from
+Capella's literature SB2 orbital elements (Torres et al. 2015 Table 1)
+via `analysis.masses.component_masses_from_elements` (M1=2.5688,
+M2=2.4828 Msun) — no separately-stated literature mass for Capella
+exists anywhere else in this repository.
+
+All six common-age fits converged (none failed). Every component in
+all six systems places as a dwarf/main-sequence star (log g ≥ 4.0)
+**except Capella**, whose two components place as a giant
+(log g≈2.7) and a subgiant (log g≈3.0–3.1) — physically expected for
+a well-known G-giant + G-subgiant binary, not a surprise. No
+component's requested mass fell outside the grid's 0.15–7 Msun
+coverage. Two things were flagged as genuinely worth a second look
+rather than silently accepted:
+
+- **HD184467's secondary** (0.85 Msun) sits exactly equidistant
+  (0.05 Msun) between the grid's 0.8 and 0.9 Msun tracks —
+  `nearest_track()` resolves the tie by taking the first in
+  ascending iteration order (0.8 Msun), giving a 5.9% mass mismatch
+  and, read independently, a 15.5 Gyr best-fit age that exceeds a
+  Hubble time. This is a genuine grid-spacing coincidence for this
+  one component, not a bug in the search or fit code — flagged in
+  `evolutionary_checks.json` and this system's
+  `evolutionary_track_source.result_summary`. The joint common-age
+  fit for this system still converges (7.9 Gyr), constrained
+  primarily by the better-behaved primary.
+- **Sparse local age-grid spacing** (local tabulated-age spacing
+  exceeding 20% of the age itself at the best-fit point) is flagged
+  for at least one component in nearly every system — an expected
+  consequence of Girardi (2000)'s age sampling being coarser than
+  this project's own fit resolution, not a fit-quality problem. It
+  means the *reported* age is only as precise as the grid's own
+  tabulation there, independent of how good the chi2 looks; treat
+  ages carrying this flag as approximate to the nearest tabulated
+  grid point rather than as precision solutions.
+
+Full per-component numbers (requested/nearest mass, mismatch %,
+independent best-fit age/chi2/log g, evolutionary state, all flags,
+the joint common-age fit) are in
+`validation/results/evolutionary_checks.json` and summarized in each
+system's own `validation/expected_results/*.json` under
+`evolutionary_track_source.result_summary`.
+
+**No prior age/mass/evolutionary-stage number existed anywhere else
+in this project's documentation for any of these six systems before
+this run** (confirmed by direct search) — so there is nothing for
+these results to disagree with; this is the first time such numbers
+have been computed in this project. This is distinct from — and does
+not include — a comparison against each source paper's *own*
+separately-published age/mass values, which was not performed as
+part of this run and remains open if wanted.
+
+See `docs/project_decisions.md`'s 2026-08-29 "Girardi (2000) blocker
+closed" entry for the full narrative.

@@ -11,6 +11,20 @@ from pyseshat.evolution.parsers import (
     load_girardi2000_isochrone,
 )
 
+from pyseshat.evolution.parsers.girardi2000 import (
+    DEFAULT_OVERSHOOT,
+    SOLAR_METALLICITY,
+    load_girardi2000_vizier_isochrones,
+    load_girardi2000_vizier_tracks,
+)
+
+#: Conventional filenames for the real VizieR J/A+AS/141/371 export,
+#: as downloaded 2026-08-29 (see docs/project_decisions.md's dated
+#: entry for the exact query/provenance). load_default_evolution_model()
+#: looks for exactly these two names at its data directory.
+VIZIER_TRACKS_FILENAME = "mstracks.tsv"
+VIZIER_ISOCHRONES_FILENAME = "isochrones.tsv"
+
 
 # ==========================================================
 # Public API
@@ -64,103 +78,177 @@ def load_model(
     ](**kwargs)
 
 
+def _default_data_dir():
+
+    return (
+        Path(__file__).resolve().parents[3]
+        / "data"
+        / "evolution"
+        / "girardi2000"
+    )
+
+
+def load_girardi2000_from_vizier(
+    track_path,
+    isochrone_path,
+    *,
+    metallicity=SOLAR_METALLICITY,
+    overshoot=DEFAULT_OVERSHOOT,
+):
+    """
+    Build a full Girardi (2000) EvolutionModel from the real
+    VizieR J/A+AS/141/371 exports (tables ``mstracks`` and
+    ``isochron``).
+
+    This is the entry point ``load_default_evolution_model()``
+    uses once real data files are present (see below) -- exposed
+    directly too, since a caller may want a metallicity/overshoot
+    other than this project's own default, or to load the two
+    files from a non-conventional location.
+
+    Parameters
+    ----------
+    track_path : path-like
+        Path to the downloaded ``mstracks.tsv`` file.
+
+    isochrone_path : path-like
+        Path to the downloaded ``isochrones.tsv`` file.
+
+    metallicity : float, default SOLAR_METALLICITY (0.019)
+
+    overshoot : int, default DEFAULT_OVERSHOOT (1)
+
+    Returns
+    -------
+    EvolutionModel
+        ``name="Girardi2000"``, with tracks/isochrones from the
+        two files at the requested (metallicity, overshoot). See
+        ``pyseshat.evolution.parsers.girardi2000``'s module
+        docstring for the real-data handling this performs
+        (radius derivation, Stage/phase, non-monotonic-age
+        truncation, duplicate-mass deduplication).
+    """
+
+    tracks = load_girardi2000_vizier_tracks(
+        track_path,
+        metallicity=metallicity,
+        overshoot=overshoot,
+    )
+
+    isochrones = load_girardi2000_vizier_isochrones(
+        isochrone_path,
+        metallicity=metallicity,
+        overshoot=overshoot,
+    )
+
+    return EvolutionModel(
+
+        name="Girardi2000",
+
+        tracks=tracks,
+
+        isochrones=isochrones,
+
+    )
+
+
 def load_default_evolution_model(
     *,
     data_dir=None,
+    metallicity=SOLAR_METALLICITY,
+    overshoot=DEFAULT_OVERSHOOT,
 ):
     """
     Load this project's default evolutionary-track/isochrone
     grid: Girardi et al. (2000), A&AS, 141, 371, at solar
-    metallicity (Z=0.019).
+    metallicity (Z=0.019) with core convective overshooting
+    (the grid's full, main set -- see
+    ``pyseshat.evolution.parsers.girardi2000``'s module
+    docstring).
 
-    This is a thin convenience wrapper, not a new data source:
-    it looks for already-downloaded Girardi (2000) track and
-    isochrone files under a conventional directory and, if
-    present, loads them via load_model("girardi2000", ...)
-    exactly as a caller would by hand. **No Girardi (2000) data
-    files are bundled with this repository** (the same
-    "external data, not shipped" situation that has always
-    applied to the pre-existing PARSEC parser -- see
-    docs/guide/evolutionary_checks.md) -- this function exists
-    so that once a user has downloaded the grid (from the
-    Padova group's legacy CMD 2.7 interface or from VizieR
-    catalog J/A+AS/141/371) and placed it at the conventional
-    path below, every part of this codebase that wants "the
-    default grid" can call one function rather than
-    special-casing file discovery per script.
+    **[2026-08-29] Now backed by real data.** Looks for
+    ``mstracks.tsv`` and ``isochrones.tsv`` (the real VizieR
+    J/A+AS/141/371 exports -- see
+    ``docs/project_decisions.md``'s dated entry for the exact
+    provenance) at ``data_dir`` and, if both are present, loads
+    them via :func:`load_girardi2000_from_vizier`. This was a
+    stub raising ``FileNotFoundError``/``NotImplementedError``
+    before real data was obtained; that failure mode is preserved
+    below for the case where the files genuinely are not there
+    yet, so a caller in an environment without this data still
+    gets an honest, informative error rather than a silent empty
+    model.
 
     Parameters
     ----------
     data_dir : path-like, optional
-        Directory containing the downloaded Girardi (2000)
-        ASCII track/isochrone files, plus a
-        ``column_map.json`` (or equivalent) describing their
-        column layout. Defaults to
+        Directory expected to contain ``mstracks.tsv`` and
+        ``isochrones.tsv``. Defaults to
         ``<repo>/data/evolution/girardi2000/``.
+
+    metallicity : float, default SOLAR_METALLICITY (0.019)
+
+    overshoot : int, default DEFAULT_OVERSHOOT (1)
+
+    Returns
+    -------
+    EvolutionModel
 
     Raises
     ------
     FileNotFoundError
-        If no data has been placed at the expected location.
-        The error message states exactly where to put it and
-        points to the two sourcing options described in this
-        module's own docstring and in
-        docs/guide/evolutionary_checks.md.
+        If the data directory or either expected file is
+        missing. The error message states exactly where to put
+        them and points to the sourcing options described in
+        ``pyseshat.evolution.parsers.girardi2000``'s module
+        docstring and ``docs/guide/evolutionary_checks.md``.
     """
 
     if data_dir is None:
-
-        data_dir = (
-            Path(__file__).resolve().parents[3]
-            / "data"
-            / "evolution"
-            / "girardi2000"
-        )
-
+        data_dir = _default_data_dir()
     else:
-
         data_dir = Path(data_dir)
 
-    if not data_dir.exists() or not any(
-        data_dir.glob("*")
-    ):
+    track_path = data_dir / VIZIER_TRACKS_FILENAME
+    isochrone_path = data_dir / VIZIER_ISOCHRONES_FILENAME
+
+    if not track_path.exists() or not isochrone_path.exists():
+
+        missing = [
+            str(p)
+            for p in (track_path, isochrone_path)
+            if not p.exists()
+        ]
 
         raise FileNotFoundError(
 
-            "No Girardi (2000) evolutionary-track/isochrone "
-            f"data found at '{data_dir}'. This grid is "
+            "Girardi (2000) evolutionary-track/isochrone data "
+            f"not found: missing {missing}. This grid is "
             "external data and is not bundled with the "
-            "repository (see "
+            "repository by default (see "
             "pyseshat.evolution.parsers.girardi2000's module "
             "docstring and docs/guide/evolutionary_checks.md). "
-            "Download the tracks/isochrones at Z=0.019 (solar) "
-            "from the Padova group's legacy CMD 2.7 interface "
-            "(https://stev.oapd.inaf.it/cgi-bin/cmd_2.7, select "
-            "'Girardi et al. (2000) + simplified TP-AGB (for "
-            "M<=7 Msun) + Bertelli et al. 1994') or from VizieR "
-            "catalog J/A+AS/141/371, place the files at this "
-            "path, and call load_model('girardi2000', ...) "
-            "directly with the appropriate column_map (or "
-            "extend this function to do so automatically once "
-            "a fixed file layout is agreed on)."
+            "Download the VizieR J/A+AS/141/371 'mstracks' and "
+            "'isochron' tables (ASU-TSV format) from "
+            "https://vizier.cds.unistra.fr/viz-bin/VizieR?"
+            "-source=J/A+AS/141/371, or the tracks/isochrones "
+            "at Z=0.019 from the Padova group's legacy CMD 2.7 "
+            "interface (https://stev.oapd.inaf.it/cgi-bin/cmd_2.7, "
+            "select 'Girardi et al. (2000) + simplified TP-AGB "
+            "(for M<=7 Msun) + Bertelli et al. 1994'), and place "
+            f"them at '{data_dir}' named 'mstracks.tsv' and "
+            "'isochrones.tsv' respectively -- or call "
+            "load_girardi2000_from_vizier(track_path, "
+            "isochrone_path, ...) directly with wherever they "
+            "actually are."
 
         )
 
-    raise NotImplementedError(
-
-        "Girardi (2000) data files were found at "
-        f"'{data_dir}', but load_default_evolution_model() "
-        "does not yet know this project's agreed-on file "
-        "naming/column-map convention for them (none has been "
-        "fixed yet, since no real data has been loaded through "
-        "this path so far -- see "
-        "docs/guide/evolutionary_checks.md). Call "
-        "load_model('girardi2000', track_files=..., "
-        "isochrone_files=..., track_column_map=..., "
-        "isochrone_column_map=..., track_metadata=..., "
-        "isochrone_metadata=...) directly instead, or extend "
-        "this function once that convention is fixed."
-
+    return load_girardi2000_from_vizier(
+        track_path,
+        isochrone_path,
+        metallicity=metallicity,
+        overshoot=overshoot,
     )
 
 

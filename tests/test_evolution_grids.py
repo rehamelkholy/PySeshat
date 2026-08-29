@@ -10,6 +10,8 @@ found this gap -- and found that a previously-documented
 ``tests/test_parsec.py`` did not actually exist).
 """
 
+from pathlib import Path
+
 import numpy as np
 
 import pytest
@@ -18,6 +20,7 @@ from pyseshat.evolution.grids import (
     DEFAULT_EVOLUTION_MODEL_NAME,
     load_default_evolution_model,
     load_girardi2000,
+    load_girardi2000_from_vizier,
     load_model,
     load_parsec,
 )
@@ -31,14 +34,19 @@ from pyseshat.evolution.parsers.girardi2000 import (
     CITATION,
     MASS_RANGE_MSUN,
     SOLAR_METALLICITY,
+    _read_vizier_asu_tsv,
     load_girardi2000_isochrone,
     load_girardi2000_track,
+    load_girardi2000_vizier_isochrones,
+    load_girardi2000_vizier_tracks,
 )
 
 from pyseshat.evolution.parsers.parsec import (
     load_parsec_isochrone,
     load_parsec_track,
 )
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 # ==========================================================
@@ -392,13 +400,156 @@ def test_load_default_evolution_model_raises_when_no_data_present(
 
 def test_load_default_evolution_model_repo_state_today():
     """
-    As of this change, the repository itself has no
-    data/evolution/girardi2000/ directory populated with real
-    tracks -- calling this with no arguments (the real
-    production code path) must therefore raise, not silently
-    succeed. This is intentionally an honest failing default,
-    not a stub returning fabricated data.
+    [2026-08-29] As of this change, the repository's
+    data/evolution/girardi2000/ directory is populated with the
+    real VizieR J/A+AS/141/371 mstracks.tsv/isochrones.tsv
+    exports (see docs/project_decisions.md's "Girardi (2000)
+    blocker closed" dated entry) -- calling this with no
+    arguments (the real production code path) must therefore
+    now succeed and return real, non-empty, Z=0.019 data. This
+    replaces the previous "must raise FileNotFoundError"
+    assertion, which tested the pre-data repo state; the
+    FileNotFoundError path itself is still covered directly by
+    test_load_default_evolution_model_raises_when_no_data_present
+    above (via an explicitly empty tmp_path directory), so that
+    behavior is not lost.
+
+    Skipped, rather than failed, in an environment where these
+    two real data files genuinely are not present (e.g. a fresh
+    checkout without the external data downloaded) -- this grid
+    is deliberately not bundled with the repository (see
+    pyseshat.evolution.parsers.girardi2000's module docstring).
     """
 
-    with pytest.raises(FileNotFoundError):
-        load_default_evolution_model()
+    if not (
+        REAL_TRACKS_TSV.exists() and REAL_ISOCHRONES_TSV.exists()
+    ):
+        pytest.skip(
+            "real Girardi (2000) data not present at "
+            f"{REAL_TRACKS_TSV.parent} in this environment"
+        )
+
+    model = load_default_evolution_model()
+
+    assert isinstance(model, EvolutionModel)
+    assert model.name == "Girardi2000"
+    assert len(model.tracks) > 0
+    assert len(model.isochrones) > 0
+    assert model.available_metallicities == (SOLAR_METALLICITY,)
+
+
+# ==========================================================
+# Real VizieR J/A+AS/141/371 data (mstracks.tsv, isochrones.tsv)
+# ==========================================================
+#
+# These tests exercise the actual downloaded files this project's
+# default grid is built from -- not synthetic fixtures -- per the
+# explicit instruction that loading these specific files needed its
+# own coverage, not just the generic column_map-based parsing tests
+# above. Skipped (not failed) when the real files are absent, since
+# this external data is not bundled with the repository.
+
+REAL_DATA_DIR = REPO_ROOT / "data" / "evolution" / "girardi2000"
+REAL_TRACKS_TSV = REAL_DATA_DIR / "mstracks.tsv"
+REAL_ISOCHRONES_TSV = REAL_DATA_DIR / "isochrones.tsv"
+
+_real_data_present = (
+    REAL_TRACKS_TSV.exists() and REAL_ISOCHRONES_TSV.exists()
+)
+
+requires_real_girardi2000_data = pytest.mark.skipif(
+    not _real_data_present,
+    reason=(
+        "real Girardi (2000) VizieR data "
+        f"(mstracks.tsv/isochrones.tsv) not present at "
+        f"{REAL_DATA_DIR} in this environment"
+    ),
+)
+
+
+@requires_real_girardi2000_data
+def test_read_vizier_asu_tsv_tracks_real_file():
+
+    df = _read_vizier_asu_tsv(REAL_TRACKS_TSV)
+
+    assert len(df) == 13723
+    for col in ("Overshoot", "Mass", "Z", "Age", "logL", "logTeff", "logg"):
+        assert col in df.columns
+
+
+@requires_real_girardi2000_data
+def test_read_vizier_asu_tsv_isochrones_real_file():
+
+    df = _read_vizier_asu_tsv(REAL_ISOCHRONES_TSV)
+
+    assert len(df) == 64381
+
+
+@requires_real_girardi2000_data
+def test_load_girardi2000_vizier_tracks_real_file():
+
+    tracks = load_girardi2000_vizier_tracks(
+        REAL_TRACKS_TSV, metallicity=SOLAR_METALLICITY,
+    )
+
+    assert len(tracks) == 34
+
+    masses = sorted(t.initial_mass for t in tracks)
+    assert masses[0] >= 0.15
+    assert masses[-1] <= 7.0
+
+    for track in tracks:
+        # Truncation at the first non-monotonic Age transition
+        # must leave every track strictly increasing in age.
+        assert np.all(np.diff(track.age) > 0)
+        # log_radius must have been derived (not left absent),
+        # since neither real table has a radius column.
+        assert track.log_radius is not None
+        assert len(track.log_radius) == len(track.age)
+        # Stage cannot populate the numeric phase contract for
+        # real Girardi data (see this module's docstring).
+        assert track.phase is None
+
+
+@requires_real_girardi2000_data
+def test_load_girardi2000_vizier_isochrones_real_file():
+
+    isochrones = load_girardi2000_vizier_isochrones(
+        REAL_ISOCHRONES_TSV, metallicity=SOLAR_METALLICITY,
+    )
+
+    assert len(isochrones) == 50
+
+    for iso in isochrones:
+        # drop_duplicates(keep="first") on Mini must leave every
+        # isochrone's mass array strictly increasing.
+        assert np.all(np.diff(iso.mass) > 0)
+
+
+@requires_real_girardi2000_data
+def test_load_girardi2000_from_vizier_real_files():
+
+    model = load_girardi2000_from_vizier(
+        REAL_TRACKS_TSV, REAL_ISOCHRONES_TSV,
+    )
+
+    assert isinstance(model, EvolutionModel)
+    assert model.name == "Girardi2000"
+    assert len(model.tracks) == 34
+    assert len(model.isochrones) == 50
+    assert model.available_metallicities == (SOLAR_METALLICITY,)
+
+
+@requires_real_girardi2000_data
+def test_load_default_evolution_model_uses_real_repo_data():
+    """
+    End-to-end: load_default_evolution_model() with no arguments
+    against the real repo-root data/evolution/girardi2000/
+    files -- the actual production code path, not a tmp_path
+    stand-in.
+    """
+
+    model = load_default_evolution_model()
+
+    assert len(model.tracks) == 34
+    assert len(model.isochrones) == 50

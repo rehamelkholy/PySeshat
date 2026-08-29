@@ -52,30 +52,22 @@ Of the 8 registered benchmark systems:
   at all"), so none of the orbit-plotting functions apply.
   ``plot_binary_hrdiagram`` could in principle be used, but
   requires a full evolutionary-track cross-check
-  (``evolution/binary.py``) to be run per system first -- a
-  separate, heavier pipeline this pass did not have time to wire
-  up and verify for all four systems. Flagged as future work.
-  **[2026-08-29]** The grid that cross-check would run on is now
-  decided and code-integrated -- Girardi et al. (2000), Z=0.019,
-  registered as ``evolution/grids.py``'s ``"girardi2000"`` model,
-  chosen for direct comparability with the Al-Wardat SED-fitting
-  literature these four systems (and Capella/AlphaCenAB's
-  photometry rows) benchmark against. This script still does not
-  generate any HR-diagram figure, deliberately: no real Girardi
-  (2000) numeric track/isochrone data has been sourced into this
-  repository yet (a confirmed network blocker -- VizieR, the CDS
-  FTP archive, and both Padova CMD web interfaces are unreachable
-  from this development environment; see
-  docs/guide/evolutionary_checks.md's 2026-08-29 entry for the
-  full trail). Generating an HR-diagram figure without a real
-  grid would mean plotting synthetic/placeholder track curves
-  against real fitted stellar parameters and presenting the
-  result as this project's HR-diagram figure -- exactly the kind
-  of fabricated-looking output this project's "never fabricate
-  scientific data" rule exists to prevent -- so this remains
-  undone rather than faked. See
-  docs/project_decisions.md's matching dated entry for what was
-  and was not done.
+  (``evolution/binary.py``) to be run per system first.
+  **[2026-08-29] Done.** Real Girardi (2000) track/isochrone data
+  (VizieR catalog J/A+AS/141/371, Z=0.019, Overshoot=1 -- see
+  ``evolution/parsers/girardi2000.py``'s module docstring and
+  ``docs/project_decisions.md``'s dated entry) was obtained and
+  wired in as ``evolution/grids.py``'s default grid, and
+  ``generate_hrdiagrams()`` below now generates a real HR-diagram
+  figure for exactly these six systems (the four Al-Wardat SED
+  systems, plus Capella and AlphaCenAB's photometry rows) using
+  ``pyseshat.evolution.benchmark_checks`` (the same pipeline
+  ``scripts/run_evolutionary_checks.py`` uses for the numeric
+  age/mass/evolutionary-stage report, so the plotted points and
+  the reported numbers cannot silently drift apart). This is
+  separate from -- and does not require -- the four flat-orbit
+  systems' plots above; it runs against literature (Teff, R)
+  values, not a fitted orbit.
 
 Run
 
@@ -101,6 +93,9 @@ from pyseshat.visualization.orbit_plot import (
 from pyseshat.visualization.dynamics_plot import plot_separation_vs_time
 from pyseshat.analysis.dynamics import separation_vs_time
 from pyseshat.inference.likelihood import visual_xy_residuals
+from pyseshat.evolution.benchmark_checks import run_all_benchmark_checks
+from pyseshat.evolution.hrdiagram import build_binary_hrdiagram_data
+from pyseshat.visualization.hrdiagram_plot import plot_binary_hrdiagram
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -190,6 +185,53 @@ def generate_for_system(name, data_file):
     print(f"{name}: wrote 4 plots to {out_dir}")
 
 
+def generate_hrdiagrams():
+    """
+    Generate one HR-diagram figure per benchmark system with an
+    Al-Wardat SED or joint-photometry component: HD214222,
+    HD191854, HD130669, HD184467, Capella, AlphaCenAB.
+
+    Uses pyseshat.evolution.benchmark_checks.run_all_benchmark_checks()
+    -- the exact same nearest-track/independent-fit/common-age-fit
+    pipeline scripts/run_evolutionary_checks.py uses for the numeric
+    report -- so the points plotted here and the ages/masses reported
+    there cannot silently drift apart.
+
+    Saved to validation/results/plots/<system>/hrdiagram.png (a
+    system-name-keyed subdirectory distinct from the Capella_orbit/
+    AlphaCenAB_orbit orbit-fit directories above, since these are
+    photometry+evolution figures, not orbit-fit figures).
+    """
+
+    results = run_all_benchmark_checks()
+
+    for name, result in results.items():
+
+        if result.solution is None:
+            print(
+                f"{name}: SKIPPED HR-diagram -- common-age fit "
+                f"failed ({result.common_age_error})"
+            )
+            continue
+
+        data = build_binary_hrdiagram_data(
+            primary_track=result.primary.track,
+            secondary_track=result.secondary.track,
+            primary_observables=result.primary.observables,
+            secondary_observables=result.secondary.observables,
+            solution=result.solution,
+        )
+
+        out_dir = PLOTS_DIR / name
+        out_dir.mkdir(parents=True, exist_ok=True)
+        save_path = out_dir / "hrdiagram.png"
+
+        ax = plot_binary_hrdiagram(data, save_path=save_path)
+        matplotlib.pyplot.close(ax.figure)
+
+        print(f"{name}: wrote 1 HR-diagram plot to {out_dir}")
+
+
 def main():
 
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -198,12 +240,15 @@ def main():
         generate_for_system(name, data_file)
 
     print(
-        "\nZetaAqr, HIP111805 (hierarchical triples) and the 4 "
-        "Al-Wardat SED systems are intentionally NOT plotted here "
-        "-- see this script's module docstring for why, and "
+        "\nZetaAqr, HIP111805 (hierarchical triples) are "
+        "intentionally NOT plotted here -- see this script's "
+        "module docstring for why, and "
         "docs/paper_reference_notes.md / docs/project_decisions.md "
         "for the corresponding future-work entries."
     )
+
+    print()
+    generate_hrdiagrams()
 
 
 if __name__ == "__main__":

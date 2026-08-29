@@ -2191,3 +2191,220 @@ mass). Composition: solar-scaled (Grevesse & Noels 1993 mixture), not
 alpha-enhanced. These facts were extracted directly from the published
 paper's text (fetched 2026-08-29), not assumed or carried over from
 memory of the paper.
+
+## Girardi (2000) blocker closed: real VizieR data obtained, six-system evolutionary check run, HR-diagrams built (2026-08-29)
+
+This closes out the previous entry's item 3 ("no real Girardi (2000)
+numeric data, no re-run evolutionary checks"). The network blocker
+itself was never fixed from within this session/environment — it
+remains exactly as documented above — but the user downloaded the two
+real VizieR tables directly, from a network outside that restriction,
+and supplied them as attached files.
+
+### 1. Data provenance
+
+- **`mstracks.tsv`** — VizieR catalog **J/A+AS/141/371**, table
+  **mstracks** ("main sequence from ZAMS on" evolutionary tracks),
+  13,723 rows.
+- **`isochrones.tsv`** — same catalog, table **isochron**
+  (isochrones), 64,381 rows.
+- Source: Girardi, Bressan, Bertelli & Chiosi 2000, A&AS, 141, 371,
+  doi:10.1051/aas:2000126 (full citation and coverage recorded in the
+  previous entry's item 5, unchanged).
+- Placed at `data/evolution/girardi2000/mstracks.tsv` and
+  `.../isochrones.tsv` — repo root, outside `src/pyseshat/`, per this
+  project's `src/`-layout `pyproject.toml` convention (the same
+  reasoning as the existing `validation/atmosphere_models/ckp00/`
+  CK04-grid precedent). The user's first attempt placed both files at
+  `src/pyseshat/data/evolution/girardi2000/` (inside the package);
+  moved to the correct repo-root location via `device_bash`. The
+  resulting empty leftover directories under `src/pyseshat/data/`
+  could not be removed (`device_bash` refuses `rmdir` without
+  explicit user-granted delete permission) and are left for the user
+  to clean up, or for a future session with that permission granted.
+
+### 2. Real-file schema did not match the code-level integration's assumptions -- inspected directly, reconciled
+
+The prior entry's `evolution/parsers/girardi2000.py` code-level
+integration was written against a *generic*, caller-supplied
+`column_map` design, sight-unseen, since no real file was available
+to check against. On inspecting the real VizieR exports directly
+(per the user's explicit instruction to confirm before loading, not
+assume), several mismatches with that assumed design were found and
+required new, dedicated loader functions rather than forcing the real
+files through the generic path:
+
+- **File format**: VizieR ASU-TSV, not the `numpy.genfromtxt`-based
+  format the generic loader expected — a `#`-prefixed metadata block,
+  then exactly 3 non-`#` lines (real header, units, a dashes/separator
+  row whose first field is literally `-`), then tab-separated data.
+  New helper `_read_vizier_asu_tsv()` locates the header
+  programmatically (find the dashes row, take the header 2 lines
+  above it) and loads via `pandas.read_csv` with an explicit
+  `skiprows` — a **different** code path from the legacy
+  `_load_ascii_table()`/`genfromtxt(comments="#")` loader, so the
+  previously-fixed comment-stripping bug does not recur here (verified
+  by successful parsing with correct row counts and column names on
+  the first attempt).
+- **No radius column** in either real table (the generic design's
+  `column_map` had implicitly assumed one would exist to map).
+  `log_radius` is derived via the Stefan-Boltzmann law from
+  `logL`/`logTeff`, reusing this codebase's own
+  `SOLAR_EFFECTIVE_TEMPERATURE` constant (`analysis/luminosity.py`)
+  for exact self-consistency with `compute_log_luminosity()`.
+- **`Overshoot` column** (0/1), not previously anticipated at all:
+  1 = the grid's complete 0.15-7.0 Msun set (34 masses at Z=0.019) =
+  new `DEFAULT_OVERSHOOT = 1`; 0 is a smaller 1.2-8.0 Msun
+  comparison-only subset (17 masses). Determined by direct row-count
+  inspection, not assumption.
+- **`Stage` column** (text, sparse, ~88% blank — e.g. `'ZAMS'`,
+  `'Tip'`, `'1tp'`) is incompatible with `EvolutionTrack.phase`'s
+  existing numeric-cast contract (`interpolate.py`'s
+  `int(track.phase[index])`). Rather than force a bad cast or silently
+  mis-map it, real Girardi data leaves `phase=None`; `Stage` is still
+  looked up and reported separately, for descriptive purposes only.
+- **Non-monotonic ages**: 12 of 34 mass tracks (Z=0.019,
+  Overshoot=1) have a repeated/decreasing `Age` late in the track (an
+  AGB thermal-pulse artifact) that would otherwise violate
+  `_interp()`'s strict-monotonicity requirement. Before implementing a
+  fix, the affected masses/transition ages were inspected directly and
+  confirmed to lose no age range any of the six benchmark systems
+  below actually needs; each affected track is now truncated at its
+  first non-monotonic transition.
+- **Duplicate isochrone masses**: 27 of 50 age-slices have duplicate
+  (not decreasing) `Mini` values from blue-loop crossings — same
+  monotonicity requirement, same pre-fix verification, resolved via
+  `drop_duplicates(subset="Mini", keep="first")`.
+
+New functions `load_girardi2000_vizier_tracks()` /
+`load_girardi2000_vizier_isochrones()` in
+`evolution/parsers/girardi2000.py` implement this; the generic
+`column_map`-based `load_girardi2000_track()`/`_isochrone()` functions
+from the prior entry are unchanged and remain available for a
+differently-formatted file. All of the above is documented in full in
+that module's docstring.
+
+### 3. Default grid now resolves to real data
+
+`evolution/grids.py`'s `load_default_evolution_model()` — previously a
+stub that always raised `FileNotFoundError` — now looks for
+`mstracks.tsv`/`isochrones.tsv` at `data/evolution/girardi2000/` and,
+when present, loads and returns a real `EvolutionModel` (34 tracks, 50
+isochrones, Z=0.019) via new function `load_girardi2000_from_vizier()`.
+The `FileNotFoundError` failure path (with its detailed
+download/placement instructions) is preserved for an environment where
+the files genuinely are not present, rather than silently returning an
+empty model. `DEFAULT_EVOLUTION_MODEL_NAME = "girardi2000"` now
+resolves to this real, loaded data — confirmed directly (34 tracks, 50
+isochrones, `available_metallicities == (0.019,)`).
+
+### 4. Six-system evolutionary consistency check: real results
+
+Run via the new shared pipeline `evolution/benchmark_checks.py`
+(`scripts/run_evolutionary_checks.py` prints/records it;
+`scripts/generate_benchmark_plots.py`'s new `generate_hrdiagrams()`
+consumes the same fitted objects for the HR-diagram figures below, so
+the two cannot silently drift apart) for all six systems that needed
+it: HD214222, HD191854, HD130669, HD184467 (Al-Wardat SED systems,
+masses from `literature_component_parameters`), Capella (masses
+derived from Torres et al. 2015 Table 1 SB2 elements via
+`component_masses_from_elements`: M1=2.5688, M2=2.4828 Msun — no
+separately-stated literature mass exists elsewhere in this repo), and
+AlphaCenAB (masses from `AlphaCenAB_orbit.json`'s
+`component_masses_Msun`, Akeson et al. 2021 Table 8).
+
+All six independent-fit + common-age-fit pipelines completed; no
+common-age fit failed. Every component in all six systems places as
+dwarf/main-sequence (log g >= 4.0) **except Capella**, which places as
+a giant (primary, log g ~= 2.7) plus a subgiant (secondary,
+log g ~= 3.0-3.1) — physically expected for this well-known
+giant+subgiant binary, not a surprise. No component's requested mass
+fell outside the grid's 0.15-7 Msun range.
+
+Two categories of implausibility were explicitly flagged rather than
+silently accepted, per the user's explicit request:
+
+- **HD184467's secondary** (0.85 Msun) is an exact tie, equidistant
+  (0.05 Msun) between the 0.8 and 0.9 Msun tracks; `nearest_track()`
+  resolves ties by taking the first in ascending iteration order (0.8
+  Msun), producing a 5.9% mass mismatch and, read independently, a
+  15.5 Gyr best-fit age exceeding a Hubble time (13.787 Gyr, Planck
+  2018). This is a genuine grid-spacing coincidence for this one
+  component, not a search/fit bug -- the tie-breaking rule was not
+  changed. The system's joint common-age fit still converges (7.9
+  Gyr), constrained mainly by the better-behaved primary.
+- **Sparse local age-grid spacing** (tabulated-age spacing at the
+  best-fit point exceeding 20% of the age itself) is flagged for at
+  least one component in nearly every system -- Girardi (2000)'s age
+  sampling is coarser than this project's fit resolution; this means
+  the reported age is only as precise as the nearest tabulated grid
+  point, independent of chi2 quality, not a fit-quality problem.
+
+Full per-component numbers (requested/nearest mass, mismatch %,
+independent best-fit age/chi2/log g, evolutionary state, all flags,
+the joint common-age fit's age/chi2/log g per component) are in
+`validation/results/evolutionary_checks.json`; each system's own
+`validation/expected_results/*.json` now carries these under
+`evolutionary_track_source.result_summary`, with `status: "run"`
+replacing the prior `"not yet run"`.
+
+**No prior age/mass/evolutionary-stage number existed anywhere else
+in this project's documentation for any of these six systems before
+this run** — confirmed by direct search, consistent with the previous
+entry's own finding that none had ever been computed against a real
+grid. There is therefore nothing for these new results to disagree
+with; this is the first time such numbers have existed in this
+project. This is distinct from a comparison against each source
+paper's own separately-published age/mass values, which was not
+performed as part of this run.
+
+### 5. HR-diagram figures
+
+`scripts/generate_benchmark_plots.py`'s new `generate_hrdiagrams()`
+builds one `HRDiagramData` per system (via
+`evolution/hrdiagram.py`'s `build_binary_hrdiagram_data()`, from the
+same track/observables/solution objects the numeric check above
+produced) and renders it with the pre-existing
+`visualization/hrdiagram_plot.py`'s `plot_binary_hrdiagram()`
+(component points with error bars over each component's track curve
+— the same visual convention as the Al-Wardat papers). All six
+figures were generated successfully with no errors:
+`validation/results/plots/<HD214222|HD191854|HD130669|HD184467|
+Capella|AlphaCenAB>/hrdiagram.png`. Visually spot-checked
+(HD184467): the secondary's model point sits visibly offset from its
+observation, consistent with the exact-tie mass-mismatch flag above —
+the figure and the numeric flag agree, as intended.
+
+### 6. Tests and regression check
+
+`tests/test_evolution_grids.py`'s `test_load_default_evolution_model_
+repo_state_today()` — which had asserted `load_default_evolution_model()`
+raises `FileNotFoundError` in the "no data present" repo state — was
+updated to reflect that real data now resolves successfully (asserts a
+real, non-empty `EvolutionModel` at Z=0.019 instead). New tests were
+added covering the real files specifically (not just synthetic
+fixtures): `_read_vizier_asu_tsv()` against both real files (row
+counts, header/column detection), `load_girardi2000_vizier_tracks()`/
+`_isochrones()` (mass/age coverage, Overshoot=1 default, strictly
+increasing age/mass after truncation/dedup), and
+`load_girardi2000_from_vizier()`/`load_default_evolution_model()`
+end-to-end against the real repo-root `data/evolution/girardi2000/`
+files. Full suite: `MPLBACKEND=Agg PYTHONPATH=src python -m pytest
+tests/ -q`: **260/260 passed, 0 failures, 0 regressions** (289.47s) --
+strictly additive over the prior 254-test count (6 new tests, all
+listed above; the one changed test is a modification, not an
+addition, of an existing test that already counted in the 254).
+
+### 7. What remains open
+
+Comparing these new results against each source paper's own
+separately-published age/mass values (as opposed to only checking
+internal consistency against Girardi 2000) was not done here and
+remains open if wanted. The radius-prior wiring gap
+(`JointInferenceProblem.evolution_context` typed `Any`, described in
+`docs/guide/evolutionary_checks.md`) is unchanged by this entry -- it
+was never blocked by missing grid data, only by an undesigned
+contract, and remains future work item 1 in
+`docs/paper_reference_notes.md`. The two empty leftover directories
+under `src/pyseshat/data/` (item 1 above) are unresolved pending
+either user cleanup or a session with delete permission granted.

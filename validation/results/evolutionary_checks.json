@@ -1,0 +1,339 @@
+{
+  "HD214222": {
+    "grid": "Girardi et al. (2000), Z=0.019, Overshoot=1",
+    "mass_source": "literature_component_parameters (validation/expected_results, direct)",
+    "components": {
+      "primary": {
+        "requested_mass_Msun": 1.12,
+        "nearest_track_mass_Msun": 1.1,
+        "mass_mismatch_pct": 1.786,
+        "n_mass_ties": 1,
+        "literature_teff_K": 6075.0,
+        "literature_radius_Rsun": 1.14,
+        "literature_log_luminosity": 0.2027,
+        "independent_best_fit_age_yr": 3443600000.0,
+        "independent_best_fit_chi2": 0.0586,
+        "independent_best_fit_log_teff": 3.782,
+        "independent_best_fit_log_luminosity": 0.212,
+        "independent_best_fit_log_g": 4.34,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 3443600000.0,
+        "flags": []
+      },
+      "secondary": {
+        "requested_mass_Msun": 1.09,
+        "nearest_track_mass_Msun": 1.1,
+        "mass_mismatch_pct": 0.917,
+        "n_mass_ties": 1,
+        "literature_teff_K": 6000.0,
+        "literature_radius_Rsun": 1.095,
+        "literature_log_luminosity": 0.1461,
+        "independent_best_fit_age_yr": 1981100000.0,
+        "independent_best_fit_chi2": 0.014,
+        "independent_best_fit_log_teff": 3.779,
+        "independent_best_fit_log_luminosity": 0.142,
+        "independent_best_fit_log_g": 4.401,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 1981100000.0,
+        "flags": [
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 40% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      }
+    },
+    "age_difference_yr": 1462500000.0,
+    "age_difference_pct_of_older_age": 42.47,
+    "common_age_fit": {
+      "age_yr": 2748300000.0,
+      "chi2": 0.7961,
+      "primary_log_g": 4.371,
+      "secondary_log_g": 4.371,
+      "primary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "secondary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "error": null
+    }
+  },
+  "HD191854": {
+    "grid": "Girardi et al. (2000), Z=0.019, Overshoot=1",
+    "mass_source": "literature_component_parameters (validation/expected_results, direct)",
+    "components": {
+      "primary": {
+        "requested_mass_Msun": 1.12,
+        "nearest_track_mass_Msun": 1.1,
+        "mass_mismatch_pct": 1.786,
+        "n_mass_ties": 1,
+        "literature_teff_K": 5930.0,
+        "literature_radius_Rsun": 1.585,
+        "literature_log_luminosity": 0.447,
+        "independent_best_fit_age_yr": 6947300000.0,
+        "independent_best_fit_chi2": 0.259,
+        "independent_best_fit_log_teff": 3.768,
+        "independent_best_fit_log_luminosity": 0.444,
+        "independent_best_fit_log_g": 4.055,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 6947300000.0,
+        "flags": []
+      },
+      "secondary": {
+        "requested_mass_Msun": 0.89,
+        "nearest_track_mass_Msun": 0.9,
+        "mass_mismatch_pct": 1.124,
+        "n_mass_ties": 1,
+        "literature_teff_K": 5440.0,
+        "literature_radius_Rsun": 0.906,
+        "literature_log_luminosity": -0.1887,
+        "independent_best_fit_age_yr": 7948400000.0,
+        "independent_best_fit_chi2": 0.0578,
+        "independent_best_fit_log_teff": 3.738,
+        "independent_best_fit_log_luminosity": -0.188,
+        "independent_best_fit_log_g": 4.478,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 7948400000.0,
+        "flags": [
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 24% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      }
+    },
+    "age_difference_yr": 1001100000.0,
+    "age_difference_pct_of_older_age": 12.59,
+    "common_age_fit": {
+      "age_yr": 6947300000.0,
+      "chi2": 0.5231,
+      "primary_log_g": 4.055,
+      "secondary_log_g": 4.4954,
+      "primary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "secondary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "error": null
+    }
+  },
+  "HD130669": {
+    "grid": "Girardi et al. (2000), Z=0.019, Overshoot=1",
+    "mass_source": "literature_component_parameters (validation/expected_results, direct)",
+    "components": {
+      "primary": {
+        "requested_mass_Msun": 0.89,
+        "nearest_track_mass_Msun": 0.9,
+        "mass_mismatch_pct": 1.124,
+        "n_mass_ties": 1,
+        "literature_teff_K": 5290.0,
+        "literature_radius_Rsun": 0.956,
+        "literature_log_luminosity": -0.1906,
+        "independent_best_fit_age_yr": 6045500000.0,
+        "independent_best_fit_chi2": 2.0118,
+        "independent_best_fit_log_teff": 3.734,
+        "independent_best_fit_log_luminosity": -0.238,
+        "independent_best_fit_log_g": 4.511,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 6045500000.0,
+        "flags": [
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 32% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      },
+      "secondary": {
+        "requested_mass_Msun": 0.88,
+        "nearest_track_mass_Msun": 0.9,
+        "mass_mismatch_pct": 2.273,
+        "n_mass_ties": 1,
+        "literature_teff_K": 5230.0,
+        "literature_radius_Rsun": 0.95,
+        "literature_log_luminosity": -0.2159,
+        "independent_best_fit_age_yr": 6045500000.0,
+        "independent_best_fit_chi2": 2.5982,
+        "independent_best_fit_log_teff": 3.734,
+        "independent_best_fit_log_luminosity": -0.238,
+        "independent_best_fit_log_g": 4.511,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 6045500000.0,
+        "flags": [
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 32% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      }
+    },
+    "age_difference_yr": 0.0,
+    "age_difference_pct_of_older_age": 0.0,
+    "common_age_fit": {
+      "age_yr": 6045500000.0,
+      "chi2": 4.61,
+      "primary_log_g": 4.511,
+      "secondary_log_g": 4.511,
+      "primary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "secondary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "error": null
+    }
+  },
+  "HD184467": {
+    "grid": "Girardi et al. (2000), Z=0.019, Overshoot=1",
+    "mass_source": "literature_component_parameters (validation/expected_results, direct)",
+    "components": {
+      "primary": {
+        "requested_mass_Msun": 0.91,
+        "nearest_track_mass_Msun": 0.9,
+        "mass_mismatch_pct": 1.099,
+        "n_mass_ties": 1,
+        "literature_teff_K": 5340.0,
+        "literature_radius_Rsun": 0.832,
+        "literature_log_luminosity": -0.2949,
+        "independent_best_fit_age_yr": 4087400000.0,
+        "independent_best_fit_chi2": 0.0687,
+        "independent_best_fit_log_teff": 3.729,
+        "independent_best_fit_log_luminosity": -0.284,
+        "independent_best_fit_log_g": 4.539,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 4087400000.0,
+        "flags": [
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 49% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      },
+      "secondary": {
+        "requested_mass_Msun": 0.85,
+        "nearest_track_mass_Msun": 0.8,
+        "mass_mismatch_pct": 5.882,
+        "n_mass_ties": 2,
+        "literature_teff_K": 5185.0,
+        "literature_radius_Rsun": 0.783,
+        "literature_log_luminosity": -0.3988,
+        "independent_best_fit_age_yr": 15524000000.0,
+        "independent_best_fit_chi2": 0.6017,
+        "independent_best_fit_log_teff": 3.713,
+        "independent_best_fit_log_luminosity": -0.361,
+        "independent_best_fit_log_g": 4.501,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 15524000000.0,
+        "flags": [
+          "nearest available track mass (0.8) differs from requested (0.85) by 5.9% (> 5.0% threshold)",
+          "exact tie in nearest_track mass-distance minimization (2 tracks equidistant from 0.85 Msun) -- nearest_track picked the first in iteration order (0.8 Msun); this is a genuine grid-spacing coincidence, not a bug",
+          "independent best-fit age (1.552e+10 yr) exceeds a Hubble time (1.379e+10 yr) -- physically implausible for this component read alone; the joint common-age fit below may still be well-constrained by the other component",
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 21% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      }
+    },
+    "age_difference_yr": 11436600000.0,
+    "age_difference_pct_of_older_age": 73.67,
+    "common_age_fit": {
+      "age_yr": 7948400000.0,
+      "chi2": 13.1697,
+      "primary_log_g": 4.478,
+      "secondary_log_g": 4.5758,
+      "primary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "secondary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "error": null
+    }
+  },
+  "Capella": {
+    "grid": "Girardi et al. (2000), Z=0.019, Overshoot=1",
+    "mass_source": "derived from literature SB2 orbital elements (Torres et al. 2015 Table 1, P/e/i/K1/K2) via analysis.masses.component_masses_from_elements -- no separately-stated literature mass exists in this repository. M1=2.5688, M2=2.4828 Msun.",
+    "components": {
+      "primary": {
+        "requested_mass_Msun": 2.5687940703805694,
+        "nearest_track_mass_Msun": 2.5,
+        "mass_mismatch_pct": 2.678,
+        "n_mass_ties": 1,
+        "literature_teff_K": 4970.0,
+        "literature_radius_Rsun": 11.98,
+        "literature_log_luminosity": 1.897,
+        "independent_best_fit_age_yr": 767640000.0,
+        "independent_best_fit_chi2": 0.4811,
+        "independent_best_fit_log_teff": 3.691,
+        "independent_best_fit_log_luminosity": 1.875,
+        "independent_best_fit_log_g": 2.671,
+        "evolutionary_state": "giant (log g < 3.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 767640000.0,
+        "flags": []
+      },
+      "secondary": {
+        "requested_mass_Msun": 2.482826498159233,
+        "nearest_track_mass_Msun": 2.5,
+        "mass_mismatch_pct": 0.692,
+        "n_mass_ties": 1,
+        "literature_teff_K": 5730.0,
+        "literature_radius_Rsun": 8.83,
+        "literature_log_luminosity": 1.8792,
+        "independent_best_fit_age_yr": 592000000.0,
+        "independent_best_fit_chi2": 4.1065,
+        "independent_best_fit_log_teff": 3.759,
+        "independent_best_fit_log_luminosity": 1.778,
+        "independent_best_fit_log_g": 3.041,
+        "evolutionary_state": "subgiant (3.0 <= log g < 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 592000000.0,
+        "flags": []
+      }
+    },
+    "age_difference_yr": 175640000.0,
+    "age_difference_pct_of_older_age": 22.88,
+    "common_age_fit": {
+      "age_yr": 592260000.0,
+      "chi2": 45.2286,
+      "primary_log_g": 3.035,
+      "secondary_log_g": 3.035,
+      "primary_evolutionary_state": "subgiant (3.0 <= log g < 4.0)",
+      "secondary_evolutionary_state": "subgiant (3.0 <= log g < 4.0)",
+      "error": null
+    }
+  },
+  "AlphaCenAB": {
+    "grid": "Girardi et al. (2000), Z=0.019, Overshoot=1",
+    "mass_source": "AlphaCenAB_orbit.json component_masses_Msun (Akeson et al. 2021 Table 8)",
+    "components": {
+      "primary": {
+        "requested_mass_Msun": 1.0788,
+        "nearest_track_mass_Msun": 1.1,
+        "mass_mismatch_pct": 1.965,
+        "n_mass_ties": 1,
+        "literature_teff_K": 5792.0,
+        "literature_radius_Rsun": 1.2234,
+        "literature_log_luminosity": 0.1811,
+        "independent_best_fit_age_yr": 1981100000.0,
+        "independent_best_fit_chi2": 3.2281,
+        "independent_best_fit_log_teff": 3.779,
+        "independent_best_fit_log_luminosity": 0.142,
+        "independent_best_fit_log_g": 4.401,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 1981100000.0,
+        "flags": [
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 40% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      },
+      "secondary": {
+        "requested_mass_Msun": 0.9092,
+        "nearest_track_mass_Msun": 0.9,
+        "mass_mismatch_pct": 1.012,
+        "n_mass_ties": 1,
+        "literature_teff_K": 5231.0,
+        "literature_radius_Rsun": 0.8632,
+        "literature_log_luminosity": -0.2987,
+        "independent_best_fit_age_yr": 2079500000.0,
+        "independent_best_fit_chi2": 0.5904,
+        "independent_best_fit_log_teff": 3.724,
+        "independent_best_fit_log_luminosity": -0.326,
+        "independent_best_fit_log_g": 4.562,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "nearest_raw_stage_label": null,
+        "nearest_raw_stage_label_age_yr": 2079500000.0,
+        "flags": [
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 98% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      }
+    },
+    "age_difference_yr": 98400000.0,
+    "age_difference_pct_of_older_age": 4.73,
+    "common_age_fit": {
+      "age_yr": 2079500000.0,
+      "chi2": 3.7661,
+      "primary_log_g": 4.3972,
+      "secondary_log_g": 4.562,
+      "primary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "secondary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+      "error": null
+    }
+  }
+}

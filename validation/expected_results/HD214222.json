@@ -10,9 +10,45 @@
   "evolutionary_track_source": {
     "grid": "Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126",
     "metallicity_used": 0.019,
+    "overshoot_used": 1,
     "metallicity_note": "Z=0.019 (Y=0.273) is the paper's own identified solar-composition value (Sect. 2: \"almost identical to the Z=0.01886 favoured by Anders & Grevesse 1989\"), appropriate for this Sun-like system.",
-    "status": "not yet run",
-    "status_note": "Standardized on 2026-08-29 as this project's default evolutionary-track grid, for direct comparability with the Al-Wardat SED-fitting literature this system benchmarks against (which consistently uses Girardi 2000). Code-level integration (pyseshat.evolution.parsers.girardi2000, pyseshat.evolution.grids's \"girardi2000\" model) is in place, but no real Girardi (2000) numeric track/isochrone data has been sourced into this repository yet -- confirmed network blocker (VizieR, CDS FTP, and the Padova CMD legacy interface are all unreachable from this development environment's egress, including the linked user device; see docs/guide/evolutionary_checks.md's 2026-08-29 entry). No evolutionary consistency check has therefore been run against this system's fitted/literature (Teff, R) yet -- this is an open item, not a result, and no age/mass/evolutionary-stage number should be attributed to this system from this repository until that data is obtained.",
+    "status": "run",
+    "status_note": "[2026-08-29] Real Girardi (2000) evolutionary-track/isochrone data was obtained and run against this system: VizieR catalog J/A+AS/141/371 (tables mstracks, isochron), Z=0.019 (Y=0.273), Overshoot=1. Source data: Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126. Loader: pyseshat.evolution.parsers.girardi2000.load_girardi2000_vizier_tracks/_isochrones, wired as this project's default grid via pyseshat.evolution.grids.load_default_evolution_model(). Pipeline: pyseshat.evolution.benchmark_checks.run_system_evolutionary_check (nearest_track -> fit_track independently per component -> fit_common_age jointly), the same code scripts/run_evolutionary_checks.py and scripts/generate_benchmark_plots.py's generate_hrdiagrams() both use, so this recorded result, the numeric report, and the HR-diagram figure cannot silently drift apart. mass_source: literature_component_parameters (validation/expected_results, direct) primary: requested M=1.12 Msun -> nearest track M=1.1 Msun (1.79% off); independent best-fit age=3.444e+09 yr (3.44 Gyr), chi2=0.059, state=dwarf/main-sequence (log g >= 4.0). secondary: requested M=1.09 Msun -> nearest track M=1.1 Msun (0.92% off); independent best-fit age=1.981e+09 yr (1.98 Gyr), chi2=0.014, state=dwarf/main-sequence (log g >= 4.0). FLAG (secondary): best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 40% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2 independent-fit age_difference: 1.462e+09 yr (1.46 Gyr) (42.5% of the older independent age). common-age (joint) fit: age=2.748e+09 yr (2.75 Gyr), chi2=0.796, primary log g=4.371 (dwarf/main-sequence (log g >= 4.0)), secondary log g=4.371 (dwarf/main-sequence (log g >= 4.0)). No prior age/mass/evolutionary-stage numbers for this system existed anywhere else in this project's documentation before this run -- there is nothing to compare against for a discrepancy; this is the first time such numbers have been computed here. (Separate comparison against the source paper's own stated age, if any, was not performed as part of this run.)",
+    "data_provenance": "VizieR catalog J/A+AS/141/371 (tables mstracks, isochron), Z=0.019 (Y=0.273), Overshoot=1",
+    "result_summary": {
+      "mass_source": "literature_component_parameters (validation/expected_results, direct)",
+      "primary": {
+        "requested_mass_Msun": 1.12,
+        "nearest_track_mass_Msun": 1.1,
+        "mass_mismatch_pct": 1.786,
+        "independent_best_fit_age_yr": 3443600000.0,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "flags": []
+      },
+      "secondary": {
+        "requested_mass_Msun": 1.09,
+        "nearest_track_mass_Msun": 1.1,
+        "mass_mismatch_pct": 0.917,
+        "independent_best_fit_age_yr": 1981100000.0,
+        "evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "flags": [
+          "best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 40% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2"
+        ]
+      },
+      "age_difference_yr": 1462500000.0,
+      "age_difference_pct_of_older_age": 42.47,
+      "common_age_fit": {
+        "age_yr": 2748300000.0,
+        "chi2": 0.7961,
+        "primary_log_g": 4.371,
+        "secondary_log_g": 4.371,
+        "primary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "secondary_evolutionary_state": "dwarf/main-sequence (log g >= 4.0)",
+        "error": null
+      }
+    },
+    "full_numeric_results": "validation/results/evolutionary_checks.json",
+    "hrdiagram_figure": "validation/results/plots/HD214222/hrdiagram.png",
     "prior_grid": "None -- no evolutionary-track grid (Girardi, PARSEC, or otherwise) had ever been run against this system before this entry; PARSEC parsing infrastructure existed in the codebase but with zero bundled data and zero benchmark wiring."
   },
   "reference_table": "Table 1 (system parameters), Table 4 (Entire-system Johnson/Tycho photometry), Table 5 (component Teff/R/L/M), Table 6 (orbital parallax)",
