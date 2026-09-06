@@ -51,6 +51,7 @@ PySeshat
 │   │   │   ├── search.cpython-314.pyc
 │   │   │   └── solution.cpython-314.pyc
 │   │   ├── age.py
+│   │   ├── benchmark_checks.py
 │   │   ├── binary.py
 │   │   ├── grids.py
 │   │   ├── hrdiagram.py
@@ -64,6 +65,7 @@ PySeshat
 │   │   │   ├── __pycache__
 │   │   │   │   ├── __init__.cpython-314.pyc
 │   │   │   │   └── parsec.cpython-314.pyc
+│   │   │   ├── girardi2000.py
 │   │   │   └── parsec.py
 │   │   ├── residuals.py
 │   │   ├── search.py
@@ -165,6 +167,7 @@ PySeshat
 │   │   │   └── report_writer.cpython-314.pyc
 │   │   ├── coordinates.py
 │   │   ├── fit_result_io.py
+│   │   ├── gaia_parser.py
 │   │   ├── orbit_parser.py
 │   │   └── report_writer.py
 │   ├── observations
@@ -227,6 +230,8 @@ PySeshat
 │   │   │   ├── __init__.cpython-314.pyc
 │   │   │   ├── orbit3_bounds.cpython-314.pyc
 │   │   │   ├── orbit3_fit.cpython-314.pyc
+│   │   │   ├── orbit3_likelihood.cpython-314.pyc
+│   │   │   ├── orbit3_priors.cpython-314.pyc
 │   │   │   ├── triple_bounds.cpython-314.pyc
 │   │   │   ├── triple_diagnostics.cpython-314.pyc
 │   │   │   ├── triple_elements.cpython-314.pyc
@@ -242,6 +247,8 @@ PySeshat
 │   │   │   └── triple_statistics.cpython-314.pyc
 │   │   ├── orbit3_bounds.py
 │   │   ├── orbit3_fit.py
+│   │   ├── orbit3_likelihood.py
+│   │   ├── orbit3_priors.py
 │   │   ├── triple_bounds.py
 │   │   ├── triple_diagnostics.py
 │   │   ├── triple_elements.py
@@ -270,10 +277,12 @@ PySeshat
 │       │   └── orbit_plot.cpython-314.pyc
 │       ├── dynamics_plot.py
 │       ├── hrdiagram_plot.py
-│       └── orbit_plot.py
+│       ├── orbit_plot.py
+│       ├── sed_plot.py
+│       └── triple_orbit_plot.py
 └── pyseshat.egg-info
-    ├── dependency_links.txt
     ├── PKG-INFO
-    ├── requires.txt
     ├── SOURCES.txt
+    ├── dependency_links.txt
+    ├── requires.txt
     └── top_level.txt

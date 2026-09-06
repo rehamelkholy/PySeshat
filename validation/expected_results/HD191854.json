@@ -60,7 +60,7 @@
   "metallicity": {
     "value": 0.0,
     "literature_value": -0.05,
-    "note": "Approximated as solar (0.0) to match the only metallicity currently downloaded in the local CK04 grid (validation/atmosphere_models/ckp00/, [M/H]=0.0); the literature value is retained here for reference and as a documented simplification, not silently dropped."
+    "note": "Approximated as solar (0.0), the nearest available CK04 grid point to the literature value -0.05 (grid metallicity steps are [-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, +0.2, +0.5]; 0.0 is closer than any other available step). Re-verified 2026-09-02 after the full 608-file CK04 grid (all 8 metallicity slices) was downloaded: 0.0 remains the nearest grid point even with the fuller grid available, so this is not a data-availability limitation -- it is standard nearest-grid-point selection (AtmosphereGrid.interpolate() requires an exact metallicity match; metallicity is not interpolated). The literature value is retained here for reference and as a documented simplification, not silently dropped."
   },
   "primary_logg": {
     "value": 4.087,

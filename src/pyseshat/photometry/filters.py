@@ -257,6 +257,61 @@ class PhotometricPassband:
         )
 
     @property
+    def pivot_wavelength(
+        self
+    ):
+        """
+        Pivot wavelength of the passband, in Angstrom.
+
+        Added 2026-09-02 for ``visualization.sed_plot.plot_sed_fit()``
+        (see ``docs/guide/visualization.md``'s "SED fit" section):
+        placing a broadband photometric point on a flux-density
+        (F_lambda-vs-wavelength) plot needs one representative
+        wavelength per passband, and the pivot wavelength is the
+        standard choice for that in the SED-fitting literature
+        (invariant to whether the passband is treated as
+        photon-counting or energy-integrating, unlike a simple
+        mean or the throughput-weighted centroid) -- the same
+        definition used by, e.g., the SVO Filter Profile Service.
+
+        Returns
+        -------
+        float
+            .. math::
+
+                \\lambda_{\\rm pivot} = \\sqrt{
+                    \\frac{\\int T(\\lambda)\\,\\lambda\\,d\\lambda}
+                    {\\int T(\\lambda)\\,\\lambda^{-1}\\,d\\lambda}
+                }
+
+            computed by trapezoidal integration over this
+            passband's own tabulated wavelength grid.
+
+        Notes
+        -----
+        This is a real integral over the *tabulated* throughput
+        curve (``numpy.trapezoid``), not an approximation from
+        ``minimum_wavelength``/``maximum_wavelength``/
+        ``peak_wavelength`` alone -- for an asymmetric passband
+        (e.g. most real filter curves) the pivot wavelength differs
+        from all three of those.
+        """
+
+        numerator = np.trapezoid(
+            self.throughput * self.wavelength,
+            self.wavelength,
+        )
+
+        denominator = np.trapezoid(
+            self.throughput / self.wavelength,
+            self.wavelength,
+        )
+
+        return float(
+            np.sqrt(numerator / denominator)
+        )
+
+    @property
     def peak_wavelength(
         self
     ):

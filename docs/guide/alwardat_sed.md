@@ -56,9 +56,7 @@ disagreed with it) — the prior is expressed as an ordinary pseudo-residual
 appended to the real measurement residuals for the optimizer, while
 `photometric_residuals_from_problem()` gives you back the pure
 measurement residuals (without the prior's pseudo-residual mixed in) for
-honest chi-square/RMS reporting. See
-`docs/project_decisions.md`'s "`PhotometricParameters` fit-flags/prior
-mechanism" entry for the full derivation.
+honest chi-square/RMS reporting.
 
 ## Why radius needs a prior at all: a real, physical degeneracy
 
@@ -83,8 +81,7 @@ the methodological reason for that design.
 literature radius" is close to true by construction) — the intended real
 fix is to tie the prior to an evolutionary-track-predicted radius (given
 each component's literature mass) instead, via `evolution/binary.py`;
-not yet wired in, tracked as future work item 1 in
-`docs/paper_reference_notes.md`.
+not yet wired in, tracked as future work.
 
 ## A second, independent finding: near-twin components are hard to split
 
@@ -120,7 +117,113 @@ records. Reverse-fitting an empirical correction from the benchmark data
 itself was considered and rejected as fabrication. Stromgren u stays
 excluded from all four fits pending an authoritative source — see each
 system's `excluded_measurements` field in its `validation/expected_results/`
-JSON, and `docs/project_decisions.md` for the full chain of reasoning.
+JSON.
+
+## SED-fit figure (essential figure 4)
+
+**[2026-09-02]** `validation/results/plots/<system>/sed_fit.pdf` now
+exists for all four Al-Wardat benchmark systems (HD214222, HD191854,
+HD130669, HD184467) — no plotting function for `fit_photometry()`'s
+output existed anywhere in this package before this date (confirmed
+by grepping `visualization/` and `validation/results/plots/`), and
+this closed a previously-tracked gap. See
+`docs/guide/visualization.md`'s "SED-fit flux-vs-wavelength
+convention" section for the full visual-convention derivation from
+Al-Wardat (2002, 2012) and Abushattal et al. 2025's own SED figures
+(flux density vs. wavelength, composite + per-component model curves,
+observed points at each passband's pivot wavelength with the assumed
+0.30 mag uncertainty propagated to flux error bars, and the excluded
+Stromgren u point above drawn distinctly rather than dropped).
+
+Each figure is generated from that system's own fitted solution —
+`scripts/generate_benchmark_plots.py`'s `generate_sed_fit_plots()`
+calls the same `benchmark_runner.run_alwardat_benchmark()` used to
+produce the registered reduced-chi-square values, so the plotted
+curve cannot silently drift from the reported number. All four were
+visually inspected (rendered to PNG and read directly) after
+generation: the model curves track the observed points within their
+error bars in all four systems, consistent with their reduced
+chi-square values of 0.107-0.152; the excluded Stromgren u point sits
+visibly below the model curve in every system, consistent with its
+documented ~1.7 mag anomaly; HD191854 shows clearly separated
+primary/secondary curves (its 490 K Teff split, see "A second,
+independent finding" above), while HD214222, HD130669, and HD184467
+show near-overlapping component curves, consistent with their
+near-twin-component-temperature degeneracy.
+
+## CK04 grid coverage, and what metallicity range this package supports
+
+**The full CK04 grid is downloaded and available** (confirmed by a
+2026-09-02 grid-completeness audit):
+`validation/atmosphere_models/` holds all 608 FITS files specified by
+Castelli & Kurucz (2004) --
+
+- **Effective temperature**: 3500-50000 K, 76 grid points (non-uniform
+  spacing; finer near typical F/G/K temperatures).
+- **Surface gravity**: log g = 0.0-5.0 (cgs), 0.5-dex steps.
+- **Metallicity**: [M/H] in {-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, +0.2,
+  +0.5} dex (directories `ckm25`...`ckm05`, `ckp00`, `ckp02`, `ckp05`).
+
+`AtmosphereGrid.interpolate()` (`stellar/atmospheres.py`) bilinearly
+interpolates in (Teff, log g) but selects metallicity **exactly** --
+metallicity is not interpolated, so a target star's [Fe/H] must be
+rounded to the nearest available grid step (0.0 is exact for a
+genuinely solar star; the largest possible rounding error is 0.25 dex,
+at the midpoint between two adjacent steps). `load_ck04_grid()` only
+loads whichever specific files you pass it, so a per-system
+`atmosphere_files` list (as used throughout `validation/expected_results/`)
+must bracket BOTH the target Teff range AND include files from the
+correct metallicity subdirectory for a non-solar fit.
+
+**Package scope for general use**: no prior scope statement existed in
+this codebase before the 2026-09-02 audit, so this package now targets
+**[Fe/H] roughly -1.0 to +0.5 dex** as its documented default scope --
+solar-neighborhood F/G/K dwarfs and subgiants, matching the Al-Wardat
+method's own target population (Sun-like SB2 binaries), not just the
+12 benchmark systems' own literature values. The full downloaded grid
+(-2.5 to +0.5 dex) already covers this target range with margin on the
+metal-poor side; a target star outside -1.0 to +0.5 dex is still
+fittable (the grid extends to -2.5 dex) but is outside this package's
+primary documented use case. A target star's `AtmosphereModel`/`AtmosphereGrid`
+docstrings (`stellar/atmospheres.py`) and `load_ck04_fits()` itself
+place no artificial restriction beyond the physical grid boundaries --
+`interpolate()` simply raises `ValueError` for a Teff/logg outside the
+loaded files' range, or for a metallicity with no exact grid match.
+
+**Benchmark-specific metallicity choices, and why they don't all use
+literature [Fe/H] even though the full grid is now available:**
+
+| System | Literature [Fe/H] | Nearest grid step | Used | Why |
+|---|---|---|---|---|
+| HD214222 | -0.05 | 0.0 (0.05 away) | 0.0 | nearest grid point |
+| HD191854 | -0.05 | 0.0 (0.05 away) | 0.0 | nearest grid point |
+| HD130669 | -0.03 | 0.0 (0.03 away) | 0.0 | nearest grid point |
+| HD184467 | -0.25 | tie: 0.0 and -0.5 (both 0.25 away) | 0.0 | empirically tested both (see below); 0.0 gives the better reduced chi2 |
+| Capella (photometry) | -0.04 | 0.0 (0.04 away) | 0.0 | nearest grid point *and* self-consistent with its synthetic generation (below) |
+| alpha Cen AB (photometry) | ~+0.23 | +0.2 (0.03 away) | 0.0 | self-consistency with its synthetic generation (below) overrides nearest-grid-point |
+
+For the four Abushattal-authored systems (HD214222/HD191854/HD130669/HD184467),
+their literature [Fe/H] values are all close enough to solar (within
+0.05 dex, except HD184467's exact tie) that 0.0 genuinely is, or ties
+for, the nearest available grid point -- **not** a data-availability
+compromise, even though it was originally documented as one back when
+only 4 files were downloaded.
+
+Capella and alpha Cen AB's photometric benchmarks are different: their
+"measurements" are entirely **synthetic**, forward-modeled by this same
+pipeline's `synthetic_binary_magnitudes()` at metallicity=0.0
+(`scripts/build_joint_benchmarks.py`). For these two, fitting at 0.0 is
+the *self-consistent* choice regardless of the true literature value,
+since the benchmark's actual purpose is recovering the parameters used
+to generate its own synthetic input. This was tested directly for
+alpha Cen AB (`scripts/ck04_metallicity_rerun_check.py`): re-fitting at +0.2
+(the literature-nearest grid point, now available) makes the fit
+measurably *worse* (reduced chi2 2.25 -> 2.92), exactly as expected for
+a deliberate synthetic-data/fit-grid metallicity mismatch -- confirming
+this is the right call, not an oversight.
+
+No previously-reported benchmark fit-quality number (reduced chi2,
+worst-parameter relative error) changed as a result of this audit.
 
 ## An important epistemic caveat for the paper
 

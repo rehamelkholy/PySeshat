@@ -6,10 +6,9 @@ component around the inner pair's center of mass) plus an inner orbit
 outer's observed astrometric position. PySeshat supports **two
 historically distinct formalisms for that coupling**, kept
 architecturally separate rather than unified into one shared
-abstraction — see `docs/project_decisions.md`'s design-choices section
-for the full rationale; the short version is that they are not two
-syntactic forms of the same physics, so forcing a shared representation
-would risk silently changing the model.
+abstraction: they are not two syntactic forms of the same physics, so
+forcing a shared representation would risk silently changing the
+model.
 
 ## Legacy ORBITT2 (15 parameters)
 
@@ -44,8 +43,7 @@ fitted = fit_result.elements   # TripleOrbitalElements, .outer and .inner
 to the `(0, 1)` its naive physical definition
 (`f = q_inner / (1 + q_inner)`) might suggest — HIP 111805's own
 published solution has `f = -0.330`; bounding it would make that real,
-already-published system's solution unreachable. See
-`docs/project_decisions.md` for the full derivation.
+already-published system's solution unreachable.
 
 ## A worked example: ζ Aquarii
 
@@ -73,11 +71,11 @@ PySeshat's fit *improves* on the literature χ² (694.51 vs. 699.73 at the
 literature starting point) and recovers a dynamical mass
 M_dyn ≈ 3.26 ± 0.40 M☉ (≈12.4% relative uncertainty) consistent with
 both the parallax-uncertainty-only expectation (~10.6%) and Tokovinin's
-approximate component-mass sum (≈3.4 M☉). See
-`docs/paper_reference_notes.md` §3.3 for the full writeup, including a
-single resolved-and-explained residual outlier at epoch 2009.7552 (two
-disagreeing speckle-astrometry reductions in the source data, not a
-PySeshat bug).
+approximate component-mass sum (≈3.4 M☉). A single residual outlier at
+epoch 2009.7552 was investigated and explained rather than left as an
+unexplained anomaly: it traces to two disagreeing speckle-astrometry
+reductions present in the source data itself, not a PySeshat fitting
+bug.
 
 ## HIP 111805: the most literature-complete benchmark
 
@@ -92,15 +90,33 @@ actually stress-tests convergence from a non-trivial starting point. See
 `examples/03_hierarchical_triple_orbit3.py` for a runnable comparison of
 both systems side by side.
 
-## No orbit plot yet for triples
+## Orbit plots for triples [2026-08-30]
 
-`src/pyseshat/visualization/` has no triple-aware orbit-plotting
-function — `TripleOrbitalElements.outer` is a real `OrbitalElements`,
-so `plot_visual_orbit()` could in principle be pointed at it, but the
-outer astrometric observations these systems are fit against include the
-inner subsystem's astrometric wobble (the `f` term), which a flat
-two-body curve doesn't model; plotting one directly against those
-observations would show a real, wobble-driven residual pattern a reader
-could easily mistake for a fit-quality problem. This is a genuine,
-scoped gap — see `visualization.md` and `docs/paper_reference_notes.md`'s
-"Future work" section.
+`src/pyseshat/visualization/triple_orbit_plot.py`'s `plot_triple_orbit()`
+is the triple-aware orbit-plotting function. `TripleOrbitalElements.outer`
+is a real `OrbitalElements`, so `plot_visual_orbit()` could in principle
+be pointed at it directly — but the outer astrometric observations these
+systems are fit against include the inner subsystem's astrometric wobble
+(the `f` term), which a flat two-body curve doesn't model; plotting one
+directly against those observations would show a real, wobble-driven
+residual pattern a reader could easily mistake for a fit-quality problem.
+`plot_triple_orbit()` avoids this by drawing BOTH ORBIT3 visual
+observables side by side, in the same North-up/East-left convention as
+`plot_visual_orbit()`: the resolved inner orbit (POS1) in the left panel,
+and the wobble-corrected wide/outer orbit (POS2 = r_outer + f*r_inner) in
+the right panel — so neither curve is ever plotted against observations
+it does not actually model.
+
+`scripts/generate_triple_orbit_plots.py` (wired into
+`scripts/generate_benchmark_plots.py`) generates both systems' figures
+using the same fitted solution `validation/benchmark_runner.py`'s
+`run_orbit3_benchmark()` produces for the paper's benchmark table
+(cross-checked at generation time, not just assumed to match), saved to
+`validation/results/plots/ZetaAqr/triple_orbit.pdf` and
+`validation/results/plots/HIP111805/triple_orbit.pdf` (vector PDF, no
+grid lines, per A&A's figure requirements). ζ Aqr's epoch-2009.7552
+residual anomaly (see above) is drawn with a distinct marker on the
+inner-orbit panel; HIP 111805's plot shows a visually striking wobble
+signature, since its short ~1.5 yr inner period makes the wobble term
+appear as a braided/doubled curve in the outer panel rather than a
+subtle perturbation.

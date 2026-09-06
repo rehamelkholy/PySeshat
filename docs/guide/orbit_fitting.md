@@ -27,8 +27,7 @@ Note the conversion from the parser's polar `(theta, rho)` columns to
 Cartesian `(X, Y)` before fitting — residuals throughout this codebase
 are always computed in Cartesian coordinates specifically to avoid the
 0/360-degree position-angle discontinuity corrupting a residual near
-that boundary (see `docs/project_decisions.md`'s design-choices
-section). `rv_data=rv` is optional; omit it (or pass an empty array) for
+that boundary). `rv_data=rv` is optional; omit it (or pass an empty array) for
 a visual-only fit.
 
 `elements.fit_flags` controls which parameters the optimizer actually
@@ -68,8 +67,7 @@ you the same Cartesian residuals the optimizer minimized;
 chi-square, reduced chi-square, and RMS, normalized to the same key
 schema (`chi_square`, `reduced_chi_square`, `rms`, `n_data`, `n_params`)
 regardless of which fitting path (plain binary, ORBIT3 triple, Al-Wardat
-SED) produced them — see `docs/project_decisions.md`'s "statistics
-normalization" design-choice entry.
+SED) produced them.
 
 ## Angle and sign conventions
 
@@ -82,12 +80,12 @@ F/G sign) can silently produce a numerically plausible but mirrored or
 sign-flipped solution. The RV `K1`/`K2` sign/component assignment in
 particular was independently re-derived and empirically reconfirmed (not
 merely assumed) against both FIN379 and GL765 — see
-`tests/test_rv_sign_convention_validation.py` and
-`docs/project_decisions.md`'s "RESOLVED: RV K1/K2 sign convention"
-entry.
+`tests/test_rv_sign_convention_validation.py`.
 
-**The one convention this codebase does not yet verify**: whether
-`plot_visual_orbit()`'s X/Y axes actually correspond to the standard
-North-up/East-left astronomical convention. See `visualization.md` for
-the full writeup — this affects how a plotted orbit *looks*, not the fit
-itself, but matters if you're reproducing a published figure.
+**North-up/East-left convention: settled.** `plot_visual_orbit()`'s
+X/Y axes are confirmed to follow the standard North-up/East-left
+astronomical convention — see `visualization.md`'s
+"Literature-convention conformity" section for the full derivation and
+regression test. Safe to use `plot_visual_orbit()` output as-is when
+reproducing a published figure; this affects how a plotted orbit
+*looks*, not the fit itself.

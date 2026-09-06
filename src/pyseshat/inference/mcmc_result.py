@@ -347,6 +347,9 @@ class MCMCResult(BaseFitResult):
         truths=None,
         max_samples=10000,
         random_seed=42,
+        show_grid=False,
+        output_format="png",
+        save_path=None,
         **kwargs
     ):
         """
@@ -373,6 +376,32 @@ class MCMCResult(BaseFitResult):
 
         random_seed : int, default=42
             Random seed used for plotting subsamples.
+
+        show_grid : bool, default=False
+            Whether to draw axes grid lines on each panel.
+            Unlike every other plotting function in this
+            codebase, ``corner.corner()`` draws NO grid lines
+            by default, and this function has never added any.
+            To genuinely preserve this function's *original*
+            behavior (the same "no existing call site breaks"
+            principle applied to every other plotting function),
+            this default is ``False`` here rather than ``True`` --
+            setting it to ``True`` would silently change the
+            appearance of every corner plot ever produced by this
+            function. Pass ``show_grid=True`` explicitly to opt
+            into grid lines.
+
+        output_format : str, default="png"
+            File format passed to ``Figure.savefig()`` (e.g.
+            "png", "pdf", "svg"). Only takes effect when
+            ``save_path`` is given.
+
+        save_path : str or Path, optional
+            If given, save the figure to this path (in
+            ``output_format``) before returning. If None
+            (default), matches this function's original behavior
+            of not saving internally -- the caller retrieves the
+            returned ``Figure`` and saves it externally.
 
         **kwargs
             Additional keyword arguments passed to
@@ -854,28 +883,6 @@ class MCMCResult(BaseFitResult):
                     "anchor"
                 )
 
-            ax.text(
-
-                0.5,
-
-                -0.9,
-
-                labels[
-                    column
-                ],
-
-                transform=ax.transAxes,
-
-                horizontalalignment="center",
-
-                verticalalignment="top",
-
-                fontsize=11,
-
-                clip_on=False
-
-            )
-        
         # ======================================================
         # Disable offset notation for T0
         # ======================================================
@@ -990,6 +997,111 @@ class MCMCResult(BaseFitResult):
                 )
 
         # ======================================================
+        # Place bottom-row parameter labels
+        #
+        # corner's own x-axis label was cleared above (see that
+        # loop's comment) and is replaced by an explicitly
+        # positioned ``ax.text`` call, because corner.corner()'s
+        # own label placement collides with the rotated tick
+        # labels this function adds.
+        #
+        # The vertical offset is MEASURED, not a fixed guess: a
+        # hardcoded axes-fraction offset (this function's original
+        # implementation used -0.9) is either too small for long
+        # tick-label strings or -- as was the case here -- much
+        # larger than necessary for short ones, leaving a large,
+        # inconsistent gap between the tick numbers and their
+        # parameter label. Instead, after every tick/formatter
+        # change above (including the T0 offset-notation fix,
+        # which can change that column's tick-label text/width) is
+        # already applied, this draws the figure once so
+        # Matplotlib has computed each rotated tick label's actual
+        # on-screen extent, finds the lowest (most negative, in
+        # axes-fraction y) point among them per column, and places
+        # the parameter label a small, fixed gap below THAT --
+        # giving a consistent, tight, non-overlapping gap
+        # regardless of tick-label length, font, or figure size.
+        # ======================================================
+
+        fig.canvas.draw()
+
+        renderer = fig.canvas.get_renderer()
+
+        # Small fixed clearance, in axes-fraction units, between
+        # the bottom-most tick-label pixel and the parameter label
+        # above it -- NOT the whole gap (which is dominated by the
+        # tick labels' own measured extent).
+        label_clearance = 0.05
+
+        for column in range(
+            ndim
+        ):
+
+            ax = axes[
+                ndim - 1,
+                column
+            ]
+
+            inv = ax.transAxes.inverted()
+
+            tick_bottoms_axes_frac = []
+
+            for tick in ax.get_xticklabels():
+
+                bbox = tick.get_window_extent(
+                    renderer=renderer
+                )
+
+                # Bottom-left corner of the tick label's pixel
+                # bbox, converted into this axes' fraction
+                # coordinates (0 = axis bottom, negative = below
+                # the axis).
+
+                _, y0_axes = inv.transform(
+                    (bbox.x0, bbox.y0)
+                )
+
+                tick_bottoms_axes_frac.append(
+                    y0_axes
+                )
+
+            if tick_bottoms_axes_frac:
+
+                lowest = min(
+                    tick_bottoms_axes_frac
+                )
+
+            else:
+
+                # No tick labels to measure (shouldn't happen for
+                # a visible bottom-row panel, but fall back to a
+                # small, safe default rather than raising).
+
+                lowest = -0.3
+
+            ax.text(
+
+                0.5,
+
+                lowest - label_clearance,
+
+                labels[
+                    column
+                ],
+
+                transform=ax.transAxes,
+
+                horizontalalignment="center",
+
+                verticalalignment="top",
+
+                fontsize=11,
+
+                clip_on=False
+
+            )
+
+        # ======================================================
         # Format first-column y axes
         # ======================================================
 
@@ -1055,6 +1167,43 @@ class MCMCResult(BaseFitResult):
                 title.set_y(
                     1.10
                 )
+
+        # ======================================================
+        # Grid lines (opt-in -- see show_grid's docstring above:
+        # corner.corner() draws none by default, and this
+        # function never added any, so this loop is purely
+        # additive and gated behind the flag).
+        # ======================================================
+
+        if show_grid:
+
+            for row in range(
+                ndim
+            ):
+
+                for column in range(
+                    row + 1
+                ):
+
+                    axes[
+                        row,
+                        column
+                    ].grid(
+                        True
+                    )
+
+        # ======================================================
+        # Save to disk
+        # ======================================================
+
+        if save_path is not None:
+
+            fig.savefig(
+                save_path,
+                format=output_format,
+                dpi=150,
+                bbox_inches="tight"
+            )
 
         return fig
 

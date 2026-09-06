@@ -60,7 +60,7 @@
   },
   "metallicity": {
     "value": 0.0,
-    "source": "nearest available CK04 grid point"
+    "source": "nearest available CK04 grid point (ckp00, [M/H]=0.0). Literature [Fe/H]~=+0.23 (e.g. Morel 2018, A&A 615, A172: 'a robust value, [Fe/H] ~ +0.23 dex'); +0.2 (ckp02) is the nearest available grid step to that literature value. Re-verified 2026-09-02 after the full 608-file CK04 grid was downloaded: this system's photometric measurements are SYNTHETIC, forward-modeled by this same pipeline's synthetic_binary_magnitudes() at metallicity=0.0 (scripts/build_joint_benchmarks.py), so 0.0 is the self-consistent choice for this benchmark's actual purpose. Empirically tested fitting at +0.2 instead (script: scripts/ck04_metallicity_rerun_check.py) and confirmed it makes the fit WORSE, as expected for a deliberate synthetic-data/fit-grid metallicity mismatch: reduced chi2 2.25->2.92, primary_temperature rel. err. 7.00%->11.69%, secondary_temperature rel. err. 14.70%->19.23%. Kept at 0.0."
   },
   "primary_logg": {
     "value": 4.3117,

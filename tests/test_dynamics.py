@@ -74,3 +74,58 @@ def test_separation_vs_time_matches_orbit_model_and_plots_correctly():
     assert ax.get_ylabel() == "Separation (arcsec)"
 
     plt.close(fig)
+
+
+# ==========================================================
+# show_grid / output_format / save_path
+#
+# Added 2026-08-30 alongside the new parameters themselves
+# (docs/project_decisions.md) -- same coverage pattern as
+# tests/test_orbit_plot.py.
+# ==========================================================
+
+def test_plot_separation_vs_time_show_grid_toggle():
+
+    epochs = np.linspace(2000, 2025, 10)
+    rho = np.abs(np.sin(epochs))
+
+    fig_default, ax_default = plot_separation_vs_time(
+        epochs, rho, show=False
+    )
+    assert (
+        ax_default.xaxis.get_gridlines()[0].get_visible()
+        and ax_default.yaxis.get_gridlines()[0].get_visible()
+    )
+    plt.close(fig_default)
+
+    fig_off, ax_off = plot_separation_vs_time(
+        epochs, rho, show=False, show_grid=False
+    )
+    assert not (
+        ax_off.xaxis.get_gridlines()[0].get_visible()
+        or ax_off.yaxis.get_gridlines()[0].get_visible()
+    )
+    plt.close(fig_off)
+
+
+def test_plot_separation_vs_time_save_path_writes_requested_format(
+    tmp_path,
+):
+
+    epochs = np.linspace(2000, 2025, 10)
+    rho = np.abs(np.sin(epochs))
+
+    out = tmp_path / "separation.pdf"
+
+    fig, ax = plot_separation_vs_time(
+        epochs, rho,
+        show=False,
+        output_format="pdf",
+        save_path=out,
+    )
+
+    assert out.exists()
+    assert out.stat().st_size > 0
+    assert out.read_bytes()[:4] == b"%PDF"
+
+    plt.close(fig)

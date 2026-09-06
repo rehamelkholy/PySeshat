@@ -12,6 +12,8 @@ def plot_binary_hrdiagram(
     *,
     ax=None,
     save_path=None,
+    show_grid=True,
+    output_format="png",
 ):
     """
     Plot a publication-quality binary Hertzsprung-Russell
@@ -27,6 +29,15 @@ def plot_binary_hrdiagram(
 
     save_path
         Optional output filename.
+
+    show_grid : bool, default=True
+        Whether to draw axes grid lines. Default preserves this
+        function's original (always-on) behavior.
+
+    output_format : str, default="png"
+        File format passed to ``Figure.savefig()`` (e.g. "png",
+        "pdf", "svg"). Only takes effect when ``save_path`` is
+        given.
 
     Returns
     -------
@@ -129,9 +140,10 @@ def plot_binary_hrdiagram(
         r"$\log\left(L/L_\odot\right)$"
     )
 
-    ax.grid(
-        alpha=0.3,
-    )
+    if show_grid:
+        ax.grid(
+            alpha=0.3,
+        )
 
     ax.legend(
         frameon=True,
@@ -145,6 +157,7 @@ def plot_binary_hrdiagram(
     if save_path is not None:
         fig.savefig(
             save_path,
+            format=output_format,
             dpi=300,
             bbox_inches="tight",
         )

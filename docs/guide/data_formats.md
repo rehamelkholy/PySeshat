@@ -69,9 +69,8 @@ inner orbit, both parsed by `parse_triple_file()`:
   carries `K3, K4, V0`. See `validation/benchmark_systems/HIP111805/*.in3`.
 
 **Two format-specific quirks that matter if you're fitting your own
-triple system** (both documented in depth in `docs/project_decisions.md`
-and `docs/paper_reference_notes.md`, since they cost real debugging time
-on the two registered triple benchmarks):
+triple system** (both cost real debugging time on the two registered
+triple benchmarks):
 
 1. A published astrometric wobble amplitude (e.g. from a paper's own
    Table) is usually the *astrometric* wobble `a_astrometric`, not the
@@ -111,7 +110,7 @@ example):
 - `atmosphere_files` — which CK04 grid FITS files (under
   `validation/atmosphere_models/`) this system's fit needs loaded; must
   bracket **both** components' temperatures, not just one (a real bug
-  this project hit — see `docs/project_decisions.md`).
+  this project hit).
 - `literature_component_parameters` — the independently-published
   comparison target this benchmark's fit is checked against.
 - `distance_pc`, `metallicity`, `primary_logg`, `secondary_logg` — held
@@ -127,3 +126,109 @@ standard the source paper defines — building your own system's file by
 hand from a literature Table is expected; use an existing one as a
 template (`examples/06_your_own_data_template.py` includes an annotated
 copy for exactly this purpose).
+
+## Gaia DR3 NSS `nss_two_body_orbit` rows
+
+`src/pyseshat/io/gaia_parser.py` converts a row of Gaia DR3's
+Non-Single-Star two-body-orbit archive table
+(`gaiadr3.nss_two_body_orbit`) into this codebase's own
+`OrbitalElements`. Unlike the formats above, this is not a file this
+project ships examples of — a "row" is any mapping with the archive's
+own column names (a `dict`, a pandas `Series`/`DataFrame` row, or an
+astropy `Table` row all work):
+
+```python
+from pyseshat.io.gaia_parser import parse_nss_orbital_row
+
+row = {
+    "nss_solution_type": "Orbital",
+    "a_thiele_innes": ..., "b_thiele_innes": ..., "f_thiele_innes": ..., "g_thiele_innes": ...,
+    "period": ...,          # days
+    "eccentricity": ...,
+    "t_periastron": ...,    # days, relative to J2016.0
+    "parallax": ...,        # mas
+}
+result = parse_nss_orbital_row(row)
+elements = result["elements"]        # OrbitalElements
+distance_pc = result["distance_pc"]
+```
+
+Only `Orbital`/`OrbitalAlternative*`/`OrbitalTargetedSearch*` (pure
+astrometric) and `AstroSpectroSB1` (astrometric + single-lined RV
+jointly fit) solution types carry the Thiele-Innes constants this
+module needs; purely spectroscopic (`SB1`/`SB2`/...) and eclipsing
+solution types raise `ValueError` rather than silently returning a
+physically meaningless orbit — see the module's own docstring for the
+full scope, the Thiele-Innes→Campbell inversion method (Halbwachs et
+al. 2023), and the ascending/descending-node ±180° ambiguity that pure
+astrometric (no-RV) solutions carry.
+
+**A real robustness bug, caught before any real archive data was even
+available (2026-09-01)**: a genuine CSV/VOTable export represents an
+unpopulated *optional* column (e.g. `inclination`/`arg_periastron` on
+a pure-astrometric `Orbital` row, which Gaia's own pipeline never
+populates for that solution type) as NaN once loaded through
+pandas/astropy — not Python `None`, which only a hand-built dict can
+produce. The original `row.get(key) is not None` checks silently
+accepted NaN as "present" and propagated it straight into a NaN
+`OrbitalElements` field. Fixed via `gaia_parser._is_present()`, which
+treats NaN and `None` identically; regression-tested in
+`tests/test_gaia_parser.py`. Worth knowing if you write your own
+row-loading code against a real archive export: don't assume `is not
+None` is enough for an optional numeric column.
+
+**Validation status: [RESOLVED 2026-09-01] validated against a real,
+retrieved Gaia Archive export**, not just a round-trip. `tests/
+test_gaia_parser.py` forward-transforms El-Badry et al. 2023's own
+*published* Campbell elements for Gaia BH1 (source_id
+`4373465352415301632`) through this codebase's own `thiele_innes()`
+and checks they round-trip back out through `parse_nss_orbital_row()`
+— this validates the inversion algebra and unit conversions, but was
+never a check against archive-retrieved data on its own. A live TAP
+query (`astroquery.gaia`) is blocked by this project's org network
+egress policy from every environment tested — the cloud sandbox,
+`WebFetch`, and the user's own linked-device shell (all return an HTTP
+403 for `gea.esac.esa.int`) — so this gap was closed via the same
+manual-export path that resolved the Girardi (2000) evolutionary-track
+data gap: the user ran an ADQL query through the Gaia Archive's own web
+interface (<https://gea.esac.esa.int/archive/>) and supplied a real CSV
+export.
+
+The script originally targeted Gaia BH1 and Gaia BH2, but the query
+for that pair returned zero rows for both — Ryu et al. 2025
+(arXiv:2411.00654) explains this: both have low (~39%/~27%) modeled
+probability of surviving Gaia's pipeline into the *public* catalog,
+despite being real, well-characterized systems. `scripts/
+validate_gaia_archive_export.py` was rewritten to target **RX Cam**
+(source_id `470361114339849472`) and **HIP 36189** (source_id
+`3162827836766605440`) instead — both explicitly named by source_id,
+with real Gaia-fitted parameters, in Gaia Collaboration 2023's own DR3
+companion paper (arXiv:2206.05595). (SIMBAD/VizieR were checked first,
+as the route to this paper's own benchmark systems Capella/alpha Cen
+AB, but are unreachable by any tool this session has, so their NSS
+status remains undetermined rather than ruled out.)
+
+Run against the real export, `scripts/validate_gaia_archive_export.py`
+reports:
+- **RX Cam**: archive-derived period/eccentricity/inclination match
+  the Gaia team's own published reading of this exact row to
+  sub-0.25%, and are consistent within the row's own error bars with
+  Groenewegen (2013)'s fully independent, pre-Gaia literature values —
+  a clean, direct validation of the Thiele-Innes-to-Campbell inversion
+  against real archive data.
+- **HIP 36189**: the naive forward-predicted position initially missed
+  the independent Herald et al. (2020) occultation observation by a
+  wide margin. Investigated rather than accepted or dismissed: Gaia's
+  `Orbital`-type solutions fit the astrometric *photocentre's* orbit,
+  not the relative (star-to-star) orbit an occultation resolves — a
+  real, physically necessary distinction, already documented in this
+  module's own "Scope" section above. Applying Gaia Collaboration
+  2023's own mass-function relation (using the paper's own quoted
+  component masses and magnitude difference) to convert the
+  photocentre amplitude to a relative-orbit amplitude, and propagating
+  this specific row's own quoted Thiele-Innes uncertainties (Monte
+  Carlo, 4000 draws) for the position angle, brings both separation and
+  position angle into agreement.
+
+Both corrections are permanent, re-runnable parts of the script (not
+one-off analysis).

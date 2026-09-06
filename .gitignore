@@ -10,3 +10,21 @@ __pycache__/
 # (2026-08-27).
 tests/artifacts/
 examples/output/
+
+# Standard Python build/packaging/test artifacts
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Internal working notes / decision logs -- kept locally for reference,
+# not intended for the public repo (2026-09-04).
+docs/project_decisions.md
+docs/paper_reference_notes.md
+docs/paper_reproduction_notes.md
+docs/development_plan_phase2.md
+docs/acknowledgements_inventory.md
+docs/citation_todo.md
+CLAUDE.md
+claude/

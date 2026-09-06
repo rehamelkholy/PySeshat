@@ -6,11 +6,30 @@ build-backend = "setuptools.build_meta"
 name = "pyseshat"
 version = "0.1.0"
 description = "Python framework for binary star orbit determination and stellar modeling"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
 authors = [
     { name = "Reham El-Kholy", email = "relkholy@sci.cu.edu.eg" }
 ]
-readme = "README.md"
-requires-python = ">=3.10"
+keywords = [
+    "astronomy",
+    "astrophysics",
+    "binary stars",
+    "orbit determination",
+    "stellar modeling",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Physics",
+]
 
 dependencies = [
     "numpy",
@@ -21,8 +40,14 @@ dependencies = [
     "emcee",
     "corner",
     "numba",
-    "astroquery"
+    "astroquery",
+    "adjustText"
 ]
+
+[project.urls]
+Homepage = "https://github.com/rehamelkholy/PySeshat"
+Repository = "https://github.com/rehamelkholy/PySeshat"
+Issues = "https://github.com/rehamelkholy/PySeshat/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -5,17 +5,28 @@ Download the complete Castelli & Kurucz (2004) ATLAS9 atmosphere grid
 
 This fills out PySeshat's `validation/atmosphere_models/` directory so
 the Al-Wardat SED-fitting pipeline can be used for ANY target system,
-not just the ones whose Teff happens to fall in the 4 files already
-present locally.
+not just the ones whose Teff/metallicity happened to fall in the 4
+files originally present locally.
 
 WHAT THIS DOWNLOADS
 --------------------
 608 FITS files total: 76 effective-temperature points (3500-50000 K)
 x 8 metallicities ([M/H] = -0.5, -1.0, -1.5, -2.0, -2.5, 0.0, +0.2, +0.5,
 i.e. directories ckm05, ckm10, ckm15, ckm20, ckm25, ckp00, ckp02, ckp05).
-4 of these are already present in the PySeshat repo (ckm05_10000.fits,
-ckp00_5750/6000/6250.fits) - the manifest below marks those and this
-script skips them by default (use --force to re-download anyway).
+
+STATUS (2026-09-02): all 608/608 files have already been downloaded to
+validation/atmosphere_models/ (confirmed present and FITS-valid by the
+2026-09-02 CK04 grid-completeness audit -- see
+docs/project_decisions.md and docs/guide/alwardat_sed.md's "CK04 grid
+coverage" section). This script and its manifest are kept for
+reproducibility/provenance (this is how the grid was originally
+sourced, after the network-egress block described below made a direct
+sandbox download impossible) and as a template for re-downloading
+individual files if one is ever lost or corrupted -- re-running it is
+safe and a no-op for any file already present and valid (it checks
+each destination file directly, not just the manifest's ``already_present``
+column, which still reflects the original 4-file starting point and is
+not kept in sync).
 
 Total size is roughly 608 x ~67 KB =~ 41 MB, so this is a small download
 overall - the "batches" are about being a polite, resumable citizen of
@@ -29,7 +40,7 @@ Claude desktop-bridge device shell block ssb.stsci.edu, which is why
 this script has to be run by hand):
 
     pip install requests   # if not already available
-    python download_ck04_grid.py --dest "D:\\Scientific Books\\PostDoc Research\\Potential work\\Binaries\\BinariesPaper\\pyseshat\\validation\\atmosphere_models"
+    python download_ck04_grid.py --dest "/path/to/pyseshat/validation/atmosphere_models"
 
 It reads ck04_manifest.csv (must be in the same directory as this
 script, or pass --manifest), downloads in batches of --batch-size

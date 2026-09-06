@@ -22,7 +22,10 @@ def plot_visual_orbit(
     Y_obs,
     orbit,
     title="Visual Binary Orbit",
-    show=True
+    show=True,
+    show_grid=True,
+    output_format="png",
+    save_path=None
 ):
     """
     Plot observed and modeled visual binary orbit, in the
@@ -41,6 +44,24 @@ def plot_visual_orbit(
 
     title : str
         Plot title
+
+    show_grid : bool, default=True
+        Whether to draw axes grid lines. Default preserves this
+        function's original (always-on) behavior, so existing
+        callers are unaffected.
+
+    output_format : str, default="png"
+        File format passed to ``Figure.savefig()`` (any format
+        Matplotlib's ``savefig`` natively supports, e.g. "png",
+        "pdf", "svg"). Only takes effect when ``save_path`` is
+        given.
+
+    save_path : str or Path, optional
+        If given, save the figure to this path (in ``output_format``)
+        before returning. If None (default), the figure is not
+        saved internally -- matching this function's original
+        behavior, where the caller retrieves ``(fig, ax)`` and
+        saves it externally.
 
     Orientation convention (settled 2026-08-27; see
     docs/project_decisions.md for the full derivation and sources)
@@ -139,7 +160,16 @@ def plot_visual_orbit(
 
     ax.set_aspect("equal")
 
-    ax.grid(True)
+    if show_grid:
+        ax.grid(True)
+
+    if save_path is not None:
+        fig.savefig(
+            save_path,
+            format=output_format,
+            dpi=150,
+            bbox_inches="tight"
+        )
 
     if show:
         plt.show()
@@ -155,7 +185,10 @@ def plot_residuals(
     t,
     residuals,
     title="Residual Diagnostics",
-    show=True
+    show=True,
+    show_grid=True,
+    output_format="png",
+    save_path=None
 ):
     """
     Plot X (North) and Y (East) residuals versus time.
@@ -179,6 +212,20 @@ def plot_residuals(
         time-series subplots rather than a 2D spatial plot, so no
         North-up/East-left axis transform applies here -- both
         panels simply plot residual value vs. epoch.
+
+    show_grid : bool, default=True
+        Whether to draw axes grid lines on both panels. Default
+        preserves this function's original (always-on) behavior.
+
+    output_format : str, default="png"
+        File format passed to ``Figure.savefig()`` (e.g. "png",
+        "pdf", "svg"). Only takes effect when ``save_path`` is
+        given.
+
+    save_path : str or Path, optional
+        If given, save the figure to this path (in ``output_format``)
+        before returning. If None (default), matches this
+        function's original behavior of not saving internally.
     """
 
     n = len(t)
@@ -209,7 +256,8 @@ def plot_residuals(
 
     axes[0].set_ylabel("North Residuals")
 
-    axes[0].grid(True)
+    if show_grid:
+        axes[0].grid(True)
 
     # ------------------------------------------------------
     # Y residuals
@@ -229,11 +277,20 @@ def plot_residuals(
 
     axes[1].set_xlabel("Epoch")
 
-    axes[1].grid(True)
+    if show_grid:
+        axes[1].grid(True)
 
     fig.suptitle(title)
 
     plt.tight_layout()
+
+    if save_path is not None:
+        fig.savefig(
+            save_path,
+            format=output_format,
+            dpi=150,
+            bbox_inches="tight"
+        )
 
     if show:
         plt.show()
@@ -249,7 +306,10 @@ def plot_rv_orbit(
     elements,
     title="Radial Velocity Orbit",
     phase=False,
-    show=True
+    show=True,
+    show_grid=True,
+    output_format="png",
+    save_path=None
 ):
     """
     Plot observed and modeled radial velocity curves for both
@@ -275,6 +335,20 @@ def plot_rv_orbit(
         If False, plot against raw time/epoch instead.
     show : bool
         If True, call ``plt.show()`` before returning.
+
+    show_grid : bool, default=True
+        Whether to draw axes grid lines. Default preserves this
+        function's original (always-on) behavior.
+
+    output_format : str, default="png"
+        File format passed to ``Figure.savefig()`` (e.g. "png",
+        "pdf", "svg"). Only takes effect when ``save_path`` is
+        given.
+
+    save_path : str or Path, optional
+        If given, save the figure to this path (in ``output_format``)
+        before returning. If None (default), matches this
+        function's original behavior of not saving internally.
 
     Returns
     -------
@@ -418,9 +492,18 @@ def plot_rv_orbit(
         title
     )
 
-    ax.grid(True)
+    if show_grid:
+        ax.grid(True)
 
     ax.legend()
+
+    if save_path is not None:
+        fig.savefig(
+            save_path,
+            format=output_format,
+            dpi=150,
+            bbox_inches="tight"
+        )
 
     if show:
         plt.show()

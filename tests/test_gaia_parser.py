@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pytest
 
@@ -336,3 +338,117 @@ def test_parse_nss_orbital_row_rejects_nonpositive_parallax():
     with pytest.raises(ValueError):
 
         parse_nss_orbital_row(row)
+
+
+# ==========================================================
+# NaN-vs-None handling for optional archive columns (2026-09-01)
+# ==========================================================
+#
+# A genuine CSV/VOTable export of the real Gaia archive represents
+# an unpopulated OPTIONAL column (e.g. inclination/arg_periastron
+# on a pure-astrometric "Orbital"-type row) as NaN once loaded
+# through pandas/astropy -- NOT Python None, which only a
+# hand-built dict (as every other test in this file uses) can
+# produce. Caught via a CSV round-trip smoke test while preparing
+# scripts/validate_gaia_archive_export.py, before any real archive
+# data was available -- see gaia_parser.py's _is_present() and
+# docs/project_decisions.md's 2026-09-01 dated entry.
+
+def test_is_present_treats_nan_same_as_none():
+
+    from pyseshat.io.gaia_parser import _is_present
+
+    assert _is_present(None) is False
+    assert _is_present(float("nan")) is False
+    assert _is_present(np.nan) is False
+    assert _is_present(0.0) is True
+    assert _is_present(1.5) is True
+    assert _is_present("Orbital") is True
+
+
+def test_parse_nss_orbital_row_treats_nan_optional_columns_as_absent():
+    """
+    A NaN (not None) 'inclination'/'arg_periastron' -- exactly what
+    a real CSV export's unpopulated cell becomes after
+    ``pandas.read_csv`` -- must fall back to this module's own
+    Thiele-Innes inversion, the same as if the column were entirely
+    absent, rather than propagating NaN into the returned
+    OrbitalElements.
+    """
+
+    elements_in = OrbitalElements(
+        P=0.5, T0=0.0, e=0.2, a=0.05, Omega=30.0, omega=200.0, i=60.0,
+    )
+
+    A, B, F, G = thiele_innes(elements_in)
+
+    row = {
+        "nss_solution_type": "Orbital",
+        "a_thiele_innes": A,
+        "b_thiele_innes": B,
+        "f_thiele_innes": F,
+        "g_thiele_innes": G,
+        "period": 0.5 * 365.25,
+        "eccentricity": 0.2,
+        "t_periastron": 0.0,
+        "parallax": 10.0,
+        # exactly what pandas.read_csv leaves an empty optional
+        # cell as -- NOT None:
+        "inclination": float("nan"),
+        "arg_periastron": float("nan"),
+    }
+
+    result = parse_nss_orbital_row(row)
+    elements = result["elements"]
+
+    assert not math.isnan(elements.i)
+    assert not math.isnan(elements.omega)
+
+    assert elements.i == pytest.approx(60.0, abs=1e-6)
+
+    same_branch = elements.omega == pytest.approx(200.0, abs=1e-6)
+    flipped_branch = elements.omega == pytest.approx(20.0, abs=1e-6)
+    assert same_branch or flipped_branch
+
+
+def test_parse_nss_orbital_row_astrospectro_nan_rv_columns_leave_defaults():
+    """
+    Same NaN-vs-None distinction, for AstroSpectroSB1's optional
+    RV columns (semi_amplitude_primary/center_of_mass_velocity):
+    NaN must leave K1/V0 at OrbitalElements' own defaults, not
+    propagate NaN into them.
+    """
+
+    elements_in = OrbitalElements(
+        P=1.0, T0=0.0, e=0.1, a=1.0, Omega=10.0, omega=20.0, i=45.0,
+    )
+
+    A, B, F, G = thiele_innes(elements_in)
+
+    row = {
+        "nss_solution_type": "AstroSpectroSB1",
+        "a_thiele_innes": A,
+        "b_thiele_innes": B,
+        "f_thiele_innes": F,
+        "g_thiele_innes": G,
+        "period": 365.25,
+        "eccentricity": 0.1,
+        "t_periastron": 0.0,
+        "parallax": 5.0,
+        "inclination": 45.0,
+        "arg_periastron": 20.0,
+        "semi_amplitude_primary": float("nan"),
+        "center_of_mass_velocity": float("nan"),
+    }
+
+    result = parse_nss_orbital_row(row)
+    elements = result["elements"]
+
+    assert not math.isnan(elements.K1)
+    assert not math.isnan(elements.V0)
+    assert elements.K1 == OrbitalElements(
+        P=1.0, T0=0.0, e=0.1, a=1.0, Omega=10.0, omega=20.0, i=45.0,
+    ).K1
+    assert elements.V0 == OrbitalElements(
+        P=1.0, T0=0.0, e=0.1, a=1.0, Omega=10.0, omega=20.0, i=45.0,
+    ).V0

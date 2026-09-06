@@ -848,3 +848,297 @@ def binary_photometric_chi_square(
         measurements=measurements
 
     )
+
+
+def synthetic_binary_sed(
+    atmosphere_grid,
+    passbands,
+    primary_temperature,
+    secondary_temperature,
+    primary_logg,
+    secondary_logg,
+    metallicity,
+    primary_radius,
+    secondary_radius,
+    distance,
+    ebv=0.0,
+    rv=3.1
+):
+    """
+    Calculate the extincted synthetic flux-density SED curve
+    (wavelength vs. flux) of an unresolved binary, for plotting.
+
+    This is a sibling of ``synthetic_binary_magnitudes()`` above,
+    added 2026-09-02 to support ``visualization.sed_plot.plot_sed_fit()``
+    (see ``docs/guide/visualization.md``'s "SED fit" section and
+    ``docs/project_decisions.md``'s dated entry). It performs
+    EXACTLY the same physical steps as
+    ``synthetic_binary_magnitudes()`` -- atmosphere interpolation
+    (``atmosphere_grid.interpolate()``), unresolved-binary flux
+    combination (``composite_binary_sed()``), wavelength
+    restriction to the requested passbands' combined coverage, and
+    CCM89 optical extinction (``ccm89_optical_extinction()``/
+    ``apply_extinction()``) -- but returns the extincted flux
+    CURVES (composite and each component individually) instead of
+    collapsing them to per-passband magnitudes via
+    ``synthetic_band_flux()``/``pogson_magnitude()``. Deliberately
+    implemented as an independent function rather than a shared
+    refactor of the validated, tested
+    ``synthetic_binary_magnitudes()`` above, to avoid touching
+    that function's tested code path; self-consistency between the
+    two is verified directly in
+    ``tests/test_sed_curve.py`` (integrating this function's
+    curves through a passband and confirming the resulting
+    magnitude matches ``synthetic_binary_magnitudes()``'s own
+    output to numerical precision), not merely assumed from
+    sharing the same helper calls.
+
+    Parameters
+    ----------
+    atmosphere_grid
+        Stellar-atmosphere grid providing an ``interpolate()``
+        method.
+
+    passbands : mapping
+        Mapping from passband identifiers to photometric-passband
+        objects. Only used to determine the wavelength interval
+        the returned curves must cover (no photometric integration
+        is performed here) -- the same restriction
+        ``synthetic_binary_magnitudes()`` applies, so the returned
+        curves are guaranteed valid over exactly the range a
+        companion call to that function would need.
+
+    primary_temperature, secondary_temperature : float
+        Component effective temperatures in kelvin.
+
+    primary_logg, secondary_logg : float
+        Component surface gravities, log10(g).
+
+    metallicity : float
+        Atmosphere-grid metallicity.
+
+    primary_radius, secondary_radius : float
+        Component radii in solar radii.
+
+    distance : float
+        Distance in parsecs.
+
+    ebv : float, default=0.0
+        Color excess E(B-V), in magnitudes.
+
+    rv : float, default=3.1
+        Ratio of total-to-selective extinction.
+
+    Returns
+    -------
+    dict
+        ``{"wavelength": ndarray, "composite_flux": ndarray,
+        "primary_flux": ndarray, "secondary_flux": ndarray}``, all
+        flux arrays in the same units as
+        ``AtmosphereModel.flux``/``composite_binary_sed()``
+        (erg s^-1 cm^-2 Angstrom^-1), extincted identically to
+        ``synthetic_binary_magnitudes()``'s internal model SED
+        (``primary_flux + secondary_flux`` matches
+        ``composite_flux`` to floating-point precision, since both
+        components share the same E(B-V)/R_V, the standard
+        assumption for two stars at the same distance behind the
+        same foreground reddening).
+
+    Raises
+    ------
+    ValueError
+        Under the same conditions as
+        ``synthetic_binary_magnitudes()``: no passbands supplied,
+        insufficient wavelength coverage, or (when E(B-V) > 0) a
+        passband outside the implemented optical CCM89 domain.
+
+    Notes
+    -----
+    Individual-component curves are diluted by their own
+    ``(radius / distance)^2`` factor (via ``scale_surface_flux()``,
+    through ``composite_binary_sed()``'s own primary/secondary
+    scaling) and extincted with the SAME wavelength-dependent
+    extinction curve as the composite -- physically correct for
+    two components of one physical binary at one distance behind
+    one foreground dust screen, and the reason
+    ``primary_flux + secondary_flux`` matches ``composite_flux`` to
+    floating-point precision (extinction is a multiplicative factor
+    applied identically to both terms of a sum -- mathematically
+    exact, though not necessarily bit-for-bit identical once
+    floating-point rounding is involved).
+    """
+
+    # ======================================================
+    # Validate passbands
+    # ======================================================
+
+    if not hasattr(passbands, "items"):
+
+        raise TypeError(
+            "passbands must be a mapping."
+        )
+
+    if len(passbands) == 0:
+
+        raise ValueError(
+            "At least one passband is required."
+        )
+
+    # ======================================================
+    # Validate color excess
+    # ======================================================
+
+    try:
+
+        ebv = float(ebv)
+
+    except (TypeError, ValueError) as error:
+
+        raise TypeError(
+            "ebv must be a real number."
+        ) from error
+
+    if not np.isfinite(ebv):
+
+        raise ValueError(
+            "ebv must be finite."
+        )
+
+    if ebv < 0.0:
+
+        raise ValueError(
+            "ebv must not be negative."
+        )
+
+    # ======================================================
+    # Interpolate component atmospheres
+    # ======================================================
+
+    primary = atmosphere_grid.interpolate(
+        teff=primary_temperature,
+        logg=primary_logg,
+        metallicity=metallicity,
+    )
+
+    secondary = atmosphere_grid.interpolate(
+        teff=secondary_temperature,
+        logg=secondary_logg,
+        metallicity=metallicity,
+    )
+
+    # ======================================================
+    # Construct diluted (distance-scaled) component SEDs and
+    # their sum, exactly as composite_binary_sed() does
+    # internally for synthetic_binary_magnitudes() -- but here
+    # each component's own diluted flux is kept, not just the
+    # sum.
+    # ======================================================
+
+    from pyseshat.stellar.sed_model import scale_surface_flux
+
+    primary_observed = scale_surface_flux(
+        atmosphere=primary,
+        radius=primary_radius,
+        distance=distance,
+    )
+
+    secondary_observed = scale_surface_flux(
+        atmosphere=secondary,
+        radius=secondary_radius,
+        distance=distance,
+    )
+
+    wavelength = primary_observed.wavelength.copy()
+
+    intrinsic_composite_flux = (
+        primary_observed.flux + secondary_observed.flux
+    )
+
+    # ======================================================
+    # Determine required wavelength interval (identical logic
+    # to synthetic_binary_magnitudes())
+    # ======================================================
+
+    minimum_required_wavelength = min(
+        passband.minimum_wavelength for passband in passbands.values()
+    )
+
+    maximum_required_wavelength = max(
+        passband.maximum_wavelength for passband in passbands.values()
+    )
+
+    wavelength_mask = (
+        (wavelength >= minimum_required_wavelength)
+        & (wavelength <= maximum_required_wavelength)
+    )
+
+    model_wavelength = wavelength[wavelength_mask]
+
+    model_primary_flux = primary_observed.flux[wavelength_mask]
+
+    model_secondary_flux = secondary_observed.flux[wavelength_mask]
+
+    model_composite_flux = intrinsic_composite_flux[wavelength_mask]
+
+    if model_wavelength.size < 2:
+
+        raise ValueError(
+            "The atmosphere wavelength grid does not "
+            "cover the requested passbands."
+        )
+
+    # ======================================================
+    # Apply extinction when requested (identical logic to
+    # synthetic_binary_magnitudes(), applied to each component
+    # and the composite alike)
+    # ======================================================
+
+    if ebv == 0.0:
+
+        extincted_primary_flux = model_primary_flux.copy()
+        extincted_secondary_flux = model_secondary_flux.copy()
+        extincted_composite_flux = model_composite_flux.copy()
+
+    else:
+
+        minimum_optical_wavelength = 10000.0 / 3.3
+        maximum_optical_wavelength = 10000.0 / 1.1
+
+        if (
+            minimum_required_wavelength <= minimum_optical_wavelength
+            or maximum_required_wavelength > maximum_optical_wavelength
+        ):
+
+            raise ValueError(
+                "All passbands must lie inside the "
+                "implemented optical CCM89 domain "
+                "when E(B-V) is greater than zero."
+            )
+
+        extinction_curve = ccm89_optical_extinction(
+            wavelength=model_wavelength,
+            ebv=ebv,
+            rv=rv,
+        )
+
+        extincted_primary_flux = apply_extinction(
+            flux=model_primary_flux,
+            extinction=extinction_curve,
+        )
+
+        extincted_secondary_flux = apply_extinction(
+            flux=model_secondary_flux,
+            extinction=extinction_curve,
+        )
+
+        extincted_composite_flux = apply_extinction(
+            flux=model_composite_flux,
+            extinction=extinction_curve,
+        )
+
+    return {
+        "wavelength": model_wavelength,
+        "composite_flux": extincted_composite_flux,
+        "primary_flux": extincted_primary_flux,
+        "secondary_flux": extincted_secondary_flux,
+    }

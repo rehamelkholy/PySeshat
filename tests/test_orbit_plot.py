@@ -418,3 +418,154 @@ def test_plot_rv_orbit_empty():
             elements,
             show=False,
         )
+
+
+# ==========================================================
+# show_grid / output_format / save_path
+#
+# Added 2026-08-30 alongside the show_grid/output_format/
+# save_path parameters themselves (docs/project_decisions.md).
+# Confirms (1) the new default (show_grid=True) is a true no-op
+# for existing callers, (2) show_grid=False actually disables
+# the grid, and (3) save_path + output_format actually write a
+# file in the requested format, for all three functions in this
+# module.
+# ==========================================================
+
+def _grid_is_on(ax):
+
+    return (
+        ax.xaxis.get_gridlines()[0].get_visible()
+        and ax.yaxis.get_gridlines()[0].get_visible()
+    )
+
+
+def test_plot_visual_orbit_show_grid_default_matches_original_behavior():
+
+    x = np.linspace(-1.0, 1.0, 20)
+    y = np.sin(x)
+    orbit = {"X": x, "Y": y}
+
+    fig_default, ax_default = plot_visual_orbit(x, y, orbit, show=False)
+    assert _grid_is_on(ax_default)
+    plt.close(fig_default)
+
+    fig_off, ax_off = plot_visual_orbit(
+        x, y, orbit, show=False, show_grid=False
+    )
+    assert not _grid_is_on(ax_off)
+    plt.close(fig_off)
+
+
+def test_plot_visual_orbit_save_path_writes_requested_format(tmp_path):
+
+    x = np.linspace(-1.0, 1.0, 20)
+    y = np.sin(x)
+    orbit = {"X": x, "Y": y}
+
+    out = tmp_path / "orbit.pdf"
+
+    fig, ax = plot_visual_orbit(
+        x, y, orbit,
+        show=False,
+        output_format="pdf",
+        save_path=out,
+    )
+
+    assert out.exists()
+    assert out.stat().st_size > 0
+    assert out.read_bytes()[:4] == b"%PDF"
+
+    plt.close(fig)
+
+
+def test_plot_residuals_show_grid_toggle():
+
+    t = np.arange(10.0)
+    residuals = np.zeros(20)
+
+    fig_default, axes_default = plot_residuals(t, residuals, show=False)
+    assert _grid_is_on(axes_default[0])
+    assert _grid_is_on(axes_default[1])
+    plt.close(fig_default)
+
+    fig_off, axes_off = plot_residuals(
+        t, residuals, show=False, show_grid=False
+    )
+    assert not _grid_is_on(axes_off[0])
+    assert not _grid_is_on(axes_off[1])
+    plt.close(fig_off)
+
+
+def test_plot_residuals_save_path_writes_requested_format(tmp_path):
+
+    t = np.arange(10.0)
+    residuals = np.zeros(20)
+
+    out = tmp_path / "residuals.svg"
+
+    fig, axes = plot_residuals(
+        t, residuals,
+        show=False,
+        output_format="svg",
+        save_path=out,
+    )
+
+    assert out.exists()
+    assert out.stat().st_size > 0
+    assert out.read_bytes()[:5] == b"<?xml"
+
+    plt.close(fig)
+
+
+def test_plot_rv_orbit_show_grid_toggle():
+
+    elements = OrbitalElements(
+        P=10.0, T0=0.0, e=0.2, a=1.0,
+        Omega=30.0, omega=60.0, i=70.0,
+        K1=20.0, K2=30.0, V0=0.0,
+    )
+
+    rv = np.array([
+        [0.0, 20.0, 1.0, 0],
+        [2.5, -30.0, 1.0, 1],
+    ])
+
+    fig_default, ax_default = plot_rv_orbit(rv, elements, show=False)
+    assert _grid_is_on(ax_default)
+    plt.close(fig_default)
+
+    fig_off, ax_off = plot_rv_orbit(
+        rv, elements, show=False, show_grid=False
+    )
+    assert not _grid_is_on(ax_off)
+    plt.close(fig_off)
+
+
+def test_plot_rv_orbit_save_path_writes_requested_format(tmp_path):
+
+    elements = OrbitalElements(
+        P=10.0, T0=0.0, e=0.2, a=1.0,
+        Omega=30.0, omega=60.0, i=70.0,
+        K1=20.0, K2=30.0, V0=0.0,
+    )
+
+    rv = np.array([
+        [0.0, 20.0, 1.0, 0],
+        [2.5, -30.0, 1.0, 1],
+    ])
+
+    out = tmp_path / "rv.pdf"
+
+    fig, ax = plot_rv_orbit(
+        rv, elements,
+        show=False,
+        output_format="pdf",
+        save_path=out,
+    )
+
+    assert out.exists()
+    assert out.stat().st_size > 0
+    assert out.read_bytes()[:4] == b"%PDF"
+
+    plt.close(fig)

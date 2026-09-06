@@ -52,6 +52,11 @@ class TrackFitResult
 class CommonAgeFitResult
 }
 
+package "pyseshat.evolution.benchmark_checks" {
+class ComponentEvolutionResult <<dataclass>>
+class SystemEvolutionResult <<dataclass>>
+}
+
 package "pyseshat.evolution.binary" {
 class BinaryTrackFitResult
 }
@@ -86,6 +91,9 @@ class StellarObservables
 }
 
 package "pyseshat.evolution.parsers.__init__" {
+}
+
+package "pyseshat.evolution.parsers.girardi2000" {
 }
 
 package "pyseshat.evolution.parsers.parsec" {
@@ -247,6 +255,9 @@ package "pyseshat.io.coordinates" {
 package "pyseshat.io.fit_result_io" {
 }
 
+package "pyseshat.io.gaia_parser" {
+}
+
 package "pyseshat.io.orbit_parser" {
 }
 
@@ -338,6 +349,12 @@ package "pyseshat.triple.orbit3_bounds" {
 package "pyseshat.triple.orbit3_fit" {
 }
 
+package "pyseshat.triple.orbit3_likelihood" {
+}
+
+package "pyseshat.triple.orbit3_priors" {
+}
+
 package "pyseshat.triple.triple_bounds" {
 }
 
@@ -396,6 +413,12 @@ package "pyseshat.visualization.hrdiagram_plot" {
 }
 
 package "pyseshat.visualization.orbit_plot" {
+}
+
+package "pyseshat.visualization.sed_plot" {
+}
+
+package "pyseshat.visualization.triple_orbit_plot" {
 }
 
 @enduml

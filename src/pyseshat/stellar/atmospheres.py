@@ -1,3 +1,32 @@
+"""
+Castelli & Kurucz (2004) ATLAS9 (CK04) stellar-atmosphere grid.
+
+Grid coverage (full grid, as downloaded to
+``validation/atmosphere_models/`` -- confirmed complete by the
+2026-09-02 grid-completeness audit, see ``docs/project_decisions.md``
+and ``docs/guide/alwardat_sed.md``):
+
+- Effective temperature: 3500-50000 K (76 grid points, non-uniform
+  spacing).
+- Surface gravity: log g = 0.0-5.0 cgs (0.5-dex steps).
+- Metallicity: [M/H] in {-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, +0.2, +0.5}
+  dex (608 FITS files total: 76 Teff points x 8 metallicities).
+
+This package's documented default scope for general use is roughly
+[Fe/H] = -1.0 to +0.5 dex (solar-neighborhood F/G/K dwarfs/subgiants,
+the Al-Wardat method's target population) -- comfortably inside the
+downloaded grid's actual range, which extends further to -2.5 dex.
+
+``AtmosphereGrid.interpolate()`` bilinearly interpolates in
+(teff, logg) but selects metallicity **exactly** -- it is not
+interpolated across metallicity, so a target star's [Fe/H] must be
+rounded to the nearest available grid step before fitting (see
+``load_ck04_grid()``, and the per-system ``atmosphere_files``/
+``metallicity`` fields under ``validation/expected_results/`` for
+worked examples, including cases where the nearest grid step is a
+genuine tie between two adjacent metallicities).
+"""
+
 import numpy as np
 import re
 

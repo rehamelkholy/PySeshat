@@ -57,7 +57,7 @@
   },
   "metallicity": {
     "value": 0.0,
-    "source": "nearest available CK04 grid point (ckp00); literature [Fe/H]=-0.04 (Torres et al. 2015) is not itself used -- only the solar-metallicity grid is downloaded for this project"
+    "source": "nearest available CK04 grid point (ckp00, [M/H]=0.0); literature [Fe/H]=-0.04 (Torres et al. 2015) is not itself used. Re-verified 2026-09-02 after the full 608-file CK04 grid (all 8 metallicity slices) was downloaded: this system's photometric measurements are SYNTHETIC, forward-modeled by this same pipeline's synthetic_binary_magnitudes() at metallicity=0.0 (scripts/build_joint_benchmarks.py) -- so fitting at 0.0 is the self-consistent choice for this benchmark's actual purpose (validating the fitting pipeline recovers the parameters used to generate its own synthetic input), not merely a data-availability fallback. Fitting at a metallicity closer to the true literature value (e.g. -0.04 is itself closer to 0.0 than to any other grid step, so this is moot for Capella specifically) would introduce a deliberate synthetic-data/fit-grid mismatch rather than remove one."
   },
   "primary_logg": {
     "value": 2.691,

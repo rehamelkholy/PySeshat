@@ -1,9 +1,0 @@
-numpy
-scipy
-astropy
-matplotlib
-pandas
-emcee
-corner
-numba
-astroquery

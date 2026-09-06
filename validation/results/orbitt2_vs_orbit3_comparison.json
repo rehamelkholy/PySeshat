@@ -1,0 +1,253 @@
+{
+  "ZetaAqr": {
+    "system": "ZetaAqr",
+    "data_provenance": "validation/benchmark_systems/ZetaAqr/ZetaAqr.in2 -- Tokovinin (2016), ApJ, 831, 151, Table 5",
+    "no_rv_data_available": true,
+    "no_rv_data_note": "Tokovinin (2016) states there are no RV data of adequate precision for this system's inner orbit; neither formalism uses any RV data here, so no dynamical component masses can be derived for ZetaAqr in either formalism -- this is a data limitation shared by both, not a formalism failure.",
+    "legacy": {
+      "observations_used": 331,
+      "optimizer_success": true,
+      "initial_chi2": 5222.156078154905,
+      "final_chi2": 691.9561480057033,
+      "reduced_chi2": 1.0661882095619466,
+      "rms": 1.0223751654165798,
+      "outer": {
+        "P": 544.0320881904441,
+        "T0": 1981.3082140923952,
+        "e": 0.4232278617258436,
+        "a": 3.504107860730899,
+        "Omega": 130.90467391438656,
+        "omega": 268.63191397560917,
+        "i": 142.38585411172485
+      },
+      "inner_orientation": {
+        "P": 25.76068816644693,
+        "T0": 2006.3906095997881,
+        "e": 0.8674553719034593,
+        "Omega": 278.71212561724707,
+        "omega": 115.46073771638464,
+        "i": 8.924125533817566
+      },
+      "inner_a_wobble_amplitude_fixed_astrometric": 0.11,
+      "B_fitted": 3.431929054425936,
+      "B_bounds": [
+        0.0,
+        "inf"
+      ],
+      "B_at_lower_bound": false
+    },
+    "orbit3": {
+      "observations_used": 331,
+      "optimizer_success": true,
+      "initial_chi2": 699.7334123610008,
+      "final_chi2": 694.507554063731,
+      "reduced_chi2": 1.0717709167650171,
+      "rms": 1.0242583007042352,
+      "outer": {
+        "P": 542.0193913867035,
+        "T0": 1981.4210511145643,
+        "e": 0.4209412599972264,
+        "a": 3.4990380874977407,
+        "Omega": 131.02198542807824,
+        "omega": 268.91724944531603,
+        "i": 141.9251062871626
+      },
+      "inner_orientation": {
+        "P": 25.948067873902364,
+        "T0": 2006.488873896313,
+        "e": 0.8780741267158632,
+        "Omega": 293.8161604254481,
+        "omega": 100.32162228672908,
+        "i": 14.092176109842985
+      },
+      "inner_a_true_separation_fixed": 0.385,
+      "f_fitted": 0.29730971573054976,
+      "canonical_benchmark_chi2": 694.507554063731,
+      "canonical_benchmark_chi2_note": "final_chi2 above is recomputed by this script's own zetaaqr_orbit3_fit(), not copied from run_orbit3_benchmark(); canonical_benchmark_chi2 is the live value from that canonical benchmark path (the one docs/paper_reference_notes.md Section 3.3 cites, 694.51), checked to agree within 0.5 every time this script runs -- see the 2026-08-30 fix note at this module's ZETA_EXPECTED loading block. A 2026-08-30 investigation found and fixed a real ~5-point divergence between these two numbers, traced to this script previously initializing the outer orbit from ZetaAqr.in2's raw file header (T02=1980.5) instead of from the literature/expected_results value (T02=1981.50) -- see docs/project_decisions.md's dated entry for the full investigation."
+    },
+    "comparison": {
+      "outer_orbit_difference": {
+        "P": 2.012696803740596,
+        "T0": -0.11283702216906022,
+        "e": 0.002286601728617166,
+        "a": 0.005069773233158159,
+        "Omega": -0.11731151369167492,
+        "omega": -0.2853354697068653,
+        "i": 0.4607478245622474
+      },
+      "inner_orientation_difference": {
+        "P": -0.18737970745543464,
+        "T0": -0.09826429652480329,
+        "e": -0.010618754812403819,
+        "Omega": -15.10403480820105,
+        "omega": 15.139115429655561,
+        "i": -5.168050576025422
+      },
+      "B_fit_vs_reciprocal_of_f_fit": {
+        "B_fit": 3.431929054425936,
+        "one_over_f_fit": 3.363495866735464,
+        "relative_difference_pct": 2.034585157878953
+      },
+      "wobble_amplitude_arcsec": {
+        "legacy_a_inner_unscaled": 0.11,
+        "orbit3_f_times_a_inner": 0.11446424055626166,
+        "relative_difference_pct": 3.9001180932724444
+      },
+      "true_inner_separation_arcsec": {
+        "legacy_B_times_a_inner": 0.377512195986853,
+        "orbit3_a_inner_fixed": 0.385,
+        "relative_difference_pct": 1.9448841592589676
+      },
+      "chi2_difference": -2.5514060580277373
+    }
+  },
+  "HIP111805": {
+    "system": "HIP111805",
+    "data_provenance": "validation/benchmark_systems/HIP111805/HIP111805.in3 -- Tokovinin & Latham (2017)",
+    "rv_data_available": true,
+    "legacy": {
+      "observations_used": 110,
+      "rv_observations_discarded": 93,
+      "rv_discarded_note": "Legacy ORBITT2 has no mechanism to use radial-velocity data at all (LEGACY_TRIPLE_PARAMETER_ORDER and triple_visual_residuals() carry no K1/K2/K3/K4/V0 handling) -- this is a structural limitation of the formalism as implemented, not a choice made for this comparison.",
+      "optimizer_success": true,
+      "initial_chi2": 10507.878401249674,
+      "final_chi2": 712.6724512462473,
+      "reduced_chi2": 3.4595750060497443,
+      "rms": 1.7998389463886728,
+      "outer": {
+        "P": 29.97850915388626,
+        "T0": 2010.1720647574425,
+        "e": 0.31329934305931323,
+        "a": 0.3381005275100248,
+        "Omega": 154.35655556426295,
+        "omega": 84.9340683330144,
+        "i": 88.22566889240375
+      },
+      "inner": {
+        "P": 1.5058717272728663,
+        "T0": 1985.3319764673251,
+        "e": 0.2695623865190264,
+        "a": 2.7399122711925672e-08,
+        "Omega": 334.3674606565536,
+        "omega": 81.98616635144631,
+        "i": 89.72415850734433
+      },
+      "B_fitted": 1728587.0372662984,
+      "B_bounds": [
+        0.0,
+        "inf"
+      ],
+      "B_at_lower_bound": false,
+      "dynamical_masses_derivable": false,
+      "a_B_degeneracy_diagnostics": {
+        "a_fitted": 2.7399122711925672e-08,
+        "a_lower_bound": 0.0,
+        "a_at_lower_bound": true,
+        "B_fitted": 1728587.0372662984,
+        "condition_number": 2.3093736761243244e+42,
+        "effective_rank": 5,
+        "n_fitted_parameters": 15,
+        "is_degenerate": true,
+        "worst_constrained_mode_eigenvalue": 0.00011924833641692911,
+        "worst_constrained_mode_loadings": {
+          "P": -0.33358159584428765,
+          "T0": 0.9377957008081069,
+          "e": 0.01029611743072102,
+          "a": 0.029195003712829445,
+          "Omega": -0.010717604588126954,
+          "omega": -0.09038768830281523,
+          "i": -0.004402605930458336,
+          "P2": 1.2475187707487994e-08,
+          "T02": -2.2448962688687803e-07,
+          "e2": -8.226342907275506e-08,
+          "a2": 1.4763855659433003e-14,
+          "Omega2": 4.0607949820951944e-11,
+          "omega2": 1.4378447307575765e-09,
+          "i2": -1.2078775994976196e-10,
+          "B": 1.2186352048682532e-13
+        },
+        "dominant_parameters_in_worst_mode": [
+          "T0",
+          "P"
+        ],
+        "diagnostic_error": null,
+        "interpretation": "The published/expected wobble amplitude for this system is negative (f * a_true = -0.33 * 0.0385 ~= -0.0127 arcsec), but legacy inner.a is bounded to [0, +inf) in triple_bounds.build_triple_bounds() and so cannot represent a negative wobble amplitude. The optimizer's best available compromise is to drive inner.a toward its lower bound of 0 (minimizing the unavoidable sign-error penalty in the 110-observation 'outer+inner' visual stream that inner.a alone controls), which in turn lets the 13-observation 'B*inner' stream be satisfied by an arbitrarily large B (since the product B*a can stay near its fitted finite value even as a -> 0 and B -> infinity in tandem). The raw fitted values (a_fitted ~= 2.7e-8, essentially at a_lower_bound=0.0; B_fitted ~= 1.73e6) already show this directly. The formal diagnostics corroborate a severe, genuine non-identifiability in this fit overall -- condition_number ~= 2.3e42 (double-precision arithmetic is only meaningful to ~1e16 dynamic range, so this matrix is numerically singular) and effective_rank collapsing to 5 of 15 fitted parameters (is_degenerate=True) -- but the specific per-parameter breakdown in worst_constrained_mode_loadings /  dominant_parameters_in_worst_mode should NOT be over-interpreted as 'a and B are the degenerate pair': at this condition number the eigenvector decomposition itself is numerically unreliable (expected, since a's Jacobian column is suppressed to ~1e-8 by a_fitted's own near-zero value, which is exactly the kind of ill-conditioning that produces spurious eigenvector mixing with unrelated parameters such as T0/P). The defensible, honestly-reported claim is therefore: (1) a is pinned at its lower bound, (2) B is consequently left essentially unconstrained and explodes, and (3) the fit as a whole is formally degenerate (condition_number, effective_rank, is_degenerate all corroborate this) -- not a specific claim about which eigenmode 'contains' the a/B pair."
+      }
+    },
+    "orbit3": {
+      "observations_used": 203,
+      "visual_observations_used": 110,
+      "rv_observations_used": 93,
+      "optimizer_success": true,
+      "initial_chi2": 502.10381623935166,
+      "final_chi2": 502.10381623935166,
+      "reduced_chi2": 1.7136649018407906,
+      "rms": 1.266556570821288,
+      "outer": {
+        "P": 30.127,
+        "T0": 2010.179,
+        "e": 0.324,
+        "a": 0.3361,
+        "Omega": 154.25,
+        "omega": 84.92,
+        "i": 88.28
+      },
+      "inner": {
+        "P": 1.50119,
+        "T0": 1986.093,
+        "e": 0.022,
+        "a": 0.0385,
+        "Omega": 334.5,
+        "omega": 232.9,
+        "i": 85.8
+      },
+      "f_fitted": -0.33,
+      "K1": 13.13,
+      "K2": 19.21,
+      "K3": 6.057,
+      "K4": 8.6,
+      "V0": -22.575,
+      "inner_dynamical_masses_Msun": {
+        "M1": 1.14985678241971,
+        "M2": 0.7859250157819256,
+        "M_total": 1.9357817982016354,
+        "M1_sin3i": 1.1406177388295204,
+        "M2_sin3i": 0.7796101463212703
+      },
+      "outer_dynamical_masses_Msun": {
+        "M1": 1.786060341586502,
+        "M2": 1.2579264522080749,
+        "M_total": 3.043986793794577,
+        "M1_sin3i": 1.7836472671906645,
+        "M2_sin3i": 1.2562269182992856
+      }
+    },
+    "comparison": {
+      "outer_orbit_difference": {
+        "P": -0.14849084611373797,
+        "T0": -0.006935242557574384,
+        "e": -0.010700656940686781,
+        "a": 0.0020005275100247744,
+        "Omega": 0.10655556426294766,
+        "omega": 0.01406833301439292,
+        "i": -0.054331107596254924
+      },
+      "inner_orbit_difference": {
+        "P": 0.0046817272728663095,
+        "T0": -0.7610235326749262,
+        "e": 0.24756238651902643,
+        "a": -0.038499972600877286,
+        "Omega": -0.13253934344641038,
+        "omega": -150.9138336485537,
+        "i": 3.924158507344316
+      },
+      "B_fit_vs_reciprocal_of_f_fit": {
+        "B_fit": 1728587.0372662984,
+        "one_over_f_fit": -3.0303030303030303,
+        "note": "f_fitted is negative for this system (published f=-0.33; see docs/project_decisions.md's 'f unbounded' entry), so 1/f_fitted is negative -- but B is bounded to [0, +inf) in triple_bounds.build_triple_bounds() and so cannot reach that value directly. In practice the legacy optimizer does NOT pin B at its lower bound of 0 (check B_at_lower_bound above -- it is False): instead it drives inner.a toward 0 and lets B grow essentially without bound as a consequence, an a/B degeneracy specific to this negative-wobble system. See legacy.a_B_degeneracy_diagnostics above for the formal (condition-number/rank/degeneracy) characterization of this finding -- this comparison is therefore NOT a clean B=1/f validation for HIP111805 the way it is for ZetaAqr; it is a genuine, investigated discrepancy rooted in B's bound excluding the physically correct negative value."
+      },
+      "chi2_difference": 210.56863500689565,
+      "chi2_not_directly_comparable_note": "Legacy final_chi2 is computed over 110 visual observations only (see legacy.observations_used); ORBIT3 final_chi2 is computed over 110 visual + 93 RV observations = 203 total (see orbit3.observations_used). The two chi2 values are NOT on the same footing and must not be interpreted as 'legacy fits better' or worse without accounting for this."
+    }
+  }
+}

@@ -45,9 +45,8 @@ component's literature mass) feeding directly into
 `PhotometricParameters.priors` in place of the literature radius itself
 — is **not yet done**. `JointInferenceProblem.evolution_context` is
 currently typed `Any` with no defined per-component sample/observables
-contract; designing that contract is the concrete blocker (future work
-item 1 in `docs/paper_reference_notes.md`), not further evolutionary-track
-code being missing.
+contract; designing that contract is the concrete blocker, not further
+evolutionary-track code being missing.
 
 ## Where this is tested today
 
@@ -59,11 +58,9 @@ see `visualization.md`) with synthetic tracks. **[2026-08-29]**
 now additionally cover the grid-loading/lookup/fitting layer itself
 (`evolution/grids.py`, `evolution/parsers/parsec.py`,
 `evolution/parsers/girardi2000.py`, `evolution/search.py`,
-`evolution/age.py`, `evolution/binary.py`) — previously untested
-despite `docs/project_decisions.md` having once (incorrectly) recorded
-that a `tests/test_parsec.py` existed and exercised it; that file was
-never actually present in the repository, so this parsing/fitting
-layer had zero direct test coverage until this entry. None of the six
+`evolution/age.py`, `evolution/binary.py`) — previously untested: this
+parsing/fitting layer had zero direct test coverage before this entry.
+None of the six
 registered systems that would use it (the four Al-Wardat SED systems
 plus Capella/AlphaCenAB's photometry rows) currently run a real
 evolutionary-track cross-check as part of
@@ -100,12 +97,11 @@ choice existed in this repo's own documentation. Specifically:
   PARSEC data files were ever bundled or referenced anywhere in the
   codebase** — `load_parsec()` requires the caller to supply
   `track_files`/`isochrone_files` explicitly and defaults to empty
-  tuples. `docs/project_decisions.md`'s own prior audit (search for
-  "Audit for other missing external files") had already found and
-  recorded this: "no external track files are referenced or needed
-  anywhere in the current codebase." "PARSEC" was never a considered
-  literature-comparability decision — it was simply the one parser
-  format that happened to be implemented, with no data behind it.
+  tuples. No external track files were ever referenced or needed
+  anywhere in the codebase at this layer. "PARSEC" was never a
+  considered literature-comparability decision — it was simply the one
+  parser format that happened to be implemented, with no data behind
+  it.
 - The commonly-cited `tests/test_parsec.py` "exercising the parser
   against synthetic fixture data" did not actually exist in the
   repository (see the section above) — the parser had literally never
@@ -175,8 +171,8 @@ was tried and confirmed blocked on 2026-08-29:
 
 This is a confirmed external blocker, the same category as the
 Gaia-archive network block already documented for `io/gaia_parser.py`
-(see `docs/project_decisions.md` and `docs/paper_reference_notes.md`
-§7 item 14) — not something fixable from within this session, and not
+(see `data_formats.md`'s Gaia section) — not something fixable from
+within this session, and not
 something to work around by approximating or fabricating grid values:
 per this project's own standing rule, no evolutionary-track numeric
 data is invented. **Consequently, no evolutionary consistency check
@@ -186,10 +182,9 @@ photometry rows) — each system's `validation/expected_results/*.json`
 now carries an `evolutionary_track_source` provenance block recording
 this decision and this exact blocker (`"status": "not yet run"`), so
 that nobody mistakes silence in that file for a completed check. No
-system's previously-reported age/mass/evolutionary-stage placement in
-`docs/project_decisions.md` or `docs/paper_reference_notes.md` has
-changed, because none was ever computed against a real grid to begin
-with (there is nothing to have shifted from).
+system's evolutionary-stage placement changed as a result of unblocking
+this, because none was ever computed against a real grid to begin with
+(there is nothing to have shifted from).
 
 **To unblock this**, a real copy of the Girardi (2000) tracks and
 isochrones at Z=0.019 needs to reach this repository from a network
@@ -204,9 +199,7 @@ track_metadata=..., isochrone_metadata=...)` loads them directly (see
 `evolution/parsers/girardi2000.py`'s module docstring for the expected
 column semantics), and `evolution/binary.py`'s existing
 `fit_binary_evolution_from_orbit()` — unchanged, since it was already
-grid-agnostic — runs the actual cross-check. This is future work item
-1 in `docs/paper_reference_notes.md`, updated 2026-08-29 with this
-grid-choice context.
+grid-agnostic — runs the actual cross-check.
 
 ## Blocker closed (2026-08-29): real Girardi (2000) data obtained, six-system check run
 
@@ -220,8 +213,7 @@ egress-restricted network) and supplied them as attached files:
   64,381 rows.
 
 Both files were placed at `data/evolution/girardi2000/` (repo root,
-per this project's `src/`-layout convention — see
-`docs/project_decisions.md`'s dated entry for why this is outside
+per this project's `src/`-layout convention: data files live outside
 `src/pyseshat/`, not inside it). Neither file matched the generic
 `column_map`-based schema the code-level integration above had
 assumed sight-unseen; the actual VizieR ASU-TSV export format,
@@ -282,8 +274,9 @@ HD191854, HD130669, HD184467) plus the two joint case studies
 runs it and writes `validation/results/evolutionary_checks.json`;
 `scripts/generate_benchmark_plots.py`'s `generate_hrdiagrams()` uses
 the exact same fitted objects to build each system's HR-diagram
-figure at `validation/results/plots/<system>/hrdiagram.png`, so the
-plotted points and these numbers cannot drift apart). Component
+figure at `validation/results/plots/<system>/hrdiagram.pdf` (vector
+PDF, no grid lines, per A&A's figure requirements), so the plotted
+points and these numbers cannot drift apart). Component
 masses come directly from `literature_component_parameters` for the
 four HD systems and AlphaCenAB (`AlphaCenAB_orbit.json`'s
 `component_masses_Msun`, Akeson et al. 2021), and are derived from
@@ -337,6 +330,3 @@ have been computed in this project. This is distinct from — and does
 not include — a comparison against each source paper's *own*
 separately-published age/mass values, which was not performed as
 part of this run and remains open if wanted.
-
-See `docs/project_decisions.md`'s 2026-08-29 "Girardi (2000) blocker
-closed" entry for the full narrative.

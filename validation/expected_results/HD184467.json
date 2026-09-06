@@ -65,7 +65,7 @@
   "metallicity": {
     "value": 0.0,
     "literature_value": -0.25,
-    "note": "Approximated as solar (0.0) to match the only metallicity currently downloaded in the local CK04 grid (validation/atmosphere_models/ckp00/, [M/H]=0.0); the literature value is retained here for reference and as a documented simplification, not silently dropped."
+    "note": "Literature [Fe/H]=-0.25 is an exact tie in grid-step distance between the two nearest available CK04 metallicities, 0.0 (ckp00) and -0.5 (ckm05) -- both are 0.25 dex away. Re-verified 2026-09-02 after the full 608-file CK04 grid was downloaded: both slices were tested empirically with fit_photometry() (script: scripts/ck04_metallicity_rerun_check.py). At metallicity=0.0 (current, kept): reduced chi2=0.112, radius rel. err. <=0.75%, Teff rel. err. <=6.37%. At metallicity=-0.5 (tested alternative): reduced chi2=0.164 (worse), radius rel. err. <=0.23% (better), Teff rel. err. <=6.37% (primary_temperature pins at the grid's 5000K lower edge in BOTH cases -- the same near-twin-component-temperature degeneracy already documented in docs/guide/alwardat_sed.md, not affected by this choice). Kept at 0.0 on the reduced-chi2 tiebreaker (the standard overall fit-quality metric); the alternative is documented here rather than silently discarded, since the tie means either choice is scientifically defensible."
   },
   "primary_logg": {
     "value": 4.556,

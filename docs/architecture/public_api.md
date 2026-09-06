@@ -121,6 +121,23 @@
 - track_chi2()
 - fit_common_age()
 
+## pyseshat.evolution.benchmark_checks
+
+### Dataclasses
+- ComponentEvolutionResult
+- SystemEvolutionResult
+
+### Classes
+- ComponentEvolutionResult
+- SystemEvolutionResult
+
+### Functions
+- load_benchmark_component_inputs()
+- evolutionary_state_from_logg()
+- run_system_evolutionary_check()
+- load_model_and_raw_tracks()
+- run_all_benchmark_checks()
+
 ## pyseshat.evolution.binary
 
 ### Classes
@@ -134,7 +151,10 @@
 
 ### Functions
 - load_model()
+- load_girardi2000_from_vizier()
+- load_default_evolution_model()
 - load_parsec()
+- load_girardi2000()
 
 ## pyseshat.evolution.hrdiagram
 
@@ -184,6 +204,14 @@
 - StellarObservables
 
 ## pyseshat.evolution.parsers.__init__
+
+## pyseshat.evolution.parsers.girardi2000
+
+### Functions
+- load_girardi2000_track()
+- load_girardi2000_isochrone()
+- load_girardi2000_vizier_tracks()
+- load_girardi2000_vizier_isochrones()
 
 ## pyseshat.evolution.parsers.parsec
 
@@ -377,6 +405,8 @@
 
 ### Functions
 - photometric_residuals_from_problem()
+- photometric_prior_residuals_from_problem()
+- photometric_residuals_with_priors_from_problem()
 - photometric_residuals()
 - chi_square()
 - reduced_chi_square()
@@ -420,6 +450,7 @@
 - log_jeffreys_prior()
 - log_isotropic_prior()
 - log_prior()
+- log_gaussian_prior()
 - log_photometric_prior()
 
 ## pyseshat.inference.problem
@@ -471,6 +502,12 @@
 - save_fit_result()
 - dict_to_orbital_elements()
 - load_fit_result()
+
+## pyseshat.io.gaia_parser
+
+### Functions
+- thiele_innes_to_campbell()
+- parse_nss_orbital_row()
 
 ## pyseshat.io.orbit_parser
 
@@ -566,6 +603,7 @@
 ### Functions
 - synthetic_binary_magnitudes()
 - binary_photometric_chi_square()
+- synthetic_binary_sed()
 
 ## pyseshat.photometry.observations
 
@@ -630,6 +668,18 @@
 - orbit3_parameter_scales()
 - orbit3_jacobian()
 - fit_orbit3()
+- fit_orbit3_mcmc()
+
+## pyseshat.triple.orbit3_likelihood
+
+### Functions
+- log_likelihood_orbit3()
+- log_posterior_orbit3()
+
+## pyseshat.triple.orbit3_priors
+
+### Functions
+- log_prior_orbit3()
 
 ## pyseshat.triple.triple_bounds
 
@@ -774,4 +824,14 @@
 - plot_visual_orbit()
 - plot_residuals()
 - plot_rv_orbit()
+
+## pyseshat.visualization.sed_plot
+
+### Functions
+- plot_sed_fit()
+
+## pyseshat.visualization.triple_orbit_plot
+
+### Functions
+- plot_triple_orbit()
 

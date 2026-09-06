@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "PySeshat"
+version: 0.1.0
+date-released: "2026-09-06"
+authors:
+  - family-names: "El-Kholy, Hayman"
+    given-names: "R. I., Z. M."
+    email: "relkholy@sci.cu.edu.eg"
+repository-code: "https://github.com/rehamelkholy/PySeshat"
+license: MIT
+identifiers:
+  # - type: doi
+    # value: "10.0000/TODO-ZENODO-DOI"
+preferred-citation:
+  type: article
+  title: "PySeshat: A Validated Python Pipeline for Binary-Star Orbit Determination and Al-Wardat Stellar Atmosphere Modeling"
+  authors:
+    - family-names: "El-Kholy, Hayman"
+      given-names: "R. I., Z. M."
+      email: "relkholy@sci.cu.edu.eg"
+  identifiers:
+    - type: other
+      value: "arXiv:submit/8043262"

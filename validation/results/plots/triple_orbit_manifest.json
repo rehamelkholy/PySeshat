@@ -1,0 +1,16 @@
+{
+  "ZetaAqr": {
+    "path": "validation/results/plots/ZetaAqr/triple_orbit.pdf",
+    "chi_square": 694.507554063731,
+    "n_inner_obs": 9,
+    "n_outer_obs": 322,
+    "n_rv_obs": 0
+  },
+  "HIP111805": {
+    "path": "validation/results/plots/HIP111805/triple_orbit.pdf",
+    "chi_square": 502.10381623935166,
+    "n_inner_obs": 10,
+    "n_outer_obs": 100,
+    "n_rv_obs": 93
+  }
+}

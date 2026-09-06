@@ -144,11 +144,56 @@ silently mislabeling it as a resolved relative-orbit scale.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 from pyseshat.orbit.orbital_elements import OrbitalElements
 
 from pyseshat.io.orbit_parser import jd_to_decimal_year
+
+
+def _is_present(value):
+    """
+    True if ``value`` is a real, populated optional field -- False
+    for Python ``None`` AND for NaN (``float('nan')``,
+    ``numpy.nan``, pandas' own NaN) alike.
+
+    This distinction matters because a genuine CSV/VOTable export
+    of the real Gaia archive represents an unpopulated OPTIONAL
+    column (e.g. ``inclination``/``arg_periastron`` on a pure-
+    astrometric ``Orbital``-type row, which Gaia's own pipeline
+    never fits for that solution type) as NaN when loaded through
+    pandas/astropy, NOT Python ``None`` -- a hand-built dict (as
+    this module's own tests originally used) can omit a key or set
+    it to ``None``, but a real archive export cannot. Checking only
+    ``row.get(key) is not None`` therefore silently accepts NaN as
+    "present" and lets it propagate into a NaN ``OrbitalElements``
+    field for every downstream calculation -- confirmed as a real,
+    reproducible bug (2026-09-01) via a CSV round-trip smoke test
+    performed while preparing this module's first genuine
+    retrieved-archive-data validation (see
+    ``scripts/validate_gaia_archive_export.py`` and
+    ``docs/project_decisions.md``'s dated entry), before any real
+    archive data was in hand -- i.e. caught proactively, not
+    discovered by a downstream NaN making it into a paper figure.
+    """
+
+    if value is None:
+
+        return False
+
+    try:
+
+        return not math.isnan(value)
+
+    except TypeError:
+
+        # Non-float, non-None (e.g. a string) -- treat as present;
+        # the caller's own float()/int() conversion will raise a
+        # clear error if it's genuinely unusable.
+
+        return True
 
 
 # ==========================================================
@@ -389,10 +434,10 @@ def parse_nss_orbital_row(row):
     omega_deg = float(
         row["arg_periastron"]
     ) if (
-        row.get("arg_periastron") is not None
+        _is_present(row.get("arg_periastron"))
     ) else omega_from_inversion
 
-    if row.get("inclination") is not None:
+    if _is_present(row.get("inclination")):
 
         i_deg = float(row["inclination"])
 
@@ -428,13 +473,13 @@ def parse_nss_orbital_row(row):
 
     if solution_type == "AstroSpectroSB1":
 
-        if row.get("semi_amplitude_primary") is not None:
+        if _is_present(row.get("semi_amplitude_primary")):
 
             kwargs["K1"] = float(
                 row["semi_amplitude_primary"]
             )
 
-        if row.get("center_of_mass_velocity") is not None:
+        if _is_present(row.get("center_of_mass_velocity")):
 
             kwargs["V0"] = float(
                 row["center_of_mass_velocity"]

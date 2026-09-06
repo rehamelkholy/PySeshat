@@ -418,6 +418,113 @@ def _fit_single_solution(
         bounds=bounds
     )
 
+# ==========================================================
+# Angle wrapping for periodic MCMC parameters
+# ==========================================================
+
+# Fitted parameters that are periodic with period 360 deg under
+# this codebase's own prior (see priors.py's log_prior:
+# ``log_uniform_prior(elements.Omega, 0.0, 360.0)`` and the same
+# for ``omega``) and are wrapped into [0, 360) by
+# ``OrbitalElements.normalize_angles()`` every time
+# ``inference/core.py``'s ``update_elements()`` builds the
+# elements object the prior/likelihood actually evaluate.
+_PERIODIC_360_PARAMETERS = ("Omega", "omega")
+
+
+def _wrap_periodic_mcmc_samples(samples, parameter_names):
+    """
+    Wrap posterior samples for periodic angular parameters
+    (``Omega``, ``omega``) into their canonical [0, 360) range.
+
+    Why this exists (found 2026-09-02, Capella corner-plot
+    investigation)
+    --------------------------------------------------------------
+    ``update_elements()`` calls ``normalize_angles()`` on the
+    reconstructed ``OrbitalElements`` BEFORE ``log_prior``/
+    ``log_likelihood`` ever see it -- so, as far as the posterior
+    DENSITY is concerned, ``Omega`` and ``omega`` are exactly
+    360-deg-periodic coordinates: a raw walker position of
+    omega=770 deg and omega=50 deg are the physically identical
+    point and receive the identical log-posterior. But ``emcee``
+    itself only ever stores the RAW, pre-normalization position it
+    proposed -- nothing in the sampling loop folds a walker's raw
+    Omega/omega coordinate back into [0, 360) between steps. For a
+    tightly-constrained angle (Omega, in every benchmark system
+    exercised so far) this is harmless in practice: the likelihood
+    gradient is steep enough that no accepted step ever crosses a
+    full period. For a WEAKLY constrained angle -- omega on a
+    near-circular orbit (e -> 0), where the periastron reference
+    point and therefore omega itself is only loosely informative --
+    walkers can and do random-walk through many equivalent periodic
+    images with no restoring force to stop them. Confirmed on
+    Capella's real MCMC chain before this fix: raw ``omega`` samples
+    spanned roughly [-72500, +79000] degrees (up to ~220 full
+    periods), continuously across the whole post-burn-in chain, not
+    a handful of early pre-convergence outliers -- while the
+    physically-identical WRAPPED distribution is a normal, tightly
+    bounded posterior around ~285 deg, exactly matching what the
+    marginal histogram already showed.
+
+    Wrapping here is the correct fix, not a cosmetic one, precisely
+    because the log-posterior is exactly invariant under a +/-360
+    deg shift in these coordinates: mapping a raw sample to its
+    representative value in [0, 360) does not discard, reject, or
+    reweight anything, and does not change the sampled posterior
+    distribution in any way -- it only removes an accounting
+    artifact of the *unwrapped* coordinate emcee happens to store.
+    Applied once here, immediately after ``run_emcee`` returns the
+    flattened chain, the wrapped range becomes part of
+    ``MCMCResult.samples`` itself (and therefore of every saved
+    ``.npz`` chain going forward), so every downstream consumer --
+    ``corner_plot()``, ``posterior_median``/``credible_interval_16``/
+    ``credible_interval_84``/``posterior_std``, ``maximum_posterior_sample``
+    -- sees the physically meaningful range without its own
+    workaround.
+
+    Parameters
+    ----------
+    samples : ndarray, shape (n_samples, n_parameters)
+        Flattened posterior chain, in the same column order as
+        ``parameter_names``.
+
+    parameter_names : sequence of str
+
+    Returns
+    -------
+    ndarray
+        A new array (the input is not modified in place) with
+        every column named in ``_PERIODIC_360_PARAMETERS`` wrapped
+        via ``np.mod(column, 360.0)``. Columns for every other
+        parameter are returned unchanged.
+    """
+
+    samples = np.array(
+        samples,
+        dtype=float,
+        copy=True
+    )
+
+    parameter_names = list(
+        parameter_names
+    )
+
+    for name in _PERIODIC_360_PARAMETERS:
+
+        if name in parameter_names:
+
+            idx = parameter_names.index(
+                name
+            )
+
+            samples[:, idx] = np.mod(
+                samples[:, idx],
+                360.0
+            )
+
+    return samples
+
+
 def _sample_single_solution_from_problem(
     fit_result,
     problem,
@@ -464,6 +571,18 @@ def _sample_single_solution_from_problem(
         rng=rng
     )
 
+    parameter_names = elements.fitted_parameter_names()
+
+    # See _wrap_periodic_mcmc_samples's own docstring: Omega/omega
+    # are periodic in the posterior emcee actually samples, but the
+    # raw chain emcee returns is NOT wrapped -- fold it into
+    # [0, 360) here, once, so every downstream consumer of
+    # MCMCResult.samples sees the physically meaningful range.
+    wrapped_samples = _wrap_periodic_mcmc_samples(
+        engine["samples"],
+        parameter_names
+    )
+
     return MCMCResult(
 
         elements=elements,
@@ -476,11 +595,11 @@ def _sample_single_solution_from_problem(
 
         uncertainties=fit_result.uncertainties,
 
-        samples=engine["samples"],
+        samples=wrapped_samples,
 
         log_probability=engine["log_probability"],
 
-        parameter_names=elements.fitted_parameter_names(),
+        parameter_names=parameter_names,
 
         acceptance_fraction=engine[
             "acceptance_fraction"

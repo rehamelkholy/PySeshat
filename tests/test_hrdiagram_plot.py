@@ -193,3 +193,61 @@ def test_plot_binary_hrdiagram():
         "Primary Model",
         "Secondary Model",
     }
+
+
+# ==========================================================
+# show_grid / output_format
+#
+# Added 2026-08-30 alongside the new parameters themselves
+# (docs/project_decisions.md). This function already had
+# save_path; only show_grid/output_format are new here, plus
+# format=output_format now being passed through to the
+# pre-existing savefig() call.
+# ==========================================================
+
+def test_plot_binary_hrdiagram_show_grid_toggle():
+
+    data = HRDiagramData(
+        primary_track=make_track(1.20, [3.80, 3.78], [0.20, 0.35]),
+        secondary_track=make_track(0.90, [3.72, 3.70], [-0.05, 0.02]),
+        primary_observables=make_observables(3.79, 0.33),
+        secondary_observables=make_observables(3.71, -0.03),
+        solution=make_solution(),
+    )
+
+    ax_default = plot_binary_hrdiagram(data)
+    assert (
+        ax_default.xaxis.get_gridlines()[0].get_visible()
+        and ax_default.yaxis.get_gridlines()[0].get_visible()
+    )
+
+    ax_off = plot_binary_hrdiagram(data, show_grid=False)
+    assert not (
+        ax_off.xaxis.get_gridlines()[0].get_visible()
+        or ax_off.yaxis.get_gridlines()[0].get_visible()
+    )
+
+
+def test_plot_binary_hrdiagram_save_path_writes_requested_format(
+    tmp_path,
+):
+
+    data = HRDiagramData(
+        primary_track=make_track(1.20, [3.80, 3.78], [0.20, 0.35]),
+        secondary_track=make_track(0.90, [3.72, 3.70], [-0.05, 0.02]),
+        primary_observables=make_observables(3.79, 0.33),
+        secondary_observables=make_observables(3.71, -0.03),
+        solution=make_solution(),
+    )
+
+    out = tmp_path / "hr.pdf"
+
+    plot_binary_hrdiagram(
+        data,
+        save_path=out,
+        output_format="pdf",
+    )
+
+    assert out.exists()
+    assert out.stat().st_size > 0
+    assert out.read_bytes()[:4] == b"%PDF"
