@@ -94,6 +94,20 @@ system into `validation/results/`:
 python validation/benchmark_runner.py
 ```
 
+## Citation
+
+If you use PySeshat in your research or publications, please cite it using the following BibTeX entry:
+
+```
+@misc{pyseshat2026,
+  author = {{El-Kholy}, R.~I. and {Hayman}, Z.~M.},
+  title  = {PySeshat: A Validated Python Pipeline for Binary-Star Orbit Determination and Al-Wardat Stellar Atmosphere Modeling},
+  year   = {2026},
+  doi    = {10.5281/zenodo.22543909},
+  url    = {https://github.com/rehamelkholy/PySeshat},
+}
+```
+
 ## License
 
 MIT -- see [`LICENSE`](LICENSE).
