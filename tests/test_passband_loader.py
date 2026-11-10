@@ -51,19 +51,22 @@ passband = load_passband(
 
 assert passband.name == "Johnson V"
 
+# Maiz Apellaniz (2006) Table 3 curve, photon-counting (file header).
+assert passband.photon_counting is True
+
 
 assert len(
 
     passband.wavelength
 
-) == 15
+) == 47
 
 
 assert np.isclose(
 
     passband.minimum_wavelength,
 
-    4600.0
+    4700.0
 
 )
 
@@ -72,7 +75,7 @@ assert np.isclose(
 
     passband.maximum_wavelength,
 
-    7400.0
+    7000.0
 
 )
 
@@ -81,7 +84,7 @@ assert np.isclose(
 
     passband.peak_wavelength,
 
-    5400.0
+    5250.0
 
 )
 
@@ -92,7 +95,7 @@ assert np.isclose(
         passband.throughput
     ),
 
-    0.98
+    1.0
 
 )
 

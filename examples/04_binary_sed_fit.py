@@ -1,10 +1,10 @@
 """
-Example 4: Al-Wardat unresolved-binary SED fit.
+Example 4: unresolved-binary SED fit.
 
 Fits HD214222's combined-light photometry to a two-component
 Castelli-Kurucz (CK04) synthetic spectral model, recovering each
-component's effective temperature, radius, and the system's
-reddening E(B-V) -- the "Al-Wardat method" this project's SED
+component's effective temperature and radius -- the "binary
+SED-fitting method" this project's SED
 benchmarks are named for (Abushattal, Georgakarakos, Al-Wardat et
 al. 2025, AJ, arXiv:2512.23652). Unlike Examples 1-3, there is no
 orbital fit here at all: this validates stellar *modelling* given
@@ -13,18 +13,19 @@ uncertainty) measurements.
 
 Run
 
-    python examples/04_alwardat_sed_fit.py
+    python examples/04_binary_sed_fit.py
 
 Uses validation/expected_results/HD214222.json and this repo's
 local CK04 atmosphere grid + passband transmission curves (all
-checked in), so this script runs out of the box. See
-docs/project_decisions.md, "PhotometricParameters fit-flags/prior
-mechanism, Al-Wardat measurement-uncertainty reassessment, and
-Stromgren u disposition (2026-08-27)" for the full derivation of
-the choices made below (why radius is freed WITH a Gaussian prior
-rather than fixed outright, why the assumed per-measurement
-uncertainty is 0.30 mag rather than a naive 0.02 mag, and why
-Stromgren u is excluded).
+checked in), so this script runs out of the box. It follows the
+benchmark configuration in that file (as
+validation/benchmark_runner.py does): the free parameters listed
+under "free_parameters" (E(B-V) is held at 0, since the combined
+light alone cannot separate temperature from reddening), each radius
+freed WITH a 10% Gaussian prior on its literature value, the
+component magnitude difference under "magnitude_differences" as an
+extra constraint, and a 0.30 mag tolerance per band (the
+measurements are the source paper's own synthetic photometry).
 """
 
 from __future__ import annotations
@@ -43,7 +44,12 @@ from pyseshat.photometry.filters import (
 )
 
 from pyseshat.photometry.observations import (
+    MagnitudeDifference,
     PhotometricMeasurement,
+)
+
+from pyseshat.photometry.calibration import (
+    vega_zero_points,
 )
 
 from pyseshat.photometry.parameters import (
@@ -70,29 +76,12 @@ EXPECTED_FILE = (
     VALIDATION_DIR / "expected_results" / f"{SYSTEM}.json"
 )
 
-# SVO Filter Profile Service "Vega system" zero points, matched to
-# each band's own transmission curve below -- see
-# validation/benchmark_runner.py's _ALWARDAT_ZERO_POINTS for the
-# full derivation and cross-check against a Sun-at-10pc pipeline
-# calibration test.
-
-ZERO_POINTS = {
-    "Johnson U": 3.49719e-9,
-    "Johnson B": 6.72553e-9,
-    "Johnson V": 3.5833e-9,
-    "Johnson R": 1.87529e-9,
-    "Stromgren v": 7.27101e-9,
-    "Stromgren b": 5.78663e-9,
-    "Stromgren y": 3.6203e-9,
-    "Tycho BT": 6.50910e-9,
-    "Tycho VT": 3.99504e-9,
-}
-
 PASSBAND_FILES = {
     "Johnson U": "johnson_u.dat",
     "Johnson B": "johnson_b.dat",
     "Johnson V": "johnson_v.dat",
-    "Johnson R": "johnson_r.dat",
+    "Cousins R": "cousins_r.dat",
+    "Stromgren u": "stromgren_u.dat",
     "Stromgren v": "stromgren_v.dat",
     "Stromgren b": "stromgren_b.dat",
     "Stromgren y": "stromgren_y.dat",
@@ -111,9 +100,7 @@ def main():
     # --------------------------------------------------
     # 1. Load the CK04 atmosphere grid and passbands this
     # system needs. atmosphere_files must bracket BOTH
-    # components' literature Teff, not just one -- see
-    # docs/project_decisions.md for a real bug this caused
-    # for two of the four registered systems.
+    # components' literature Teff, not just one.
     # --------------------------------------------------
 
     atmosphere_grid = load_ck04_grid([
@@ -128,9 +115,15 @@ def main():
             uncertainty=entry["uncertainty"],
         )
         for entry in expected["measurements"]
-        # Stromgren u is present in Table 4 but excluded here
-        # (see expected["excluded_measurements"] and
-        # docs/project_decisions.md for why).
+    ]
+
+    magnitude_differences = [
+        MagnitudeDifference(
+            passband=entry["passband"],
+            value=entry["value"],
+            uncertainty=entry["uncertainty"],
+        )
+        for entry in expected.get("magnitude_differences", [])
     ]
 
     passband_names = sorted({
@@ -150,30 +143,36 @@ def main():
         for name in passband_names
     }
 
-    zero_points = {
-        name: ZERO_POINTS[name] for name in passband_names
-    }
+    # Zero points on the standard photometric systems: the CALSPEC Vega
+    # spectrum shipped with PySeshat, integrated through these same
+    # passbands, with Vega's standard-system magnitudes (Maiz Apellaniz
+    # 2007; see pyseshat.photometry.calibration).
+    zero_points = vega_zero_points(passbands)
 
     print(
-        f"Fitting {SYSTEM} against {len(measurements)} real "
-        f"photometric measurements in {len(passband_names)} bands."
+        f"Fitting {SYSTEM} against {len(measurements)} photometric "
+        f"measurements in {len(passband_names)} bands and "
+        f"{len(magnitude_differences)} magnitude difference(s)."
     )
 
     # --------------------------------------------------
     # 2. Build the starting parameters, fit flags, and
-    # radius priors. All 5 photometric parameters are
-    # freed; radius carries a Gaussian prior tying it to
-    # the literature value (unresolved photometry alone
-    # cannot separate each component's (Teff, R) -- see
-    # module docstring above).
+    # radius priors. The parameters in
+    # expected["free_parameters"] are freed (E(B-V) is not);
+    # radius carries a Gaussian prior tying it to the
+    # literature value (unresolved photometry alone cannot
+    # separate each component's (Teff, R) -- see module
+    # docstring above).
     # --------------------------------------------------
 
     initial = expected["initial_parameters"]
 
     literature = expected["literature_component_parameters"]
 
+    free = set(expected["free_parameters"])
+
     fit_flags = {
-        name: True
+        name: name in free
         for name in (
             "primary_temperature",
             "secondary_temperature",
@@ -221,6 +220,7 @@ def main():
         passbands=passbands,
         zero_points=zero_points,
         measurements=measurements,
+        magnitude_differences=magnitude_differences,
         primary_logg=expected["primary_logg"]["value"],
         secondary_logg=expected["secondary_logg"]["value"],
         metallicity=expected["metallicity"]["value"],

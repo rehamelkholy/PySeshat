@@ -2,11 +2,9 @@
 Validate ``src/pyseshat/io/gaia_parser.py`` against REAL, retrieved
 Gaia DR3 ``gaiadr3.nss_two_body_orbit`` archive rows -- not the
 codebase's own synthesized Thiele-Innes constants -- closing the
-"no live archive query" gap documented in
-``docs/paper_reference_notes.md`` §7 item 14 and
-``docs/project_decisions.md``.
+"no live archive query" gap in the parser's validation.
 
-Why this script exists (2026-09-01)
+Why this script exists
 --------------------------------------------------------------
 The existing test (``tests/test_gaia_parser.py::
 test_gaia_bh1_round_trip_recovers_published_campbell_elements``)
@@ -25,28 +23,24 @@ retrieved via ``gaiadr3.nss_two_body_orbit`` -- not synthesized --
 and checking the result against INDEPENDENT literature values, now
 as a genuine cross-check rather than a round-trip.
 
-Live TAP access was confirmed BLOCKED from both this project's
-cloud sandbox (``astroquery.gaia`` -> HTTP 403, "Host not in
-allowlist: gea.esac.esa.int") and the user's linked-device shell
-(same org egress proxy, "Tunnel connection failed: 403 Forbidden").
-Per the same manual-export pattern that resolved the Girardi (2000)
-evolutionary-track data gap (see ``docs/project_decisions.md``'s
-2026-08-29 entry), the user runs the ADQL query below through the
-Gaia Archive's own web interface (a different network path -- their
-own browser, not this proxied shell) and exports the result as CSV
+Live TAP access may be blocked in environments with restricted
+network access (for example ``astroquery.gaia`` -> HTTP 403, "Host
+not in allowlist: gea.esac.esa.int"). In that case, run the ADQL
+query below through the Gaia Archive's own web interface (for
+example from a browser on an unrestricted network) and export the
+result as CSV
 to ``data/gaia_archive/nss_two_body_orbit_export.csv`` (or any path
 passed as this script's argument).
 
-Gaia BH1/BH2 abandoned (2026-09-01): direct queries for BOTH
-returned ZERO rows -- confirmed by the user running the ADQL query
-this script originally shipped with. Explained by Ryu et al. 2025
+Gaia BH1/BH2 are not used: direct archive queries for BOTH
+returned ZERO rows. This is explained by Ryu et al. 2025
 (arXiv:2411.00654)'s analytic selection-function model of the NSS
 astrometric-orbit catalog, which estimates only ~39% (BH1) / ~27%
 (BH2) probability of actually surviving the pipeline's quality cuts
 into the PUBLIC catalog, despite both being real, well-characterized
 systems from independent (non-Gaia) data -- i.e. their internal
 candidate solutions most likely did not make the DR3 public release.
-Replaced with two systems the Gaia team's own DR3 companion paper
+Two systems are used instead, which the Gaia team's own DR3 companion paper
 (Gaia Collaboration 2023, "Stellar multiplicity, a teaser for the
 hidden treasure", A&A 674, A34, arXiv:2206.05595) explicitly names
 BY SOURCE_ID as real, public ``Orbital``-type entries -- about as
@@ -87,9 +81,8 @@ Two real, independently-published systems are validated:
    INDEPENDENT (pre-Gaia, non-astrometric) period and eccentricity
    for the same system, which this script also checks against. The
    original discovery/spectroscopic-orbit paper is Imbert (1996),
-   A&AS 116, 497 -- cited for provenance; this session's tools could
-   not retrieve that 1996 paper's full (omega, T0, K1, gamma) table,
-   so only period/eccentricity (via Groenewegen 2013, as quoted in
+   A&AS 116, 497 -- cited for provenance; its full (omega, T0, K1, gamma) table is not
+   used, so only period/eccentricity (via Groenewegen 2013, as quoted in
    Gaia Collaboration 2023) are checked quantitatively here.
 2. **HIP 36189** (source_id 3162827836766605440) -- also an
    ``Orbital``-type solution (K giant, P ~ 2.6 yr), independently
@@ -191,7 +184,7 @@ HIP36189_MASSES = dict(
 # difference "about 1.5" mag, 0.2 mag uncertainty assigned by the
 # quoting paper -- but WHICH component (the K-giant "primary" M1, or
 # the M2 companion) is brighter is genuinely not stated in the text
-# this session's tools could retrieve. Both directions are checked
+# the sources consulted. Both directions are checked
 # below rather than guessing one.
 HIP36189_DELTA_MAG = dict(value=1.5, err=0.2)
 

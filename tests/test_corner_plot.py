@@ -1,13 +1,6 @@
 """
-Regression test for MCMCResult.corner_plot(), rewritten
-2026-08-27 from a print-only demo script (no ``def test_...``
-function, no assertions -- pytest collected 0 items from it
-regardless of correctness, the same defect fixed for
-test_rv_model.py/test_statistics.py/test_reduced_chi_square_rv.py
-in docs/project_decisions.md's "Whole-codebase audit" section)
-into a real assertion-bearing test, per
-docs/development_plan_phase2.md Phase 4's charge to strengthen
-plot-correctness coverage.
+Regression test for MCMCResult.corner_plot(), with assertions on
+the plot's content rather than just checking that it runs.
 """
 
 import matplotlib
@@ -168,8 +161,8 @@ def test_corner_plot_respects_a_parameters_subset():
 # ==========================================================
 # show_grid / output_format / save_path
 #
-# Added 2026-08-30 alongside the new parameters themselves
-# (docs/project_decisions.md). Unlike every other plotting
+# Tests for the show_grid/output_format/save_path parameters.
+# Unlike every other plotting
 # function in this codebase, corner_plot()'s show_grid defaults
 # to False (not True) -- corner.corner() draws no grid lines by
 # default and this function never added any, so False is what

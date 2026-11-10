@@ -20,8 +20,8 @@ from pyseshat.io.gaia_parser import (
 # gaia_parser's module docstring) is verified here the way any
 # closed-form matrix inversion should be: round-tripped against
 # this codebase's OWN forward transform (orbit_model.thiele_innes,
-# itself already cross-checked against Gaia's documented formula
-# -- see docs/project_decisions.md), across a wide, randomized
+# itself already cross-checked against Gaia's documented formula),
+# across a wide, randomized
 # sweep of Campbell elements, rather than trusted from the
 # literature derivation alone.
 
@@ -139,16 +139,14 @@ def test_thiele_innes_to_campbell_matches_forward_transform_exactly():
 #
 # El-Badry et al. 2023 publish the DERIVED Campbell elements
 # (Table 1) rather than Gaia's own raw archive-level A/B/F/G
-# (which this session could not retrieve -- the Gaia TAP archive
-# was unreachable from this network, see docs/project_decisions.md)
+# (not retrievable here without access to the Gaia TAP archive)
 # -- so this test forward-transforms the paper's own published
 # Campbell elements via this codebase's thiele_innes() to obtain
 # a stand-in A/B/F/G, feeds THOSE through parse_nss_orbital_row(),
 # and checks the paper's own numbers come back out. This validates
 # the parser's unit conversions and inversion formula end-to-end
 # against a real, citable, independently-derived solution; it is
-# NOT a re-fit of Gaia's raw per-CCD astrometry (which this
-# session never had access to) -- see the data_provenance-style
+# NOT a re-fit of Gaia's raw per-CCD astrometry -- see the data_provenance-style
 # note above and in gaia_parser's own module docstring.
 
 GAIA_BH1_SOURCE_ID = 4373465352415301632
@@ -341,7 +339,7 @@ def test_parse_nss_orbital_row_rejects_nonpositive_parallax():
 
 
 # ==========================================================
-# NaN-vs-None handling for optional archive columns (2026-09-01)
+# NaN-vs-None handling for optional archive columns
 # ==========================================================
 #
 # A genuine CSV/VOTable export of the real Gaia archive represents
@@ -349,10 +347,8 @@ def test_parse_nss_orbital_row_rejects_nonpositive_parallax():
 # on a pure-astrometric "Orbital"-type row) as NaN once loaded
 # through pandas/astropy -- NOT Python None, which only a
 # hand-built dict (as every other test in this file uses) can
-# produce. Caught via a CSV round-trip smoke test while preparing
-# scripts/validate_gaia_archive_export.py, before any real archive
-# data was available -- see gaia_parser.py's _is_present() and
-# docs/project_decisions.md's 2026-09-01 dated entry.
+# produce. See gaia_parser.py's _is_present() and
+# scripts/validate_gaia_archive_export.py.
 
 def test_is_present_treats_nan_same_as_none():
 

@@ -23,7 +23,7 @@ treated identically for the purposes of this page and the
 | `plot_triple_orbit` | `triple_orbit_plot.py` | `TripleOrbitalElements` (ORBIT3), both visual observables |
 | `plot_sed_fit` | `sed_plot.py` | precomputed SED curves (composite + per-component flux vs. wavelength) and observed/excluded photometric points |
 
-`plot_triple_orbit` (new 2026-08-30, see `docs/guide/triple_systems.md`
+`plot_triple_orbit` (see `docs/guide/triple_systems.md`
 "Orbit plots for triples") is the hierarchical-triple counterpart of
 `plot_visual_orbit` — same North-up/East-left convention, but drawn as
 two side-by-side panels (POS1 = resolved inner orbit; POS2 = outer +
@@ -65,7 +65,7 @@ Checked against the field's standard conventions, one at a time:
   `visual_xy_residuals`, computes `(observed - model) / sigma`, and
   every fitting pathway passes that same convention through unchanged.
 - **North-up/East-left visual-orbit convention: settled and
-  implemented (2026-08-27) — safe to use `plot_visual_orbit()` output
+  implemented — safe to use `plot_visual_orbit()` output
   as-is in a paper figure.** Cross-referenced the IAU's own PA
   definition ("measured relative to the north celestial pole, turning
   positive into the direction of the right ascension"), the WDS's own
@@ -90,18 +90,14 @@ Checked against the field's standard conventions, one at a time:
   origin, matching the IAU's own stated sense); visually confirmed
   against FIN379's, Capella's, and alpha Cen AB's regenerated plots.
 - **SED-fit flux-vs-wavelength convention: sourced from the
-  Al-Wardat-method literature itself, not assumed (2026-09-02).**
-  Before writing `plot_sed_fit()`, no plotting function for
-  `fit_photometry()`'s output existed anywhere in this package
-  (confirmed by grepping the whole `visualization/` package and
-  `validation/results/plots/` for anything photometry/SED-plot
-  related), and this was a previously-tracked gap. Checked the
-  actual source papers rather than guessing a representation:
+  binary-SED literature itself, not assumed.**
+  `plot_sed_fit()` draws `fit_photometry()`'s output using the
+  representation of the source papers:
   Al-Wardat (2002, 2012) plot flux density versus wavelength ("Figure 1
   shows the best fit between the total synthetic SED and the
   observational one" — `wardat_2012.pdf`), and Abushattal et al. 2025
   (arXiv:2512.23652, the direct source of this package's four
-  Al-Wardat benchmark systems) follows the same convention in its own
+  Abushattal et al. (2025) benchmark systems) follows the same convention in its own
   Figures 1-4: wavelength (Angstrom) on the x-axis, flux on the
   y-axis, three curves per system (total/composite, component A,
   component B), with observed photometric points overplotted as
@@ -109,16 +105,15 @@ Checked against the field's standard conventions, one at a time:
   directly — composite as a solid black curve, each component as a
   fainter dashed curve, observed points as black error bars (0.30 mag
   literature uncertainty per Abushattal et al. 2025, propagated to
-  flux), and the codebase's own excluded Stromgren-u measurement drawn
+  flux), and any measurement listed under `excluded_measurements` drawn
   distinctly (open gray markers) rather than silently dropped from the
-  figure. See `sed_plot.py`'s module docstring for the full derivation
-  and `docs/guide/alwardat_sed.md`'s "SED-fit figure" section for the
-  per-system results. **[2026-09-02, same-day follow-up]** The first
-  version's passband labels (drawn at a fixed offset) collided for any
-  two passbands close in wavelength/flux — reported by the user for
+  figure (none of the current benchmarks excludes a band). See `sed_plot.py`'s module docstring for the full derivation
+  and `docs/guide/binary_sed.md`'s "SED-fit figure" section for the
+  per-system results. Passband labels drawn at a fixed offset
+  would collide for any two passbands close in wavelength/flux (e.g.
   HD191854's "Stromgren b"/"Johnson B" and "Johnson V"/"Tycho VT"/
-  "Stromgren y" clusters. Fixed with
-  [adjustText](https://github.com/Phlya/adjustText) (new pinned
+  "Stromgren y" clusters), so labels are placed with
+  [adjustText](https://github.com/Phlya/adjustText) (a pinned
   dependency), an automatic label-collision-avoidance library that
   repels every label away from every other label and from the plotted
   points, drawing a thin leader line back to a label's point whenever
@@ -134,23 +129,23 @@ Checked against the field's standard conventions, one at a time:
 ## Generating the full benchmark plot set
 
 `scripts/generate_benchmark_plots.py` fits FIN379, GL765, and the two
-2026-08-27 joint-benchmark orbits (Capella, alpha Cen AB — the latter
+joint-benchmark orbits (Capella, alpha Cen AB — the latter
 has no RV, so it gets 3 plots instead of 4) and writes each system's
 full available plot set (visual orbit, residuals, phase-folded RV where
 applicable, separation-vs-time) to `validation/results/plots/<system>/`.
-**[2026-08-30]** It now also generates ZetaAqr's and HIP111805's
+It also generates ZetaAqr's and HIP111805's
 (hierarchical triples) wobble-corrected `triple_orbit.pdf` figures (see
 `triple_systems.md`, `plot_triple_orbit` above), via
 `scripts/generate_triple_orbit_plots.py`, and Capella's MCMC posterior
 `corner.pdf` (see "show_grid, output_format, save_path" below), via
 `scripts/generate_capella_corner_plot.py`. It still does **not**
-generate an orbit-fit plot for the four Al-Wardat-SED-only systems
+generate an orbit-fit plot for the four SED-only systems
 (there is no orbital fit to plot for those at all — a per-system
 HR-diagram cross-check is generated for them separately instead, along
 with Capella's/AlphaCenAB's own photometry rows — see
-`evolutionary_checks.md`). **[2026-09-02]** It now does generate an
+`evolutionary_checks.md`). It does generate an
 SED-fit plot for those four systems: `generate_sed_fit_plots()` calls
-`benchmark_runner.run_alwardat_benchmark()` for each of HD214222,
+`benchmark_runner.run_sed_benchmark()` for each of HD214222,
 HD191854, HD130669, and HD184467 (the exact same call that produces
 this package's own reported reduced chi-square values, so the plotted
 curve and the cited number cannot silently diverge — see "SED-fit
@@ -158,11 +153,9 @@ flux-vs-wavelength convention" above), builds the composite and
 per-component model curves via
 `photometry.model.synthetic_binary_sed()`, and writes each system's
 `sed_fit.pdf` to `validation/results/plots/<system>/`.
-`Capella_photometry` and `AlphaCenAB_photometry` are deliberately
-excluded from this step — both are entirely synthetic benchmarks
-generated by this same pipeline, so an "observed vs. model" SED-fit
-figure would not be a meaningful validation figure for them the way it
-is for the four real (if paper-synthetic-origin) Abushattal systems.
+`Capella_photometry` and `AlphaCenAB_photometry` are not plotted by
+this step. Before 0.2.0 they were synthetic benchmarks; since 0.2.0 they
+fit real catalogue photometry (`scripts/build_real_sed_benchmarks.py`).
 Run it with:
 
 ```
@@ -171,7 +164,7 @@ MPLBACKEND=Agg PYTHONPATH=src:validation python scripts/generate_benchmark_plots
 
 ## show_grid, output_format, save_path
 
-**[2026-08-30]** Every plotting function on this page (plus
+Every plotting function on this page (plus
 `MCMCResult.corner_plot()`) accepts three additional keyword
 arguments:
 

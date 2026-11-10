@@ -1,0 +1,438 @@
+{
+ "HD130669": {
+  "distance_pc": 46.3,
+  "teff": [
+   5290.0,
+   5230.0
+  ],
+  "radius": [
+   0.956,
+   0.95
+  ],
+  "rows": {
+   "E": {
+    "pyseshat": {
+     "Johnson U": 9.3,
+     "Johnson B": 8.865,
+     "Johnson V": 8.015,
+     "Cousins R": 7.571,
+     "Stromgren u": 10.446,
+     "Stromgren v": 9.343,
+     "Stromgren b": 8.472,
+     "Stromgren y": 7.975,
+     "Tycho BT": 9.095,
+     "Tycho VT": 8.106
+    },
+    "minus_table4": {
+     "Johnson U": -0.48,
+     "Johnson B": -0.415,
+     "Johnson V": -0.405,
+     "Cousins R": -0.379,
+     "Stromgren u": -0.494,
+     "Stromgren v": -0.417,
+     "Stromgren b": -0.408,
+     "Stromgren y": -0.405,
+     "Tycho BT": -0.425,
+     "Tycho VT": -0.404
+    },
+    "mean_all_bands": -0.423,
+    "rms_about_mean": 0.034
+   },
+   "A": {
+    "pyseshat": {
+     "Johnson U": 9.982,
+     "Johnson B": 9.567,
+     "Johnson V": 8.728,
+     "Cousins R": 8.29,
+     "Stromgren u": 11.127,
+     "Stromgren v": 10.037,
+     "Stromgren b": 9.18,
+     "Stromgren y": 8.688,
+     "Tycho BT": 9.793,
+     "Tycho VT": 8.817
+    },
+    "minus_table4": {
+     "Johnson U": -0.478,
+     "Johnson B": -0.413,
+     "Johnson V": -0.402,
+     "Cousins R": -0.38,
+     "Stromgren u": -0.493,
+     "Stromgren v": -0.413,
+     "Stromgren b": -0.4,
+     "Stromgren y": -0.402,
+     "Tycho BT": -0.417,
+     "Tycho VT": -0.403
+    },
+    "mean_all_bands": -0.42,
+    "rms_about_mean": 0.034
+   },
+   "B": {
+    "pyseshat": {
+     "Johnson U": 10.128,
+     "Johnson B": 9.671,
+     "Johnson V": 8.809,
+     "Cousins R": 8.359,
+     "Stromgren u": 11.275,
+     "Stromgren v": 10.157,
+     "Stromgren b": 9.271,
+     "Stromgren y": 8.768,
+     "Tycho BT": 9.905,
+     "Tycho VT": 8.901
+    },
+    "minus_table4": {
+     "Johnson U": -0.492,
+     "Johnson B": -0.419,
+     "Johnson V": -0.411,
+     "Cousins R": -0.381,
+     "Stromgren u": -0.505,
+     "Stromgren v": -0.403,
+     "Stromgren b": -0.409,
+     "Stromgren y": -0.402,
+     "Tycho BT": -0.425,
+     "Tycho VT": -0.409
+    },
+    "mean_all_bands": -0.426,
+    "rms_about_mean": 0.038
+   }
+  },
+  "table5_MV_plus_DM_minus_table4_V": [
+   -0.402,
+   -0.342
+  ],
+  "distance_implied_by_table4_V_and_table5_MV_pc": [
+   55.7,
+   54.2
+  ],
+  "pyseshat_MV": [
+   5.4,
+   5.481
+  ]
+ },
+ "HD184467": {
+  "distance_pc": 17.83,
+  "teff": [
+   5340.0,
+   5185.0
+  ],
+  "radius": [
+   0.832,
+   0.783
+  ],
+  "rows": {
+   "E": {
+    "pyseshat": {
+     "Johnson U": 7.558,
+     "Johnson B": 7.134,
+     "Johnson V": 6.292,
+     "Cousins R": 5.849,
+     "Stromgren u": 8.7,
+     "Stromgren v": 7.607,
+     "Stromgren b": 6.742,
+     "Stromgren y": 6.25,
+     "Tycho BT": 7.361,
+     "Tycho VT": 6.382
+    },
+    "minus_table4": {
+     "Johnson U": -0.392,
+     "Johnson B": -0.326,
+     "Johnson V": -0.308,
+     "Cousins R": -0.281,
+     "Stromgren u": -0.41,
+     "Stromgren v": -0.323,
+     "Stromgren b": -0.308,
+     "Stromgren y": -0.31,
+     "Tycho BT": -0.329,
+     "Tycho VT": -0.308
+    },
+    "mean_all_bands": -0.329,
+    "rms_about_mean": 0.038
+   },
+   "A": {
+    "pyseshat": {
+     "Johnson U": 8.105,
+     "Johnson B": 7.722,
+     "Johnson V": 6.903,
+     "Cousins R": 6.473,
+     "Stromgren u": 9.244,
+     "Stromgren v": 8.179,
+     "Stromgren b": 7.344,
+     "Stromgren y": 6.863,
+     "Tycho BT": 7.942,
+     "Tycho VT": 6.99
+    },
+    "minus_table4": {
+     "Johnson U": -0.385,
+     "Johnson B": -0.318,
+     "Johnson V": -0.297,
+     "Cousins R": -0.277,
+     "Stromgren u": -0.396,
+     "Stromgren v": -0.321,
+     "Stromgren b": -0.296,
+     "Stromgren y": -0.297,
+     "Tycho BT": -0.328,
+     "Tycho VT": -0.3
+    },
+    "mean_all_bands": -0.321,
+    "rms_about_mean": 0.037
+   },
+   "B": {
+    "pyseshat": {
+     "Johnson U": 8.564,
+     "Johnson B": 8.08,
+     "Johnson V": 7.208,
+     "Cousins R": 6.748,
+     "Stromgren u": 9.711,
+     "Stromgren v": 8.576,
+     "Stromgren b": 7.67,
+     "Stromgren y": 7.163,
+     "Tycho BT": 8.319,
+     "Tycho VT": 7.302
+    },
+    "minus_table4": {
+     "Johnson U": -0.406,
+     "Johnson B": -0.33,
+     "Johnson V": -0.322,
+     "Cousins R": -0.292,
+     "Stromgren u": -0.429,
+     "Stromgren v": -0.344,
+     "Stromgren b": -0.32,
+     "Stromgren y": -0.317,
+     "Tycho BT": 0.579,
+     "Tycho VT": 0.142
+    },
+    "mean_all_bands": -0.204,
+    "rms_about_mean": 0.301
+   }
+  },
+  "table5_MV_plus_DM_minus_table4_V": [
+   -0.244,
+   -0.264
+  ],
+  "distance_implied_by_table4_V_and_table5_MV_pc": [
+   20.0,
+   20.1
+  ],
+  "pyseshat_MV": [
+   5.647,
+   5.952
+  ]
+ },
+ "HD191854": {
+  "distance_pc": 56.2,
+  "teff": [
+   5930.0,
+   5440.0
+  ],
+  "radius": [
+   1.585,
+   0.906
+  ],
+  "rows": {
+   "E": {
+    "pyseshat": {
+     "Johnson U": 8.017,
+     "Johnson B": 7.872,
+     "Johnson V": 7.224,
+     "Cousins R": 6.875,
+     "Stromgren u": 9.186,
+     "Stromgren v": 8.228,
+     "Stromgren b": 7.594,
+     "Stromgren y": 7.194,
+     "Tycho BT": 8.03,
+     "Tycho VT": 7.297
+    },
+    "minus_table4": {
+     "Johnson U": -0.243,
+     "Johnson B": -0.198,
+     "Johnson V": -0.176,
+     "Cousins R": -0.165,
+     "Stromgren u": -0.214,
+     "Stromgren v": -0.202,
+     "Stromgren b": -0.176,
+     "Stromgren y": -0.176,
+     "Tycho BT": -0.21,
+     "Tycho VT": -0.173
+    },
+    "mean_all_bands": -0.193,
+    "rms_about_mean": 0.023
+   },
+   "A": {
+    "pyseshat": {
+     "Johnson U": 8.17,
+     "Johnson B": 8.056,
+     "Johnson V": 7.435,
+     "Cousins R": 7.101,
+     "Stromgren u": 9.343,
+     "Stromgren v": 8.398,
+     "Stromgren b": 7.792,
+     "Stromgren y": 7.406,
+     "Tycho BT": 8.204,
+     "Tycho VT": 7.505
+    },
+    "minus_table4": {
+     "Johnson U": -0.23,
+     "Johnson B": -0.194,
+     "Johnson V": -0.175,
+     "Cousins R": -0.159,
+     "Stromgren u": -0.207,
+     "Stromgren v": -0.192,
+     "Stromgren b": -0.178,
+     "Stromgren y": -0.174,
+     "Tycho BT": -0.206,
+     "Tycho VT": -0.175
+    },
+    "mean_all_bands": -0.189,
+    "rms_about_mean": 0.02
+   },
+   "B": {
+    "pyseshat": {
+     "Johnson U": 10.218,
+     "Johnson B": 9.894,
+     "Johnson V": 9.106,
+     "Cousins R": 8.694,
+     "Stromgren u": 11.357,
+     "Stromgren v": 10.327,
+     "Stromgren b": 9.535,
+     "Stromgren y": 9.07,
+     "Tycho BT": 10.101,
+     "Tycho VT": 9.191
+    },
+    "minus_table4": {
+     "Johnson U": -0.282,
+     "Johnson B": -0.226,
+     "Johnson V": -0.204,
+     "Cousins R": -0.186,
+     "Stromgren u": -0.293,
+     "Stromgren v": -0.223,
+     "Stromgren b": -0.215,
+     "Stromgren y": -0.21,
+     "Tycho BT": -0.229,
+     "Tycho VT": -0.209
+    },
+    "mean_all_bands": -0.228,
+    "rms_about_mean": 0.032
+   }
+  },
+  "table5_MV_plus_DM_minus_table4_V": [
+   -0.131,
+   -0.161
+  ],
+  "distance_implied_by_table4_V_and_table5_MV_pc": [
+   59.7,
+   60.5
+  ],
+  "pyseshat_MV": [
+   3.686,
+   5.357
+  ]
+ },
+ "HD214222": {
+  "distance_pc": 70.9,
+  "teff": [
+   6075.0,
+   6000.0
+  ],
+  "radius": [
+   1.14,
+   1.095
+  ],
+  "rows": {
+   "E": {
+    "pyseshat": {
+     "Johnson U": 8.523,
+     "Johnson B": 8.453,
+     "Johnson V": 7.859,
+     "Cousins R": 7.536,
+     "Stromgren u": 9.681,
+     "Stromgren v": 8.783,
+     "Stromgren b": 8.201,
+     "Stromgren y": 7.83,
+     "Tycho BT": 8.593,
+     "Tycho VT": 7.926
+    },
+    "minus_table4": {
+     "Johnson U": -0.327,
+     "Johnson B": -0.277,
+     "Johnson V": -0.331,
+     "Cousins R": -0.254,
+     "Stromgren u": -0.309,
+     "Stromgren v": -0.277,
+     "Stromgren b": -0.259,
+     "Stromgren y": -0.26,
+     "Tycho BT": -0.277,
+     "Tycho VT": -0.264
+    },
+    "mean_all_bands": -0.284,
+    "rms_about_mean": 0.027
+   },
+   "A": {
+    "pyseshat": {
+     "Johnson U": 9.18,
+     "Johnson B": 9.12,
+     "Johnson V": 8.538,
+     "Cousins R": 8.221,
+     "Stromgren u": 10.342,
+     "Stromgren v": 9.446,
+     "Stromgren b": 8.875,
+     "Stromgren y": 8.51,
+     "Tycho BT": 9.257,
+     "Tycho VT": 8.605
+    },
+    "minus_table4": {
+     "Johnson U": -0.33,
+     "Johnson B": -0.28,
+     "Johnson V": -0.262,
+     "Cousins R": -0.249,
+     "Stromgren u": -0.318,
+     "Stromgren v": -0.284,
+     "Stromgren b": -0.265,
+     "Stromgren y": -0.26,
+     "Tycho BT": -0.293,
+     "Tycho VT": -0.265
+    },
+    "mean_all_bands": -0.28,
+    "rms_about_mean": 0.025
+   },
+   "B": {
+    "pyseshat": {
+     "Johnson U": 9.379,
+     "Johnson B": 9.297,
+     "Johnson V": 8.69,
+     "Cousins R": 8.361,
+     "Stromgren u": 10.534,
+     "Stromgren v": 9.633,
+     "Stromgren b": 9.038,
+     "Stromgren y": 8.661,
+     "Tycho BT": 9.442,
+     "Tycho VT": 8.758
+    },
+    "minus_table4": {
+     "Johnson U": -0.321,
+     "Johnson B": -0.273,
+     "Johnson V": -0.26,
+     "Cousins R": -0.249,
+     "Stromgren u": -0.316,
+     "Stromgren v": -0.277,
+     "Stromgren b": -0.262,
+     "Stromgren y": -0.259,
+     "Tycho BT": -0.278,
+     "Tycho VT": -0.262
+    },
+    "mean_all_bands": -0.276,
+    "rms_about_mean": 0.023
+   }
+  },
+  "table5_MV_plus_DM_minus_table4_V": [
+   -0.227,
+   -0.237
+  ],
+  "distance_implied_by_table4_V_and_table5_MV_pc": [
+   78.7,
+   79.1
+  ],
+  "pyseshat_MV": [
+   4.285,
+   4.436
+  ]
+ }
+}

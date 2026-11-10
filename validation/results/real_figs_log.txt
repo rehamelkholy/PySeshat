@@ -1,0 +1,2 @@
+Capella scales {'visual': 1.0, 'rv': np.float64(1.0172708705530331)} -> validation/results/plots/Capella_real
+AlphaCen scales {'visual': np.float64(1.0272089626177445), 'rv': np.float64(5.846312754760611)} -> validation/results/plots/AlphaCen_real

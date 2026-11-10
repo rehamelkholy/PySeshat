@@ -4,8 +4,7 @@ Regression guard for the RV K1/K2 sign convention in
 
 Background
 ----------
-An earlier audit (see docs/project_decisions.md, "RV K1/K2 sign
-convention in orbit/rv_model.py") flagged this convention as
+An earlier audit flagged this convention as
 possibly backwards, reasoning from `orbital_elements.py`'s own
 `to_spectroscopic_convention()` docstring (which claims omega needs
 a +180 degree shift between the visual and spectroscopic

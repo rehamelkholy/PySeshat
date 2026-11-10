@@ -2,8 +2,7 @@
 Ad-hoc comparison script (not a permanent part of the repo) to test
 whether re-fitting AlphaCenAB_photometry and HD184467 at a
 closer-to-literature CK04 metallicity slice (now that the full grid
-is downloaded) changes their reported fit quality, per the 2026-09-02
-CK04 grid-completeness audit.
+is downloaded) changes their reported fit quality.
 
 Usage: MPLBACKEND=Agg PYTHONPATH=src python3 scripts/ck04_metallicity_rerun_check.py
 """
@@ -15,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "validation"))
 
-from benchmark_runner import run_alwardat_benchmark, _VALIDATION_DIR  # noqa: E402
+from benchmark_runner import run_sed_benchmark, _VALIDATION_DIR  # noqa: E402
 
 
 def load_expected(name):
@@ -43,7 +42,7 @@ print("=" * 70)
 print("AlphaCenAB_photometry -- literature [Fe/H] ~= +0.23 (Morel 2018)")
 print("=" * 70)
 
-baseline = run_alwardat_benchmark("AlphaCenAB_photometry", copy.deepcopy(expected))
+baseline = run_sed_benchmark("AlphaCenAB_photometry", copy.deepcopy(expected))
 summarize("baseline: metallicity=0.0 (ckp00, current)", baseline)
 
 variant = copy.deepcopy(expected)
@@ -52,7 +51,7 @@ variant["atmosphere_files"] = [
     p.replace("ckp00/ckp00_", "ckp02/ckp02_")
     for p in variant["atmosphere_files"]
 ]
-result_p02 = run_alwardat_benchmark("AlphaCenAB_photometry", variant)
+result_p02 = run_sed_benchmark("AlphaCenAB_photometry", variant)
 summarize("variant: metallicity=+0.2 (ckp02, nearest to literature)", result_p02)
 
 
@@ -68,7 +67,7 @@ print("=" * 70)
 print("HD184467 -- literature [Fe/H] = -0.25 (exact tie between 0.0 and -0.5)")
 print("=" * 70)
 
-baseline2 = run_alwardat_benchmark("HD184467", copy.deepcopy(expected2))
+baseline2 = run_sed_benchmark("HD184467", copy.deepcopy(expected2))
 summarize("baseline: metallicity=0.0 (ckp00, current)", baseline2)
 
 variant2 = copy.deepcopy(expected2)
@@ -77,5 +76,5 @@ variant2["atmosphere_files"] = [
     p.replace("ckp00/ckp00_", "ckm05/ckm05_")
     for p in variant2["atmosphere_files"]
 ]
-result_m05 = run_alwardat_benchmark("HD184467", variant2)
+result_m05 = run_sed_benchmark("HD184467", variant2)
 summarize("variant: metallicity=-0.5 (ckm05, equidistant alternative)", result_m05)

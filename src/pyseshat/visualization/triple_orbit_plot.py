@@ -23,8 +23,8 @@ import matplotlib.pyplot as plt
 # wide/outer orbit) -- so neither curve is plotted against
 # observations it does not actually model. Same North-up/East-left
 # convention and visual style as
-# visualization.orbit_plot.plot_visual_orbit (settled 2026-08-27,
-# see that module's docstring and docs/project_decisions.md): North
+# visualization.orbit_plot.plot_visual_orbit (see that
+# module's docstring): North
 # on the vertical axis, East on the horizontal axis with the axis
 # inverted (not negated) so East increases to the left.
 

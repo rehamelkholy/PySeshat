@@ -54,7 +54,13 @@ def synthetic_band_flux(
         <f_lambda> = ----------------------------
                        integral S d lambda
 
-    where S is the dimensionless passband throughput.
+    where S is the dimensionless passband throughput for an
+    energy-integrating curve, and S = P * lambda for a
+    photon-counting curve P (``passband.photon_counting``;
+    Maiz Apellaniz 2006, AJ 131, 1184, Appendix A).
+
+    Changed in 0.2.0: photon-counting curves were previously
+    integrated as if they were energy-integrating.
 
     This function does not apply extinction or convert
     fluxes to magnitudes.
@@ -305,6 +311,13 @@ def synthetic_band_flux(
 
     )
 
+    # A photon-counting sensitivity curve P is used as the
+    # energy-equivalent S = P * lambda (Maiz Apellaniz 2006,
+    # AJ 131, 1184, Appendix A, Eq. A1).
+    if passband.photon_counting:
+
+        throughput = throughput * integration_wavelength
+
     # ======================================================
     # Integrate passband throughput
     # ======================================================
@@ -430,6 +443,12 @@ def pogson_magnitude(
     when flux is expressed in
 
         erg s^-1 cm^-2 Angstrom^-1.
+
+    An SVO "Vega system" zero point gives Vega exactly 0 mag, and is
+    only valid for the exact passband curve it was computed with. For
+    magnitudes on the standard systems (where, e.g., Vega has
+    Strömgren u = 1.432), use
+    ``pyseshat.photometry.calibration.vega_zero_points``.
     """
 
     # ======================================================

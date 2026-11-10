@@ -198,11 +198,8 @@ def test_plot_binary_hrdiagram():
 # ==========================================================
 # show_grid / output_format
 #
-# Added 2026-08-30 alongside the new parameters themselves
-# (docs/project_decisions.md). This function already had
-# save_path; only show_grid/output_format are new here, plus
-# format=output_format now being passed through to the
-# pre-existing savefig() call.
+# Tests for the show_grid/output_format parameters, plus
+# format=output_format being passed through to savefig().
 # ==========================================================
 
 def test_plot_binary_hrdiagram_show_grid_toggle():

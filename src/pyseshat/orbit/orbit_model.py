@@ -126,8 +126,7 @@ def compute_visual_orbit(t, elements: OrbitalElements):
     `.inp` file's PA column, i.e. the standard astronomical/WDS
     position angle: measured from North (0 deg), turning positive
     toward increasing right ascension (East) -- per the IAU's own
-    definition and Washington Double Star Catalog usage (settled
-    2026-08-27, see docs/project_decisions.md). Since theta is
+    definition and Washington Double Star Catalog usage. Since theta is
     measured FROM North, `X = rho*cos(theta)` is therefore the
     North (declination) offset and `Y = rho*sin(theta)` is the
     East (right-ascension*cos(declination)) offset -- NOT

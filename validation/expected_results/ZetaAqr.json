@@ -82,5 +82,5 @@
   },
 
   "paper_table_row": "outer",
-  "paper_table_row_note": "The paper's Benchmark Results v1 table reports the OUTER orbit (P2,a2,e2,i2 above, renamed P,a,e,i for the table) plus chi2, M_dyn, and sigma_M/M derived from the outer orbit and the parallax above."
+  "paper_table_row_note": "The benchmark summary table reports the OUTER orbit (P2,a2,e2,i2 above, renamed P,a,e,i for the table) plus chi2, M_dyn, and sigma_M/M derived from the outer orbit and the parallax above."
 }

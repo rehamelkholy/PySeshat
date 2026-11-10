@@ -1,7 +1,8 @@
 # PySeshat examples
 
 Runnable, narrated example scripts, each using real benchmark data
-already checked into this repo (`validation/`, `data/`) so they run
+already checked into this repo (`validation/`, `data/`) or bundled
+with the package, so they run
 out of the box with no external downloads or network access. Run any
 of them from the repo root, e.g.:
 
@@ -17,9 +18,9 @@ Each script writes any plots/reports it produces into
 | `01_visual_rv_binary_fit.py` | The "hello world" workflow: parse a `.inp` file (FIN379), fit with least squares, plot the orbit and residuals, write a text report. |
 | `02_mcmc_posterior_exploration.py` | Bayesian posterior sampling with emcee on top of Example 1's fit: corner plot, convergence diagnostics (acceptance fraction, autocorrelation time), posterior credible intervals vs. the least-squares point estimate. |
 | `03_hierarchical_triple_orbit3.py` | A hierarchical triple (Zeta Aquarii) fit through the real 20-parameter ORBIT3 formalism, and why a plain two-body fit -- or the older legacy ORBITT2 data format ZetaAqr's own file ships in -- is wrong for a triple; converts the legacy format and shows both sides of the split. |
-| `04_alwardat_sed_fit.py` | An Al-Wardat unresolved-binary photometric SED fit (HD214222): recovering component Teff/radius/E(B-V) from combined-light photometry alone, with a Gaussian radius prior. |
+| `04_binary_sed_fit.py` | An unresolved-binary photometric SED fit (HD214222): recovering component Teff/radius/E(B-V) from combined-light photometry alone, with a Gaussian radius prior. |
 | `05_joint_orbit_photometry_fit.py` | Simultaneous orbit + photometry fitting via `JointInferenceProblem`/`JointParameters`, composed from lower-level pieces (no convenience wrapper exists yet) against a synthetic combined dataset. |
-| `06_your_own_data_template.py` | Loads two annotated templates (`templates/your_orbit.inp`, `templates/your_alwardat_system.json`) showing exactly which fields your own data needs, without reading the parser source. |
+| `06_your_own_data_template.py` | Loads two annotated templates (`templates/your_orbit.inp`, `templates/your_sed_system.json`) showing exactly which fields your own data needs, without reading the parser source. |
 | `07_gaia_dr3_nss_parsing.py` | Parses a Gaia DR3 non-single-star (NSS) archive row (Thiele-Innes constants) into the same `OrbitalElements` used everywhere else in this package, using the real, published Gaia BH1 system as a worked example. |
 | `08_evolutionary_consistency_check.py` | Independent per-component age fitting against the real Girardi (2000) evolutionary-track grid, and the age-agreement diagnostic that tells you whether two components are consistent with a common age -- using Capella's literature Teff/radius. |
 | `hrdiagram_demo.py` | Binary H-R diagram plotting from synthetic evolutionary tracks and observables. |
@@ -43,4 +44,4 @@ The pieces used across these examples fit together as
 `docs/guide/` for the per-topic guides behind the numbers these
 scripts reproduce (data formats, orbit fitting, triple systems,
 visualization conventions, evolutionary consistency checks, and the
-Al-Wardat SED-fitting method).
+binary SED-fitting method).

@@ -19,6 +19,13 @@ class PhotometricPassband:
     name : str, default=""
         Descriptive passband name.
 
+    photon_counting : bool, default=False
+        True if ``throughput`` is a photon-counting sensitivity
+        curve P(lambda), False if it is an energy-integrating
+        response S(lambda). Synthetic photometry weights a
+        photon-counting curve by lambda (Maiz Apellaniz 2006,
+        AJ 131, 1184, Appendix A).
+
     Notes
     -----
     Throughput values must be finite, non-negative,
@@ -32,6 +39,8 @@ class PhotometricPassband:
     throughput: np.ndarray
 
     name: str = ""
+
+    photon_counting: bool = False
 
     def __post_init__(
         self
@@ -65,6 +74,18 @@ class PhotometricPassband:
             self.name
 
         ).strip()
+
+        if not isinstance(
+            self.photon_counting,
+            (bool, np.bool_)
+        ):
+            raise TypeError(
+                "photon_counting must be a bool."
+            )
+
+        self.photon_counting = bool(
+            self.photon_counting
+        )
 
         # ==================================================
         # Validate dimensions
@@ -263,7 +284,7 @@ class PhotometricPassband:
         """
         Pivot wavelength of the passband, in Angstrom.
 
-        Added 2026-09-02 for ``visualization.sed_plot.plot_sed_fit()``
+        Used by ``visualization.sed_plot.plot_sed_fit()``
         (see ``docs/guide/visualization.md``'s "SED fit" section):
         placing a broadband photometric point on a flux-density
         (F_lambda-vs-wavelength) plot needs one representative
@@ -397,7 +418,8 @@ class PhotometricPassband:
     
 def load_passband(
     filename,
-    name=""
+    name="",
+    photon_counting=None
 ):
     """
     Load a photometric passband from a two-column
@@ -418,6 +440,13 @@ def load_passband(
 
     name : str, default=""
         Descriptive passband name.
+
+    photon_counting : bool or None, default=None
+        Whether the curve is a photon-counting sensitivity
+        (see ``PhotometricPassband``). If None, it is read from a
+        header line ``# detector: photon`` or ``# detector:
+        energy`` in the file; a file without such a line is
+        treated as energy-integrating.
 
     Returns
     -------
@@ -523,6 +552,16 @@ def load_passband(
         )
 
     # ======================================================
+    # Detector type: argument, else file header
+    # ======================================================
+
+    if photon_counting is None:
+
+        photon_counting = _read_detector_header(
+            path
+        )
+
+    # ======================================================
     # Construct validated passband
     # ======================================================
 
@@ -544,6 +583,54 @@ def load_passband(
 
         ],
 
-        name=name
+        name=name,
+
+        photon_counting=photon_counting
 
     )
+
+
+def _read_detector_header(
+    path
+):
+    """
+    Return True for a ``# detector: photon`` header line, False
+    for ``# detector: energy`` or no such line.
+
+    Raises
+    ------
+    ValueError
+        If the detector line has any other value, or appears
+        more than once with different values.
+    """
+
+    values = set()
+
+    with open(path, encoding="utf-8") as handle:
+
+        for line in handle:
+
+            stripped = line.strip()
+
+            if not stripped.startswith("#"):
+
+                continue
+
+            key, _, value = stripped.lstrip("#").partition(":")
+
+            if key.strip().lower() == "detector":
+
+                values.add(value.strip().lower())
+
+    if not values:
+
+        return False
+
+    if len(values) > 1 or not values <= {"photon", "energy"}:
+
+        raise ValueError(
+            f"Invalid '# detector:' header in {path}: "
+            f"{sorted(values)}; expected 'photon' or 'energy'."
+        )
+
+    return values == {"photon"}

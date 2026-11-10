@@ -1,10 +1,9 @@
 {
   "system": "AlphaCenAB_photometry",
-  "orbit_type": "alwardat_sed",
-  "fitting_path": "alwardat_sed",
+  "orbit_type": "binary_sed",
+  "fitting_path": "binary_sed",
   "paper_table_row": null,
   "free_parameters": [
-    "ebv",
     "primary_radius",
     "primary_temperature",
     "secondary_radius",
@@ -21,43 +20,43 @@
     }
   },
   "statistics": {
-    "chi_square": 9.005342825465307,
-    "reduced_chi_square": 2.251335706366327,
-    "rms": 1.0002967795978965,
-    "n_data": 9,
-    "n_params": 5
+    "chi_square": 0.30500315607811473,
+    "reduced_chi_square": 0.15250157803905737,
+    "rms": 0.2254636541581646,
+    "n_data": 6,
+    "n_params": 4
   },
   "parameter_errors": {
     "primary_temperature": {
       "expected": 5792.0,
-      "fitted": 5386.448585631677,
-      "relative_error": 0.07001923590613313
+      "fitted": 5789.1310611342815,
+      "relative_error": 0.0004953278428381421
     },
     "secondary_temperature": {
       "expected": 5231.0,
-      "fitted": 5999.999969653113,
-      "relative_error": 0.1470082144242235
+      "fitted": 5114.6355264540825,
+      "relative_error": 0.022245167949898195
     },
     "primary_radius": {
       "expected": 1.2234,
-      "fitted": 1.224726855377183,
-      "relative_error": 0.0010845638198324528
+      "fitted": 1.21788569022744,
+      "relative_error": 0.004507364535360525
     },
     "secondary_radius": {
       "expected": 0.8632,
-      "fitted": 0.8702273562592732,
-      "relative_error": 0.008141052200270156
+      "fitted": 0.9029624768756198,
+      "relative_error": 0.04606403715896646
     }
   },
   "fitted_elements": {
-    "primary_temperature": 5386.448585631677,
-    "secondary_temperature": 5999.999969653113,
-    "primary_radius": 1.224726855377183,
-    "secondary_radius": 0.8702273562592732,
-    "ebv": 0.001748290015171543
+    "primary_temperature": 5789.1310611342815,
+    "secondary_temperature": 5114.6355264540825,
+    "primary_radius": 1.21788569022744,
+    "secondary_radius": 0.9029624768756198,
+    "ebv": 0.0
   },
   "optimizer_success": true,
-  "optimizer_message": "`xtol` termination condition is satisfied.",
+  "optimizer_message": "`ftol` termination condition is satisfied.",
   "mass_dynamical_Msun": null,
   "mass_sigma_Msun": null,
   "mass_relative_sigma": null

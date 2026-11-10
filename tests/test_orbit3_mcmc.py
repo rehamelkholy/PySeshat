@@ -471,3 +471,32 @@ def test_log_posterior_orbit3_finite_far_from_optimum_at_negative_f():
     )
 
     assert logp < logp_literature
+
+
+def test_orbit3_mcmc_samples_are_folded():
+    """Angles in [0, 360) and epochs within P/2 of the least-squares
+    values (0.2.0), as for binaries."""
+
+    elements = zetaaqr_elements()
+    observations, rv_observations = zetaaqr_data()
+    n_walkers = 2 * len(elements.fitted_parameter_names()) + 4
+
+    result = fit_orbit3_mcmc(
+        elements, observations, rv_observations,
+        n_walkers=n_walkers, n_steps=25, burn_in=5, thin=1,
+        rng=np.random.default_rng(12345)
+    )
+
+    names = list(result.parameter_names)
+    for angle in ("Omega", "omega", "Omega2", "omega2"):
+        if angle in names:
+            col = result.samples[:, names.index(angle)]
+            assert np.all((col >= 0.0) & (col < 360.0)), angle
+
+    inner, outer = result.elements.inner, result.elements.outer
+    for epoch, period, ref in (("T0", "P", inner), ("T02", "P2", outer)):
+        if epoch in names:
+            P = (result.samples[:, names.index(period)] if period in names
+                 else ref.P)
+            dt = result.samples[:, names.index(epoch)] - ref.T0
+            assert np.all(np.abs(dt) <= 0.5 * P + 1e-9), epoch

@@ -63,8 +63,7 @@ def plot_visual_orbit(
         behavior, where the caller retrieves ``(fig, ax)`` and
         saves it externally.
 
-    Orientation convention (settled 2026-08-27; see
-    docs/project_decisions.md for the full derivation and sources)
+    Orientation convention
     --------------------------------------------------------
     This codebase's internal `X = rho*cos(theta)`,
     `Y = rho*sin(theta)` convention (see
@@ -201,9 +200,8 @@ def plot_residuals(
     residuals : ndarray
         Concatenated residual vector:
             [resX, resY]
-        In this codebase's internal convention (settled
-        2026-08-27, see `plot_visual_orbit`'s docstring and
-        docs/project_decisions.md), `resX` is the North
+        In this codebase's internal convention (see
+        `plot_visual_orbit`'s docstring), `resX` is the North
         (declination) residual and `resY` the East
         (right-ascension*cos(declination)) residual -- the same
         `(observed - model) / sigma` values

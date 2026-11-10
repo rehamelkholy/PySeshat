@@ -1,9 +1,7 @@
 """
 Compare PySeshat's orbit/RV fitting against other established
-external packages, per Development_Plan.pdf's Validation section
-(which names PyAstronomy, RadVel, and Exo-Striker as comparison
-targets) and the user's explicit 2026-08-27 request ("comparison
-with other packages").
+external packages (PyAstronomy, RadVel and Exo-Striker are the
+comparison targets).
 
 Two independent, real comparisons are run here, using the
 Capella joint-benchmark's synthetic RV data (see
@@ -262,8 +260,7 @@ def run_radvel_comparison():
         "near-circular orbit) -- the same e/omega degeneracy at "
         "this astrometric/RV noise floor already documented for "
         "PySeshat's own fit of this system (see "
-        "validation/benchmark_registry.csv's Capella_orbit.inp row "
-        "and docs/project_decisions.md): an independent package "
+        "validation/benchmark_registry.csv's Capella_orbit.inp row): an independent package "
         "hits the same textbook near-circular-orbit degeneracy, "
         "which is evidence the degeneracy is a property of the "
         "DATA, not a PySeshat-specific fitting bug."
@@ -349,7 +346,7 @@ def run_pyastronomy_crosscheck():
 
 
 # ==========================================================
-# 3. Exo-Striker: honest scope note
+# 3. Exo-Striker: scope note
 # ==========================================================
 
 def print_exostriker_note():
@@ -360,24 +357,23 @@ def print_exostriker_note():
     print("=" * 70)
     print(
         "Exo-Striker (Trifonov 2019, ASCL 1906.004) is confirmed "
-        "pip-installable (exostriker==0.95.1) and this session has "
-        "working PyPI network access, so installation itself is not "
+        "pip-installable (exostriker==0.95.1) and can be "
+        "installed from PyPI, so installation itself is not "
         "the obstacle. It is architected as an interactive PyQt GUI "
         "application built around its own RV/TTV fitting engine, "
         "with no documented headless/scriptable public API for a "
         "single programmatic 'fit these RV points, return these "
         "parameters' call of the kind RadVel and PyAstronomy both "
         "expose directly. Reverse-engineering a private, "
-        "undocumented internal API to drive it headlessly in this "
-        "cloud sandbox (no display) was judged, under this task's "
-        "time budget, more likely to produce a fragile, unverified "
-        "wrapper than a genuine comparison -- so this is disclosed "
-        "as a real, honest limitation rather than forced through or "
-        "silently skipped. RadVel (a purpose-built, well-maintained, "
+        "undocumented internal API to drive it headlessly in an "
+        "environment without a display was judged more likely to "
+        "produce a fragile, unverified wrapper than a genuine "
+        "comparison -- so this is disclosed as a limitation rather "
+        "than forced through or silently skipped. RadVel (a purpose-built, well-maintained, "
         "actively-cited scriptable RV fitter) and PyAstronomy (a "
         "general-purpose, widely-used astronomical physics/utility "
         "library) between them already cover the two most useful "
-        "kinds of external comparison named in Development_Plan.pdf "
+        "kinds of external comparison "
         "-- an independent OPTIMIZER/fit, and an independent PHYSICS "
         "implementation."
     )
@@ -647,9 +643,9 @@ def run_orbitize_comparison():
     # (Omega+180, omega+180) describe the identical on-sky ellipse.
     # PySeshat's own fit of this system uses BOTH visual astrometry
     # AND RV together, which breaks this ambiguity; orbitize! here
-    # is deliberately restricted to relative astrometry only (per
-    # this comparison's brief), so it cannot. Reporting the raw
-    # Omega difference without disclosing this would make an honest
+    # is deliberately restricted to relative astrometry only (for
+    # this comparison), so it cannot. Reporting the raw
+    # Omega difference without disclosing this would make a genuine
     # ~180 deg node-convention offset look like a fit disagreement.
     pan1_flipped = (pan1_med - 180.0) % 360.0
     print(
@@ -693,11 +689,11 @@ def run_orbitize_comparison():
     )
 
     # Total-mass comparison, kept separate from the per-element table
-    # above (per this comparison's brief): orbitize! returns only the
+    # above (for this comparison): orbitize! returns only the
     # system's total mass, not individual component masses, so it is
     # compared against the SUM of PySeshat's own fitted component
-    # masses (the explicitly-requested comparison) -- and, for full
-    # honesty, ALSO against PySeshat's own astrometric/dynamical mass
+    # masses (the primary comparison) -- and, for
+    # completeness, ALSO against PySeshat's own astrometric/dynamical mass
     # (a^3/P^2), since that is the same physical quantity orbitize!'s
     # mtot actually measures here (both purely astrometric/Keplerian,
     # unlike the SB2/RV-spectroscopic mass-function route).

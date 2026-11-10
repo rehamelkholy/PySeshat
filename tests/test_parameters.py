@@ -90,9 +90,9 @@ def test_fitted_parameters():
 
 def test_fitted_parameter_names():
 
-    # ``fitted_parameter_names()`` became an INSTANCE method
-    # (like ``OrbitalElements.fitted_parameter_names()``) on
-    # 2026-08-27, when PhotometricParameters gained a per-
+    # ``fitted_parameter_names()`` is an INSTANCE method
+    # (like ``OrbitalElements.fitted_parameter_names()``) because
+    # PhotometricParameters has a per-
     # instance ``fit_flags`` mechanism -- which parameters count
     # as "fitted" is now instance state, not fixed for the whole
     # class, so the old unbound
@@ -218,13 +218,13 @@ def test_update_parameters_invalid_length():
 
     )
 
-    # Message changed from a hardcoded "exactly five" to a
-    # fit_flags-derived count on 2026-08-27 (update_parameters()
-    # now validates against the number of currently-FITTED
+    # The message uses a fit_flags-derived count rather than a
+    # hardcoded "exactly five" (update_parameters()
+    # validates against the number of currently-FITTED
     # parameters, not a hardcoded 5) -- with this parameters
     # object's default all-True fit_flags that count still is
-    # five, so the match string below is unchanged in substance,
-    # just phrased to match the new dynamic message.
+    # five; the match string below is phrased to match the
+    # dynamic message.
 
     with pytest.raises(
 

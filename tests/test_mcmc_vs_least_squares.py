@@ -59,7 +59,11 @@ ls = fit_visual_orbit(
 
     sigma,
 
-    rv_data=rv_data
+    rv_data=rv_data,
+
+    # The MCMC likelihood uses the quoted errors as given, so compare
+    # against the least-squares fit with the same fixed weighting.
+    weighting="fixed"
 )
 
 # ==========================================================

@@ -12,12 +12,10 @@ Run
 
     python examples/01_visual_rv_binary_fit.py
 
-See docs/project_decisions.md for what FIN379 is (a software/
-inference regression benchmark, not the project's primary ORBIT3
-physics benchmark) and CLAUDE.md's "Layering" section for how the
-pieces used below (io -> inference.optimizer -> orbit.orbit_model
--> visualization / io.report_writer) fit into the rest of the
-package.
+FIN379 is a software/inference regression benchmark, not the
+project's primary ORBIT3 physics benchmark. The pieces used below
+(io -> inference.optimizer -> orbit.orbit_model -> visualization /
+io.report_writer) show how the package's layers fit together.
 """
 
 from __future__ import annotations

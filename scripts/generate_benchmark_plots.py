@@ -2,13 +2,9 @@
 Generate the full available plot set for the benchmark systems
 that have a matching visualization function, and save the paper's
 figures under validation/results/plots/<system>/ for a one-time
-visual pass, per docs/development_plan_phase2.md Phase 4 item 3
-("once Phase 0 unblocks all 8 systems, generate the full plot
-set for each and do one visual pass before considering the
-validation phase closed").
+visual pass.
 
-**[2026-08-30] This is the paper's actual figure-generation
-pipeline.** Every figure this script writes is saved as vector
+This is the paper's actual figure-generation pipeline. Every figure this script writes is saved as vector
 PDF with grid lines disabled (``output_format="pdf"``,
 ``show_grid=False`` -- see the ``PAPER_OUTPUT_FORMAT``/
 ``PAPER_SHOW_GRID`` constants below), per A&A's specific request
@@ -17,9 +13,7 @@ default only: every plotting function in
 ``pyseshat.visualization`` (and ``MCMCResult.corner_plot()``)
 keeps its own general-purpose default (PNG, grid on -- except
 ``corner_plot()``, which defaults to grid off for its own
-already-documented reason; see
-docs/project_decisions.md's dated "Plotting-module
-show_grid/output_format/save_path parameters..." entry)
+already-documented reason)
 unchanged for interactive/general use elsewhere in the software.
 
 Scope, and why it is 2 of 8 systems rather than 8 of 8
@@ -47,15 +41,14 @@ Of the 8 registered benchmark systems:
   pointed at it -- but the outer-orbit astrometric observations
   these systems are fit against include the unresolved inner
   subsystem's astrometric wobble (the ``f`` parameter;
-  see docs/project_decisions.md, "`f` unbounded" and the ZetaAqr
-  residual-decomposition entry). A flat two-body curve plotted
+  a negative ``f`` is possible). A flat two-body curve plotted
   directly against those observations would show a real,
   wobble-driven residual pattern that a reader could easily
   mistake for a fit-quality problem rather than an intentional,
   already-modeled physical effect.
-  **[2026-08-30] Done.** A dedicated triple-aware plotting
+  A dedicated triple-aware plotting
   function, ``visualization.triple_orbit_plot.plot_triple_orbit``,
-  now exists -- it draws BOTH ORBIT3 visual observables side by
+  handles these systems -- it draws BOTH ORBIT3 visual observables side by
   side (POS1, the resolved inner orbit; POS2 = outer + f*inner,
   the wobble-corrected wide/outer orbit), so neither curve is ever
   plotted against observations it does not actually model.
@@ -63,24 +56,22 @@ Of the 8 registered benchmark systems:
   ``scripts/generate_triple_orbit_plots.py``, which fits both
   systems via the exact same steps ``validation/benchmark_runner.py``'s
   ``run_orbit3_benchmark()`` uses -- see that script's own module
-  docstring) now generates and saves both systems' figures here
-  too. See docs/paper_reference_notes.md Sections 3.3/3.4 for the
-  full writeup.
-- HD214222, HD191854, HD130669, HD184467 are Al-Wardat
+  docstring) generates and saves both systems' figures here
+  too.
+- HD214222, HD191854, HD130669, HD184467 are
   unresolved-binary SED fits -- there is no orbital solution
-  being fit at all (see examples/04_alwardat_sed_fit.py's
+  being fit at all (see examples/04_binary_sed_fit.py's
   docstring: "Unlike Examples 1-3, there is no orbital fit here
   at all"), so none of the orbit-plotting functions apply.
   ``plot_binary_hrdiagram`` could in principle be used, but
   requires a full evolutionary-track cross-check
   (``evolution/binary.py``) to be run per system first.
-  **[2026-08-29] Done.** Real Girardi (2000) track/isochrone data
+  Real Girardi (2000) track/isochrone data
   (VizieR catalog J/A+AS/141/371, Z=0.019, Overshoot=1 -- see
-  ``evolution/parsers/girardi2000.py``'s module docstring and
-  ``docs/project_decisions.md``'s dated entry) was obtained and
-  wired in as ``evolution/grids.py``'s default grid, and
-  ``generate_hrdiagrams()`` below now generates a real HR-diagram
-  figure for exactly these six systems (the four Al-Wardat SED
+  ``evolution/parsers/girardi2000.py``'s module docstring) is
+  used as ``evolution/grids.py``'s default grid, and
+  ``generate_hrdiagrams()`` below generates a real HR-diagram
+  figure for exactly these six systems (the four binary SED
   systems, plus Capella and AlphaCenAB's photometry rows) using
   ``pyseshat.evolution.benchmark_checks`` (the same pipeline
   ``scripts/run_evolutionary_checks.py`` uses for the numeric
@@ -94,11 +85,7 @@ Of the 8 registered benchmark systems:
   ``scripts/generate_capella_corner_plot.py``) -- the paper's
   representative MCMC-posterior figure, demonstrating the
   near-circular-orbit eccentricity-argument-of-periastron
-  degeneracy. **[2026-08-30] Done** -- see that script's module
-  docstring and docs/project_decisions.md's dated entry for the
-  investigation that established no corner plot, and no MCMC
-  chain, had ever previously been generated for any benchmark
-  system.
+  degeneracy. See that script's module docstring for details.
 
 Run
 
@@ -153,8 +140,8 @@ SYSTEMS_DIR = REPO_ROOT / "validation" / "benchmark_systems"
 PLOTS_DIR = REPO_ROOT / "validation" / "results" / "plots"
 
 # ------------------------------------------------------------
-# Paper figure-generation pipeline defaults (2026-08-30).
-# See the module docstring's "[2026-08-30]" note above.
+# Paper figure-generation pipeline defaults.
+# See the module docstring above.
 # ------------------------------------------------------------
 
 PAPER_OUTPUT_FORMAT = "pdf"
@@ -163,7 +150,7 @@ PAPER_SHOW_GRID = False
 BINARY_SYSTEMS = {
     "FIN379": SYSTEMS_DIR / "FIN379" / "FIN379.inp",
     "GL765": SYSTEMS_DIR / "GL765" / "GL765.inp",
-    # Joint orbit+photometry named case studies (2026-08-27, see
+    # Joint orbit+photometry named case studies (see
     # scripts/build_joint_benchmarks.py) -- both are plain flat
     # OrbitalElements binaries, same as FIN379/GL765 above, so the
     # same fitting/plotting pipeline applies directly.
@@ -174,18 +161,18 @@ BINARY_SYSTEMS = {
     "AlphaCenAB_orbit": SYSTEMS_DIR / "AlphaCenAB_orbit" / "AlphaCenAB_orbit.inp",
 }
 
-# The four Abushattal et al. 2025 Al-Wardat SED benchmark systems
-# (2026-09-02, see generate_sed_fit_plots() below). Capella_photometry
-# and AlphaCenAB_photometry are also alwardat_sed-path systems but are
+# The four Abushattal et al. 2025 binary SED benchmark systems
+# (see generate_sed_fit_plots() below). Capella_photometry
+# and AlphaCenAB_photometry are also binary_sed-path systems but are
 # deliberately NOT included here: both are entirely SYNTHETIC
-# benchmarks (see docs/guide/alwardat_sed.md's "CK04 grid coverage"
+# benchmarks (see docs/guide/binary_sed.md's "CK04 grid coverage"
 # section), so an "observed vs. model" SED-fit figure for them would
 # be comparing PySeshat's model to data PySeshat itself generated --
 # not a meaningful validation figure the way it is for the four real
 # (if paper-synthetic-origin) Abushattal systems. This matches this
 # script's own existing scoping precedent (e.g. generate_for_system()
 # above only fits real orbit-observation systems).
-ALWARDAT_SED_SYSTEMS = (
+SED_BENCHMARK_SYSTEMS = (
     "HD214222",
     "HD191854",
     "HD130669",
@@ -280,7 +267,7 @@ def generate_hrdiagrams(
 ):
     """
     Generate one HR-diagram figure per benchmark system with an
-    Al-Wardat SED or joint-photometry component: HD214222,
+    binary SED or joint-photometry component: HD214222,
     HD191854, HD130669, HD184467, Capella, AlphaCenAB.
 
     Uses pyseshat.evolution.benchmark_checks.run_all_benchmark_checks()
@@ -356,17 +343,17 @@ def generate_sed_fit_plots(
     show_grid=PAPER_SHOW_GRID,
 ):
     """
-    Generate the Al-Wardat SED-fit figure (essential figure 4,
+    Generate the binary SED-fit figure (essential figure 4,
     ``Paper_Roadmap.pdf``) for each of the four Abushattal et al.
     2025 benchmark systems: HD214222, HD191854, HD130669, HD184467.
 
     Self-consistency with validation/benchmark_registry.csv's
     already-reported fit-quality numbers is structural, not just
     checked after the fact: this function calls
-    ``benchmark_runner.run_alwardat_benchmark()`` directly (the
+    ``benchmark_runner.run_sed_benchmark()`` directly (the
     EXACT function ``validation/benchmark_runner.py``'s own
     ``run_benchmark()`` dispatches to, and that
-    ``docs/project_decisions.md``'s reported reduced-chi2/worst-
+    the reported reduced-chi2/worst-
     parameter numbers all come from) to obtain each system's fitted
     solution, rather than re-fitting independently or hand-copying
     parameter values from a JSON file -- so the curve this figure
@@ -374,7 +361,7 @@ def generate_sed_fit_plots(
     apart. The plotted model SED is then built from that SAME
     fitted solution via ``photometry.model.synthetic_binary_sed()``,
     a sibling of the tested ``synthetic_binary_magnitudes()`` that
-    ``run_alwardat_benchmark()`` itself uses internally (see that
+    ``run_sed_benchmark()`` itself uses internally (see that
     function's own docstring for the direct numerical
     cross-check confirming the two never disagree).
 
@@ -382,7 +369,7 @@ def generate_sed_fit_plots(
     ``validation/results/plots/<system>/sed_fit.<output_format>``.
     """
 
-    for name in ALWARDAT_SED_SYSTEMS:
+    for name in SED_BENCHMARK_SYSTEMS:
 
         expected_path = (
             REPO_ROOT / "validation" / "expected_results" / f"{name}.json"
@@ -397,7 +384,7 @@ def generate_sed_fit_plots(
         # makes for this system.
         # ------------------------------------------------------
 
-        result = _benchmark_runner.run_alwardat_benchmark(
+        result = _benchmark_runner.run_sed_benchmark(
             name, dict(expected)
         )
 
@@ -405,7 +392,7 @@ def generate_sed_fit_plots(
 
         # ------------------------------------------------------
         # Rebuild the same atmosphere grid / passbands / zero
-        # points run_alwardat_benchmark() builds internally (it
+        # points run_sed_benchmark() builds internally (it
         # returns fit statistics, not these intermediate objects)
         # to compute the plotted model curves from the SAME
         # fitted solution.
@@ -428,7 +415,7 @@ def generate_sed_fit_plots(
                     _benchmark_runner._VALIDATION_DIR
                     / "photometry"
                     / "passbands"
-                    / _benchmark_runner._ALWARDAT_PASSBAND_FILES[pb_name]
+                    / _benchmark_runner._SED_PASSBAND_FILES[pb_name]
                 ),
                 name=pb_name,
             )
@@ -436,7 +423,7 @@ def generate_sed_fit_plots(
         }
 
         zero_points = {
-            pb_name: _benchmark_runner._ALWARDAT_ZERO_POINTS[pb_name]
+            pb_name: _benchmark_runner._SED_ZERO_POINTS[pb_name]
             for pb_name in fitted_passband_names
         }
 
@@ -479,9 +466,9 @@ def generate_sed_fit_plots(
 
         # ------------------------------------------------------
         # Excluded (disclosed, not fit) points -- e.g. Stromgren
-        # u, see docs/guide/alwardat_sed.md's "Stromgren u"
+        # u, see docs/guide/binary_sed.md's "Stromgren u"
         # section. Loaded from the same lookup tables
-        # run_alwardat_benchmark() itself uses, since an excluded
+        # run_sed_benchmark() itself uses, since an excluded
         # passband is (by definition) not in `passbands`/
         # `zero_points` above.
         # ------------------------------------------------------
@@ -500,12 +487,12 @@ def generate_sed_fit_plots(
                     _benchmark_runner._VALIDATION_DIR
                     / "photometry"
                     / "passbands"
-                    / _benchmark_runner._ALWARDAT_PASSBAND_FILES[pb_name]
+                    / _benchmark_runner._SED_PASSBAND_FILES[pb_name]
                 ),
                 name=pb_name,
             )
 
-            excluded_zp = _benchmark_runner._ALWARDAT_ZERO_POINTS[pb_name]
+            excluded_zp = _benchmark_runner._SED_ZERO_POINTS[pb_name]
 
             flux, flux_unc = _magnitude_to_flux(
                 entry["magnitude"], entry["uncertainty"], excluded_zp
@@ -540,7 +527,7 @@ def generate_sed_fit_plots(
             excluded_flux_uncertainty=excluded_flux_uncertainty,
             excluded_labels=excluded_labels,
             title=(
-                f"{name} -- Al-Wardat SED fit "
+                f"{name} -- binary SED fit "
                 f"(reduced $\\chi^2$={stats['reduced_chi_square']:.3f})"
             ),
             show=False,
@@ -553,7 +540,7 @@ def generate_sed_fit_plots(
         print(
             f"{name}: wrote 1 SED-fit plot to {out_dir} "
             f"(reduced chi2={stats['reduced_chi_square']:.4f}, "
-            "matches validation/benchmark_registry.csv)"
+            "from benchmark_runner.run_sed_benchmark)"
         )
 
 
@@ -563,7 +550,7 @@ def generate_triple_orbit_plots(
 ):
     """
     Generate the wobble-corrected ORBIT3 triple-orbit figures for
-    ZetaAqr and HIP111805 (see module docstring, "[2026-08-30] Done").
+    ZetaAqr and HIP111805 (see module docstring).
 
     Delegates to scripts/generate_triple_orbit_plots.py's own
     generate_for_system() -- the canonical implementation, which
@@ -606,8 +593,7 @@ def generate_capella_corner_plot_figure(
 ):
     """
     Generate the Capella MCMC posterior corner plot (the paper's
-    representative MCMC-posterior figure -- see module docstring's
-    "[2026-08-30] Done" note and
+    representative MCMC-posterior figure -- see module docstring and
     scripts/generate_capella_corner_plot.py's own module docstring
     for the full investigation/reasoning).
 

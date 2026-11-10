@@ -17,6 +17,9 @@ filename = Path(
     "atmosphere_models"
 ) / (
 
+    "ckm05"
+) / (
+
     "ckm05_10000.fits"
 )
 

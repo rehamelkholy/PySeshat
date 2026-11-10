@@ -1,10 +1,9 @@
 {
   "system": "HD214222",
-  "orbit_type": "alwardat_sed",
-  "fitting_path": "alwardat_sed",
+  "orbit_type": "binary_sed",
+  "fitting_path": "binary_sed",
   "paper_table_row": null,
   "free_parameters": [
-    "ebv",
     "primary_radius",
     "primary_temperature",
     "secondary_radius",
@@ -21,43 +20,43 @@
     }
   },
   "statistics": {
-    "chi_square": 0.5723898031676852,
-    "reduced_chi_square": 0.1430974507919213,
-    "rms": 0.252188157966689,
-    "n_data": 9,
-    "n_params": 5
+    "chi_square": 0.2890864286608565,
+    "reduced_chi_square": 0.04129806123726521,
+    "rms": 0.16211287556426301,
+    "n_data": 11,
+    "n_params": 4
   },
   "parameter_errors": {
     "primary_temperature": {
       "expected": 6075.0,
-      "fitted": 5750.132854791482,
-      "relative_error": 0.05347607328535279
+      "fitted": 5849.9366360675385,
+      "relative_error": 0.03704746731398543
     },
     "secondary_temperature": {
       "expected": 6000.0,
-      "fitted": 5750.065395935716,
-      "relative_error": 0.041655767344047336
+      "fitted": 5778.166465921691,
+      "relative_error": 0.036972255679718125
     },
     "primary_radius": {
       "expected": 1.14,
-      "fitted": 1.1325974918267372,
-      "relative_error": 0.006493428222160274
+      "fitted": 1.1235457729364975,
+      "relative_error": 0.014433532511844224
     },
     "secondary_radius": {
       "expected": 1.095,
-      "fitted": 1.0884340508053103,
-      "relative_error": 0.005996300634419789
+      "fitted": 1.0803699955028736,
+      "relative_error": 0.013360734700572028
     }
   },
   "fitted_elements": {
-    "primary_temperature": 5750.132854791482,
-    "secondary_temperature": 5750.065395935716,
-    "primary_radius": 1.1325974918267372,
-    "secondary_radius": 1.0884340508053103,
-    "ebv": 0.00589487927378582
+    "primary_temperature": 5849.9366360675385,
+    "secondary_temperature": 5778.166465921691,
+    "primary_radius": 1.1235457729364975,
+    "secondary_radius": 1.0803699955028736,
+    "ebv": 0.0
   },
   "optimizer_success": true,
-  "optimizer_message": "`xtol` termination condition is satisfied.",
+  "optimizer_message": "`ftol` termination condition is satisfied.",
   "mass_dynamical_Msun": null,
   "mass_sigma_Msun": null,
   "mass_relative_sigma": null

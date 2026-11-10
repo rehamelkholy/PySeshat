@@ -20,9 +20,7 @@ from pyseshat.io.fit_result_io import (
 # tests collected from it, but still executes this module-level
 # code on collection). It used to write FIN379_fit.json with a
 # bare relative path, which landed wherever pytest's cwd happened
-# to be (the repo root, in normal use) -- see
-# docs/project_decisions.md, "FIN379 files stranded at repo root"
-# (2026-08-27). Anchored to this file's own location instead, so
+# to be (the repo root, in normal use). Anchored to this file's own location instead, so
 # the output lands in the same place regardless of invocation cwd.
 # test_fit_result_roundtrip.py reads back from this same
 # directory, so the two stay coupled (test_fit_result_io.py must

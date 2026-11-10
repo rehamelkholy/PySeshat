@@ -22,9 +22,8 @@ from pyseshat.orbit.rv_model import (
 # compute_rv_orbit called directly). It does NOT validate
 # which physical star (primary/secondary) the K1 vs K2 sign
 # convention actually corresponds to against a literature
-# SB2 solution -- see docs/project_decisions.md, "RV K1/K2
-# sign-convention audit finding", for why that is currently
-# an open question rather than something asserted here.
+# SB2 solution; that is covered by
+# tests/test_rv_sign_convention_validation.py.
 # ------------------------------------------------------
 
 ROOT = Path("validation/benchmark_systems")

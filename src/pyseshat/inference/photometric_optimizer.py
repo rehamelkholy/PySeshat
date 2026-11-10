@@ -47,8 +47,7 @@ from pyseshat.inference.photometric_problem import (
 # every call raises TypeError before a single residual is ever
 # evaluated. This was never caught because nothing exercised
 # fit_photometry_from_problem()/fit_photometry() end-to-end
-# before the Al-Wardat SED validation (see
-# docs/project_decisions.md); every existing photometric test
+# before the binary SED validation; every existing photometric test
 # calls photometric_residuals_from_problem() directly with one
 # fixed problem, which is a valid call and never hits this
 # path. This wrapper rebuilds a fresh problem at the optimizer's
@@ -136,7 +135,7 @@ def build_parameter_bounds(
         value) is guaranteed to fall inside its own bounds. This
         replaces the equivalent ad hoc ``teff_min``/``teff_max``
         logic that used to live in
-        ``validation/benchmark_runner.py::run_alwardat_benchmark()``.
+        ``validation/benchmark_runner.py::run_sed_benchmark()``.
 
     Returns
     -------
@@ -276,10 +275,15 @@ def fit_photometry(
     loss="linear",
     f_scale=1.0,
     bounds=None,
+    magnitude_differences=(),
 ):
     """
     Fit unresolved-binary photometry using nonlinear
     least squares.
+
+    ``magnitude_differences``: optional observed component
+    magnitude differences (photometry.observations.MagnitudeDifference),
+    each fitted as one additional residual.
     """
 
     problem = PhotometricInferenceProblem(
@@ -305,6 +309,8 @@ def fit_photometry(
             distance=distance,
 
             rv=rv,
+
+            magnitude_differences=tuple(magnitude_differences),
 
         ),
     )

@@ -220,6 +220,12 @@ throughput = johnson_v.throughput_at(
 
 )
 
+# The Johnson V file is a photon-counting curve P (Maiz Apellaniz
+# 2006, Table 3): its energy-equivalent weight is P * lambda.
+assert johnson_v.photon_counting
+
+throughput = throughput * integration_wavelength
+
 
 expected_flux = (
 

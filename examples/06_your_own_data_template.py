@@ -10,8 +10,8 @@ parser source directly:
         Tokovinin ORBIT-format visual/RV data file, as parsed by
         io.orbit_parser.parse_orbit_file() and fit in Example 1.
 
-    examples/templates/your_alwardat_system.json
-        Al-Wardat-style unresolved-binary photometric SED system,
+    examples/templates/your_sed_system.json
+        grid-based unresolved-binary photometric SED system,
         in the schema validation/expected_results/*.json uses, as
         fit in Example 4.
 
@@ -94,15 +94,15 @@ def show_orbit_template():
     )
 
 
-def show_alwardat_template():
+def show_sed_template():
 
     print()
     print("=" * 60)
-    print("your_alwardat_system.json")
+    print("your_sed_system.json")
     print("=" * 60)
 
     with open(
-        TEMPLATES_DIR / "your_alwardat_system.json"
+        TEMPLATES_DIR / "your_sed_system.json"
     ) as f:
 
         template = json.load(f)
@@ -153,11 +153,11 @@ def show_alwardat_template():
     print(
         "All required fields present. Next step: replace every "
         "'_comment*' key's sibling values in "
-        "examples/templates/your_alwardat_system.json with your "
+        "examples/templates/your_sed_system.json with your "
         "own system's, delete the '_comment*' keys themselves "
         "(they're documentation only, not read by any PySeshat "
         "code), then adapt Example 4 "
-        "(examples/04_alwardat_sed_fit.py) to load it."
+        "(examples/04_binary_sed_fit.py) to load it."
     )
 
 
@@ -165,7 +165,7 @@ def main():
 
     show_orbit_template()
 
-    show_alwardat_template()
+    show_sed_template()
 
 
 if __name__ == "__main__":

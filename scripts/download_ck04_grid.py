@@ -4,7 +4,7 @@ Download the complete Castelli & Kurucz (2004) ATLAS9 atmosphere grid
 (CK04 / "ck04models") from the STScI CDBS archive, in batches.
 
 This fills out PySeshat's `validation/atmosphere_models/` directory so
-the Al-Wardat SED-fitting pipeline can be used for ANY target system,
+the binary SED-fitting pipeline can be used for ANY target system,
 not just the ones whose Teff/metallicity happened to fall in the 4
 files originally present locally.
 
@@ -14,19 +14,14 @@ WHAT THIS DOWNLOADS
 x 8 metallicities ([M/H] = -0.5, -1.0, -1.5, -2.0, -2.5, 0.0, +0.2, +0.5,
 i.e. directories ckm05, ckm10, ckm15, ckm20, ckm25, ckp00, ckp02, ckp05).
 
-STATUS (2026-09-02): all 608/608 files have already been downloaded to
-validation/atmosphere_models/ (confirmed present and FITS-valid by the
-2026-09-02 CK04 grid-completeness audit -- see
-docs/project_decisions.md and docs/guide/alwardat_sed.md's "CK04 grid
-coverage" section). This script and its manifest are kept for
-reproducibility/provenance (this is how the grid was originally
-sourced, after the network-egress block described below made a direct
-sandbox download impossible) and as a template for re-downloading
-individual files if one is ever lost or corrupted -- re-running it is
-safe and a no-op for any file already present and valid (it checks
-each destination file directly, not just the manifest's ``already_present``
-column, which still reflects the original 4-file starting point and is
-not kept in sync).
+The complete grid is expected in validation/atmosphere_models/ (see
+docs/guide/binary_sed.md's "CK04 grid coverage" section). This script
+and its manifest document how the grid is sourced and can be used to
+re-download individual files if one is ever lost or corrupted --
+re-running it is safe and a no-op for any file already present and
+valid (it checks each destination file directly, not just the
+manifest's ``already_present`` column, which reflects only the
+original 4-file starting point and is not kept in sync).
 
 Total size is roughly 608 x ~67 KB =~ 41 MB, so this is a small download
 overall - the "batches" are about being a polite, resumable citizen of
@@ -34,10 +29,9 @@ STScI's server, not about data volume.
 
 USAGE
 -----
-Run this on a machine with normal internet access (NOT inside a
-sandboxed/allowlisted shell - both the Claude cloud sandbox and the
-Claude desktop-bridge device shell block ssb.stsci.edu, which is why
-this script has to be run by hand):
+Run this on a machine with normal internet access. Sandboxed or
+allowlisted networks may block ssb.stsci.edu, in which case the
+downloads will fail and the script has to be run elsewhere:
 
     pip install requests   # if not already available
     python download_ck04_grid.py --dest "/path/to/pyseshat/validation/atmosphere_models"

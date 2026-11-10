@@ -11,7 +11,7 @@ i        137.156
 K1       25.9611
 K2       26.8600
 V0       29.9387
-C Synthetic observations generated from the published orbital solution -- see scripts/build_joint_benchmarks.py module docstring for the full, honest provenance statement.
+C Synthetic observations generated from the published orbital solution -- see scripts/build_joint_benchmarks.py module docstring for the full provenance statement.
   1990.0000  223.326  0.05626 0.00050 I1   1.0   2  synth
   1991.0435  352.177  0.04614 0.00050 I1   1.0   2  synth
   1992.0870  96.975  0.04462 0.00050 I1   1.0   2  synth

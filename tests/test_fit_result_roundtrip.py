@@ -7,9 +7,7 @@ from pyseshat.io.fit_result_io import load_fit_result
 # for the full explanation). It reads back FIN379_fit.json from
 # the artifacts directory that test_fit_result_io.py writes to
 # (these two files are coupled -- test_fit_result_io.py must run
-# first, which it does alphabetically). See
-# docs/project_decisions.md, "FIN379 files stranded at repo root"
-# (2026-08-27).
+# first, which it does alphabetically).
 
 ARTIFACTS_DIR = (
     Path(__file__).resolve().parent / "artifacts"

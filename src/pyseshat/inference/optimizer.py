@@ -1,3 +1,5 @@
+import dataclasses
+
 import numpy as np
 
 from pyseshat.inference.context import LikelihoodContext
@@ -33,12 +35,23 @@ from pyseshat.inference.posterior import (
     log_posterior_from_problem,
 )
 
+from pyseshat.inference.reparameterization import (
+    SqrtEParameterization,
+    sqrt_e_log_probability,
+)
+
 from pyseshat.inference.mcmc_engine import (
     run_emcee
 )
 
 from pyseshat.inference.mcmc_result import (
     MCMCResult
+)
+
+from pyseshat.inference.dataset_weighting import (
+    combine_error_floor,
+    dataset_diagnostics,
+    update_scales,
 )
 
 from pyseshat.orbit.orbital_elements import OrbitalElements
@@ -129,13 +142,44 @@ def fit_visual_orbit(
     f_scale=1.0,
     bounds=None,
     node_disambiguation=True,
-    node_rtol=0.01
+    node_rtol=0.01,
+    weighting="auto",
+    visual_error_floor=0.0,
+    rv_error_floor=0.0,
+    allow_deflation=False,
+    max_reweight_iter=20,
+    reweight_tol=1e-3,
 ):
     """
     Public orbit-fitting interface.
 
     Automatically resolves visual-binary
     node ambiguity when RV data are present.
+
+    Dataset-level weighting
+    -----------------------
+    weighting : {"auto", "fixed", "dataset"}
+        ``"auto"`` (default): ``"dataset"`` for combined visual+RV fits,
+        ``"fixed"`` otherwise.
+        ``"fixed"``: residuals are weighted only by the supplied
+        per-datum uncertainties (original behaviour).
+        ``"dataset"``: after the fit, the uncertainties of each dataset
+        (visual, RV) are multiplied by a common factor so that the
+        dataset's reduced chi-square becomes unity, and the fit is
+        repeated until the factors converge (cf. error rescaling in
+        ORBIT/ORBIT3).  Parameter uncertainties then reflect the
+        rescaled errors.
+    visual_error_floor, rv_error_floor : float
+        Error floors (same units as sx/sy and as the RV sigma) added in
+        quadrature to the per-datum sigmas before fitting (cf. ``v0err``
+        in ORBIT).
+    allow_deflation : bool
+        If False (default) a dataset whose reduced chi-square is below
+        unity keeps its original errors (errors are only inflated).
+
+    Per-dataset diagnostics (chi2, chi2/dof, rms, applied error scales)
+    are always stored in ``result.metadata["dataset_diagnostics"]`` and
+    ``result.metadata["error_scales"]``.
     """
 
     context = LikelihoodContext(
@@ -158,13 +202,142 @@ def fit_visual_orbit(
         node_rtol=node_rtol,
     )
 
-    return fit_visual_orbit_from_problem(
-        problem
+    return _fit_with_weighting(
+        problem,
+        weighting=weighting,
+        visual_error_floor=visual_error_floor,
+        rv_error_floor=rv_error_floor,
+        allow_deflation=allow_deflation,
+        max_iter=max_reweight_iter,
+        tol=reweight_tol,
     )
+
+
+def _fit_with_weighting(
+    problem,
+    weighting="auto",
+    visual_error_floor=0.0,
+    rv_error_floor=0.0,
+    allow_deflation=False,
+    max_iter=20,
+    tol=1e-3,
+):
+    """Fit with optional error floors / dataset-level error rescaling."""
+
+    if weighting == "auto":
+        weighting = "dataset" if problem.is_combined_fit else "fixed"
+
+    if weighting not in ("fixed", "dataset"):
+        raise ValueError(
+            "weighting must be 'auto', 'fixed' or 'dataset', "
+            f"got {weighting!r}."
+        )
+
+    ctx = problem.context
+    has_rv = problem.has_rv_data
+
+    sx0 = combine_error_floor(ctx.sx, visual_error_floor)
+    sy0 = combine_error_floor(ctx.sy, visual_error_floor)
+    rv0 = None
+    if has_rv:
+        rv0 = np.array(ctx.rv_data, dtype=float, copy=True)
+        rv0[:, 2] = combine_error_floor(rv0[:, 2], rv_error_floor)
+
+    scales = {"visual": 1.0}
+    if has_rv:
+        scales["rv"] = 1.0
+
+    n_iter = 0
+    while True:
+        rv_now = None
+        if has_rv:
+            rv_now = rv0.copy()
+            rv_now[:, 2] = rv0[:, 2] * scales["rv"]
+        new_ctx = LikelihoodContext(
+            t=ctx.t,
+            X_obs=ctx.X_obs,
+            Y_obs=ctx.Y_obs,
+            sx=sx0 * scales["visual"],
+            sy=sy0 * scales["visual"],
+            rv_data=rv_now,
+        )
+        new_problem = InferenceProblem(
+            elements=problem.elements,
+            context=new_ctx,
+            method=problem.method,
+            loss=problem.loss,
+            f_scale=problem.f_scale,
+            bounds=problem.bounds,
+            node_disambiguation=problem.node_disambiguation,
+            node_rtol=problem.node_rtol,
+        )
+        fit = fit_visual_orbit_from_problem(new_problem)
+
+        n_par = len(fit.elements.fitted_parameter_names())
+        diag = dataset_diagnostics(
+            fit.residuals,
+            n_visual=len(ctx.t),
+            n_rv=len(rv_now) if has_rv else 0,
+            n_parameters=n_par,
+        )
+
+        if weighting == "fixed":
+            break
+
+        new_scales, change = update_scales(
+            diag, scales, allow_deflation=allow_deflation
+        )
+        n_iter += 1
+        if change < tol or n_iter >= max_iter:
+            break
+        scales = new_scales
+
+    if fit.metadata is None:
+        fit.metadata = {}
+    fit.metadata["dataset_diagnostics"] = diag
+    fit.metadata["error_scales"] = dict(scales)
+    fit.metadata["weighting"] = weighting
+    fit.metadata["reweight_iterations"] = n_iter
+    fit.metadata["error_floors"] = {
+        "visual": float(visual_error_floor or 0.0),
+        "rv": float(rv_error_floor or 0.0),
+    }
+    return fit
 
 # ==========================================================
 # Internal optimizer implementation
 # ==========================================================
+
+_RV_ONLY_PARAMETERS = ("K1", "K2", "V0")
+
+
+def _fix_unconstrained_rv_parameters(problem):
+    """
+    Without RV data K1, K2 and V0 do not enter the model. If they are
+    flagged as fitted (the OrbitalElements default) they would count as
+    free parameters in the degrees of freedom, get a zero uncertainty
+    from the least-squares fit and drift without bound in MCMC. Hold
+    them fixed at their given values instead (added in 0.2.0). Returns
+    the problem unchanged when RV data are present or the parameters are
+    already fixed.
+    """
+
+    if problem.has_rv_data:
+        return problem
+
+    flags = problem.elements.fit_flags
+
+    if not any(flags.get(n, False) for n in _RV_ONLY_PARAMETERS):
+        return problem
+
+    elements = problem.elements.copy()
+
+    for n in _RV_ONLY_PARAMETERS:
+        if n in elements.fit_flags:
+            elements.fit_flags[n] = False
+
+    return dataclasses.replace(problem, elements=elements)
+
 
 def _fit_visual_orbit_impl(
     problem,
@@ -180,6 +353,8 @@ def _fit_visual_orbit_impl(
     -------
     FitResult
     """
+
+    problem = _fix_unconstrained_rv_parameters(problem)
 
     elements = problem.elements
 
@@ -308,6 +483,10 @@ def fit_visual_orbit_from_problem(
     """
     Preferred orbit-fitting interface operating on an
     InferenceProblem.
+
+    The uncertainties stored in the problem are used as given; no
+    dataset-level error rescaling is applied (use ``fit_visual_orbit``
+    with ``weighting="dataset"`` or ``"auto"`` for that).
     """
 
     return _fit_visual_orbit_impl(
@@ -431,14 +610,28 @@ def _fit_single_solution(
 # elements object the prior/likelihood actually evaluate.
 _PERIODIC_360_PARAMETERS = ("Omega", "omega")
 
+_EPOCH_PERIOD_PAIRS = (("T0", "P"),)
 
-def _wrap_periodic_mcmc_samples(samples, parameter_names):
+
+def _reference_value(reference, name):
+    """Element value by name from an elements object or a mapping."""
+    if isinstance(reference, dict):
+        return reference[name]
+    return getattr(reference, name)
+
+
+def _wrap_periodic_mcmc_samples(
+    samples,
+    parameter_names,
+    reference_elements=None,
+    angle_names=_PERIODIC_360_PARAMETERS,
+    epoch_period_pairs=_EPOCH_PERIOD_PAIRS,
+):
     """
     Wrap posterior samples for periodic angular parameters
     (``Omega``, ``omega``) into their canonical [0, 360) range.
 
-    Why this exists (found 2026-09-02, Capella corner-plot
-    investigation)
+    Why this exists
     --------------------------------------------------------------
     ``update_elements()`` calls ``normalize_angles()`` on the
     reconstructed ``OrbitalElements`` BEFORE ``log_prior``/
@@ -490,13 +683,29 @@ def _wrap_periodic_mcmc_samples(samples, parameter_names):
 
     parameter_names : sequence of str
 
+    angle_names, epoch_period_pairs : sequences, optional
+        The angle columns and (epoch, period) pairs to fold; the
+        defaults are the binary elements. ``fit_orbit3_mcmc`` passes
+        the triple names (Omega, omega, Omega2, omega2; (T0, P),
+        (T02, P2)).
+
+    reference_elements : OrbitalElements or dict, optional
+        If given and ``T0`` is sampled, ``T0`` is folded to within
+        half a period of ``reference_elements.T0`` (the least-squares
+        solution), using each sample's own ``P`` when ``P`` is
+        sampled. The model depends on T0 only through
+        (t - T0) / P, so T0 + k P gives the identical log-posterior,
+        and on a near-circular orbit walkers drift across many
+        periods (added in 0.2.0: on the real Capella data with e
+        free, raw T0 samples spanned hundreds of periods).
+
     Returns
     -------
     ndarray
         A new array (the input is not modified in place) with
         every column named in ``_PERIODIC_360_PARAMETERS`` wrapped
-        via ``np.mod(column, 360.0)``. Columns for every other
-        parameter are returned unchanged.
+        via ``np.mod(column, 360.0)``, and ``T0`` folded as above.
+        Columns for every other parameter are returned unchanged.
     """
 
     samples = np.array(
@@ -509,7 +718,7 @@ def _wrap_periodic_mcmc_samples(samples, parameter_names):
         parameter_names
     )
 
-    for name in _PERIODIC_360_PARAMETERS:
+    for name in angle_names:
 
         if name in parameter_names:
 
@@ -522,6 +731,28 @@ def _wrap_periodic_mcmc_samples(samples, parameter_names):
                 360.0
             )
 
+    if reference_elements is None:
+        return samples
+
+    for epoch_name, period_name in epoch_period_pairs:
+
+        if epoch_name not in parameter_names:
+            continue
+
+        i_t0 = parameter_names.index(epoch_name)
+
+        if period_name in parameter_names:
+            period = samples[:, parameter_names.index(period_name)]
+        else:
+            period = float(_reference_value(reference_elements, period_name))
+
+        t_ref = float(_reference_value(reference_elements, epoch_name))
+
+        samples[:, i_t0] = t_ref + np.mod(
+            samples[:, i_t0] - t_ref + 0.5 * period,
+            period
+        ) - 0.5 * period
+
     return samples
 
 
@@ -533,12 +764,23 @@ def _sample_single_solution_from_problem(
     burn_in=1000,
     thin=1,
     random_scale=1e-4,
-    rng=None
+    rng=None,
+    parameterization="standard"
 ):
     """
     Sample the posterior distribution of a single orbital
     solution using an InferenceProblem.
+
+    ``parameterization="sqrt_e"`` samples (L, sqrt(e) sin omega,
+    sqrt(e) cos omega) in place of (T0, e, omega); see
+    ``pyseshat.inference.reparameterization``. Samples are returned in
+    the standard elements either way.
     """
+
+    if parameterization not in ("standard", "sqrt_e"):
+        raise ValueError(
+            "parameterization must be 'standard' or 'sqrt_e'."
+        )
 
     elements = fit_result.elements
 
@@ -546,32 +788,71 @@ def _sample_single_solution_from_problem(
         elements.fitted_parameters()
     )
 
-    engine = run_emcee(
-
-        log_probability_function=log_posterior_from_problem,
-
-        log_probability_args=(
-            problem,
-        ),
-
-        initial_parameters=initial_parameters,
-
-        covariance=fit_result.covariance,
-
-        n_walkers=n_walkers,
-
-        n_steps=n_steps,
-
-        burn_in=burn_in,
-
-        thin=thin,
-
-        random_scale=random_scale,
-
-        rng=rng
-    )
-
     parameter_names = elements.fitted_parameter_names()
+
+    if parameterization == "sqrt_e":
+
+        reparam = SqrtEParameterization(
+            parameter_names,
+            t_ref=elements.T0,
+            period=elements.P,
+        )
+
+        engine = run_emcee(
+            log_probability_function=sqrt_e_log_probability,
+            log_probability_args=(
+                reparam,
+                log_posterior_from_problem,
+                (problem,),
+            ),
+            initial_parameters=reparam.to_sampled(initial_parameters),
+            covariance=reparam.transform_covariance(
+                initial_parameters, fit_result.covariance
+            ),
+            n_walkers=n_walkers,
+            n_steps=n_steps,
+            burn_in=burn_in,
+            thin=thin,
+            random_scale=random_scale,
+            rng=rng
+        )
+
+        sampled = engine["samples"]
+
+        # Back to the standard elements; remove the Jacobian term so
+        # that log_probability is the standard log-posterior.
+        engine["log_probability"] = engine["log_probability"] - np.array(
+            [reparam.log_jacobian(q) for q in sampled]
+        )
+        engine["samples"] = reparam.to_standard_array(sampled)
+
+    else:
+
+        engine = run_emcee(
+
+            log_probability_function=log_posterior_from_problem,
+
+            log_probability_args=(
+                problem,
+            ),
+
+            initial_parameters=initial_parameters,
+
+            covariance=fit_result.covariance,
+
+            n_walkers=n_walkers,
+
+            n_steps=n_steps,
+
+            burn_in=burn_in,
+
+            thin=thin,
+
+            random_scale=random_scale,
+
+            rng=rng
+        )
+
 
     # See _wrap_periodic_mcmc_samples's own docstring: Omega/omega
     # are periodic in the posterior emcee actually samples, but the
@@ -580,7 +861,8 @@ def _sample_single_solution_from_problem(
     # MCMCResult.samples sees the physically meaningful range.
     wrapped_samples = _wrap_periodic_mcmc_samples(
         engine["samples"],
-        parameter_names
+        parameter_names,
+        reference_elements=fit_result.elements
     )
 
     return MCMCResult(
@@ -635,7 +917,8 @@ def _sample_single_solution(
     burn_in=1000,
     thin=1,
     random_scale=1e-4,
-    rng=None
+    rng=None,
+    parameterization="standard"
 ):
     """
     Sample the posterior distribution of a single orbital
@@ -690,6 +973,8 @@ def _sample_single_solution(
         random_scale=random_scale,
 
         rng=rng,
+
+        parameterization=parameterization,
     )
 
 # ==========================================================
@@ -703,7 +988,8 @@ def fit_visual_orbit_mcmc_from_problem(
     burn_in=1000,
     thin=1,
     random_scale=1e-4,
-    rng=None
+    rng=None,
+    parameterization="standard"
 ):
     """
     Preferred Bayesian orbit-fitting interface operating on
@@ -711,6 +997,11 @@ def fit_visual_orbit_mcmc_from_problem(
 
     This function first computes the maximum-likelihood
     solution, then samples the posterior using emcee.
+    ``parameterization="sqrt_e"`` (needs T0, e and omega fitted) samples
+    the mean longitude and sqrt(e) sin/cos omega instead of (T0, e,
+    omega), which mixes far better for near-circular orbits; results are
+    returned in the standard elements. See
+    ``pyseshat.inference.reparameterization``.
     """
 
     fit = fit_visual_orbit_from_problem(
@@ -743,7 +1034,9 @@ def fit_visual_orbit_mcmc_from_problem(
 
         random_scale=random_scale,
 
-        rng=rng
+        rng=rng,
+
+        parameterization=parameterization
     )
 
 # ==========================================================
@@ -769,7 +1062,8 @@ def fit_visual_orbit_mcmc(
     burn_in=1000,
     thin=1,
     random_scale=1e-4,
-    rng=None
+    rng=None,
+    parameterization="standard"
 ):
     """
     Bayesian visual-orbit fitting.
@@ -777,6 +1071,11 @@ def fit_visual_orbit_mcmc(
     This function first computes the maximum-likelihood
     solution using least squares, then samples the posterior
     distribution using emcee.
+    ``parameterization="sqrt_e"`` (needs T0, e and omega fitted) samples
+    the mean longitude and sqrt(e) sin/cos omega instead of (T0, e,
+    omega), which mixes far better for near-circular orbits; results are
+    returned in the standard elements. See
+    ``pyseshat.inference.reparameterization``.
     """
 
     context = LikelihoodContext(
@@ -827,5 +1126,6 @@ def fit_visual_orbit_mcmc(
 
         random_scale=random_scale,
 
-        rng=rng
+        rng=rng,
+        parameterization=parameterization
     )

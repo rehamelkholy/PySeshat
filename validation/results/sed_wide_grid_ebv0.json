@@ -1,0 +1,632 @@
+{
+ "grid": "CK04 ckp00 3500-10000 K (27 models)",
+ "ebv_fixed_zero": true,
+ "delta_m_V": null,
+ "delta_m_sigma": null,
+ "systems": {
+  "HD214222": {
+   "published_teff": [
+    6075.0,
+    6000.0
+   ],
+   "benchmark_grid_files": [
+    "ckp00/ckp00_3500.fits",
+    "ckp00/ckp00_3750.fits",
+    "ckp00/ckp00_4000.fits",
+    "ckp00/ckp00_4250.fits",
+    "ckp00/ckp00_4500.fits",
+    "ckp00/ckp00_4750.fits",
+    "ckp00/ckp00_5000.fits",
+    "ckp00/ckp00_5250.fits",
+    "ckp00/ckp00_5500.fits",
+    "ckp00/ckp00_5750.fits",
+    "ckp00/ckp00_6000.fits",
+    "ckp00/ckp00_6250.fits",
+    "ckp00/ckp00_6500.fits",
+    "ckp00/ckp00_6750.fits",
+    "ckp00/ckp00_7000.fits",
+    "ckp00/ckp00_7250.fits",
+    "ckp00/ckp00_7500.fits",
+    "ckp00/ckp00_7750.fits",
+    "ckp00/ckp00_8000.fits",
+    "ckp00/ckp00_8250.fits",
+    "ckp00/ckp00_8500.fits",
+    "ckp00/ckp00_8750.fits",
+    "ckp00/ckp00_9000.fits",
+    "ckp00/ckp00_9250.fits",
+    "ckp00/ckp00_9500.fits",
+    "ckp00/ckp00_9750.fits",
+    "ckp00/ckp00_10000.fits"
+   ],
+   "benchmark_runner_result": {
+    "fitted": {
+     "primary_temperature": 5849.936637881054,
+     "secondary_temperature": 5778.166467753578,
+     "primary_radius": 1.1235457718016906,
+     "secondary_radius": 1.0803699943592182,
+     "ebv": 0.0
+    },
+    "reduced_chi2": 0.04129806042806083
+   },
+   "runs": {
+    "published": {
+     "chi2": 0.05483976824803788,
+     "reduced_chi2": 0.00913996137467298,
+     "fitted": {
+      "primary_temperature": 4919.714318927326,
+      "secondary_temperature": 6337.251363748218,
+      "primary_radius": 1.1399525335655327,
+      "secondary_radius": 1.094790894072269,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 19.017048248109866,
+      "secondary_temperature": 5.6208560624703,
+      "primary_radius": 0.0041637223216824965,
+      "secondary_radius": 0.019096431756249758
+     }
+    },
+    "4500/4500": {
+     "chi2": 0.05483976822482368,
+     "reduced_chi2": 0.009139961370803947,
+     "fitted": {
+      "primary_temperature": 4919.714331125772,
+      "secondary_temperature": 6337.251361343307,
+      "primary_radius": 1.1399525334967702,
+      "secondary_radius": 1.0947908934211086,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 19.01704804731239,
+      "secondary_temperature": 5.620856022388444,
+      "primary_radius": 0.004163728353485235,
+      "secondary_radius": 0.01909649122295833
+     }
+    },
+    "6000/6000": {
+     "chi2": 0.05483976823377285,
+     "reduced_chi2": 0.009139961372295476,
+     "fitted": {
+      "primary_temperature": 4919.714332983025,
+      "secondary_temperature": 6337.251360175965,
+      "primary_radius": 1.139952533285372,
+      "secondary_radius": 1.0947908937219317,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 19.01704801674033,
+      "secondary_temperature": 5.620856002932745,
+      "primary_radius": 0.004163746897189818,
+      "secondary_radius": 0.019096463750525074
+     }
+    },
+    "7500/5500": {
+     "chi2": 0.055489399071934176,
+     "reduced_chi2": 0.009248233178655696,
+     "fitted": {
+      "primary_temperature": 6286.006391376375,
+      "secondary_temperature": 4855.210601692725,
+      "primary_radius": 1.1397219628383075,
+      "secondary_radius": 1.094959564128973,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 3.4733562366481507,
+      "secondary_temperature": 19.07982330512126,
+      "primary_radius": 0.024389224709858815,
+      "secondary_radius": 0.0036927736097595505
+     }
+    },
+    "5000/7000": {
+     "chi2": 0.05483976822462183,
+     "reduced_chi2": 0.009139961370770305,
+     "fitted": {
+      "primary_temperature": 4919.71424609831,
+      "secondary_temperature": 6337.25139011734,
+      "primary_radius": 1.1399525331640863,
+      "secondary_radius": 1.0947908934848,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 19.017049446941407,
+      "secondary_temperature": 5.620856501955663,
+      "primary_radius": 0.004163757536281764,
+      "secondary_radius": 0.019096485406383305
+     }
+    }
+   },
+   "best_start": "5000/7000",
+   "chi2_min": 0.05483976822462183,
+   "starts_within_dchi2_1": [
+    "published",
+    "4500/4500",
+    "6000/6000",
+    "7500/5500",
+    "5000/7000"
+   ],
+   "teff_range_within_dchi2_1": {
+    "primary": [
+     4919.71424609831,
+     6286.006391376375
+    ],
+    "secondary": [
+     4855.210601692725,
+     6337.25139011734
+    ]
+   }
+  },
+  "HD191854": {
+   "published_teff": [
+    5930.0,
+    5440.0
+   ],
+   "benchmark_grid_files": [
+    "ckp00/ckp00_3500.fits",
+    "ckp00/ckp00_3750.fits",
+    "ckp00/ckp00_4000.fits",
+    "ckp00/ckp00_4250.fits",
+    "ckp00/ckp00_4500.fits",
+    "ckp00/ckp00_4750.fits",
+    "ckp00/ckp00_5000.fits",
+    "ckp00/ckp00_5250.fits",
+    "ckp00/ckp00_5500.fits",
+    "ckp00/ckp00_5750.fits",
+    "ckp00/ckp00_6000.fits",
+    "ckp00/ckp00_6250.fits",
+    "ckp00/ckp00_6500.fits",
+    "ckp00/ckp00_6750.fits",
+    "ckp00/ckp00_7000.fits",
+    "ckp00/ckp00_7250.fits",
+    "ckp00/ckp00_7500.fits",
+    "ckp00/ckp00_7750.fits",
+    "ckp00/ckp00_8000.fits",
+    "ckp00/ckp00_8250.fits",
+    "ckp00/ckp00_8500.fits",
+    "ckp00/ckp00_8750.fits",
+    "ckp00/ckp00_9000.fits",
+    "ckp00/ckp00_9250.fits",
+    "ckp00/ckp00_9500.fits",
+    "ckp00/ckp00_9750.fits",
+    "ckp00/ckp00_10000.fits"
+   ],
+   "benchmark_runner_result": {
+    "fitted": {
+     "primary_temperature": 5789.35763285794,
+     "secondary_temperature": 5280.699419182299,
+     "primary_radius": 1.5686847495020892,
+     "secondary_radius": 0.9042087400364596,
+     "ebv": 0.0
+    },
+    "reduced_chi2": 0.006971887809846423
+   },
+   "runs": {
+    "published": {
+     "chi2": 0.009201970769384185,
+     "reduced_chi2": 0.0015336617948973643,
+     "fitted": {
+      "primary_temperature": 5855.885037066191,
+      "secondary_temperature": 4692.051109903444,
+      "primary_radius": 1.5847904478558503,
+      "secondary_radius": 0.9059327433852173,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 1.2498307408736724,
+      "secondary_temperature": 13.749060479716105,
+      "primary_radius": 0.013220955466854159,
+      "secondary_radius": 0.007423467415307366
+     }
+    },
+    "4500/4500": {
+     "chi2": 0.010302289434984688,
+     "reduced_chi2": 0.0017170482391641146,
+     "fitted": {
+      "primary_temperature": 5322.342181049548,
+      "secondary_temperature": 6369.805038611414,
+      "primary_radius": 1.5845626163640494,
+      "secondary_radius": 0.905876834229932,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 10.247180758017734,
+      "secondary_temperature": 17.092004386239225,
+      "primary_radius": 0.02759518207890116,
+      "secondary_radius": 0.01359445585739404
+     }
+    },
+    "6000/6000": {
+     "chi2": 0.010302289457227096,
+     "reduced_chi2": 0.0017170482428711827,
+     "fitted": {
+      "primary_temperature": 5322.3421574676595,
+      "secondary_temperature": 6369.805074181017,
+      "primary_radius": 1.584562616933984,
+      "secondary_radius": 0.9058768343097439,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 10.24718115568871,
+      "secondary_temperature": 17.092005040092218,
+      "primary_radius": 0.027595146120885764,
+      "secondary_radius": 0.013594447048141962
+     }
+    },
+    "7500/5500": {
+     "chi2": 0.009201970752542121,
+     "reduced_chi2": 0.0015336617920903536,
+     "fitted": {
+      "primary_temperature": 5855.885039095158,
+      "secondary_temperature": 4692.051102403436,
+      "primary_radius": 1.584790446982532,
+      "secondary_radius": 0.9059327432464529,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 1.2498307066583745,
+      "secondary_temperature": 13.7490606175839,
+      "primary_radius": 0.013221010565800944,
+      "secondary_radius": 0.007423482731471205
+     }
+    },
+    "5000/7000": {
+     "chi2": 0.010302289463844913,
+     "reduced_chi2": 0.0017170482439741522,
+     "fitted": {
+      "primary_temperature": 5322.342172132344,
+      "secondary_temperature": 6369.80505117403,
+      "primary_radius": 1.5845626171306932,
+      "secondary_radius": 0.9058768343020528,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 10.247180908392178,
+      "secondary_temperature": 17.092004617169675,
+      "primary_radius": 0.027595133710203397,
+      "secondary_radius": 0.013594447897045937
+     }
+    }
+   },
+   "best_start": "7500/5500",
+   "chi2_min": 0.009201970752542121,
+   "starts_within_dchi2_1": [
+    "published",
+    "4500/4500",
+    "6000/6000",
+    "7500/5500",
+    "5000/7000"
+   ],
+   "teff_range_within_dchi2_1": {
+    "primary": [
+     5322.3421574676595,
+     5855.885039095158
+    ],
+    "secondary": [
+     4692.051102403436,
+     6369.805074181017
+    ]
+   }
+  },
+  "HD130669": {
+   "published_teff": [
+    5290.0,
+    5230.0
+   ],
+   "benchmark_grid_files": [
+    "ckp00/ckp00_3500.fits",
+    "ckp00/ckp00_3750.fits",
+    "ckp00/ckp00_4000.fits",
+    "ckp00/ckp00_4250.fits",
+    "ckp00/ckp00_4500.fits",
+    "ckp00/ckp00_4750.fits",
+    "ckp00/ckp00_5000.fits",
+    "ckp00/ckp00_5250.fits",
+    "ckp00/ckp00_5500.fits",
+    "ckp00/ckp00_5750.fits",
+    "ckp00/ckp00_6000.fits",
+    "ckp00/ckp00_6250.fits",
+    "ckp00/ckp00_6500.fits",
+    "ckp00/ckp00_6750.fits",
+    "ckp00/ckp00_7000.fits",
+    "ckp00/ckp00_7250.fits",
+    "ckp00/ckp00_7500.fits",
+    "ckp00/ckp00_7750.fits",
+    "ckp00/ckp00_8000.fits",
+    "ckp00/ckp00_8250.fits",
+    "ckp00/ckp00_8500.fits",
+    "ckp00/ckp00_8750.fits",
+    "ckp00/ckp00_9000.fits",
+    "ckp00/ckp00_9250.fits",
+    "ckp00/ckp00_9500.fits",
+    "ckp00/ckp00_9750.fits",
+    "ckp00/ckp00_10000.fits"
+   ],
+   "benchmark_runner_result": {
+    "fitted": {
+     "primary_temperature": 5060.5484158901945,
+     "secondary_temperature": 4982.247923272223,
+     "primary_radius": 0.9309855130697722,
+     "secondary_radius": 0.9358139368302063,
+     "ebv": 0.0
+    },
+    "reduced_chi2": 0.07270649374679625
+   },
+   "runs": {
+    "published": {
+     "chi2": 0.03695721685497379,
+     "reduced_chi2": 0.006159536142495631,
+     "fitted": {
+      "primary_temperature": 5337.041553928553,
+      "secondary_temperature": 4346.793583836517,
+      "primary_radius": 0.9557039052639761,
+      "secondary_radius": 0.9494867250700846,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 0.8892543275718938,
+      "secondary_temperature": 16.88731197253313,
+      "primary_radius": 0.030972252722162915,
+      "secondary_radius": 0.0540289399910921
+     }
+    },
+    "4500/4500": {
+     "chi2": 0.03695721682004553,
+     "reduced_chi2": 0.006159536136674255,
+     "fitted": {
+      "primary_temperature": 5337.04155038625,
+      "secondary_temperature": 4346.7935998469375,
+      "primary_radius": 0.9557039044953805,
+      "secondary_radius": 0.9494867252007935,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 0.889254260609633,
+      "secondary_temperature": 16.88731166640655,
+      "primary_radius": 0.03097233311919551,
+      "secondary_radius": 0.05402892623226177
+     }
+    },
+    "6000/6000": {
+     "chi2": 0.036957216769009045,
+     "reduced_chi2": 0.006159536128168174,
+     "fitted": {
+      "primary_temperature": 5337.041568177585,
+      "secondary_temperature": 4346.793539610661,
+      "primary_radius": 0.9557039046523415,
+      "secondary_radius": 0.9494867246627983,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 0.8892545969297703,
+      "secondary_temperature": 16.88731281815179,
+      "primary_radius": 0.03097231670068089,
+      "secondary_radius": 0.054028982863335864
+     }
+    },
+    "7500/5500": {
+     "chi2": 0.03695721682705238,
+     "reduced_chi2": 0.0061595361378420635,
+     "fitted": {
+      "primary_temperature": 5337.04155394383,
+      "secondary_temperature": 4346.793586097022,
+      "primary_radius": 0.9557039048512733,
+      "secondary_radius": 0.9494867250597102,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 0.8892543278606798,
+      "secondary_temperature": 16.887311929311245,
+      "primary_radius": 0.030972295891907777,
+      "secondary_radius": 0.054028941083130846
+     }
+    },
+    "5000/7000": {
+     "chi2": 0.037265914052294936,
+     "reduced_chi2": 0.006210985675382489,
+     "fitted": {
+      "primary_temperature": 4356.599121708884,
+      "secondary_temperature": 5341.392444783062,
+      "primary_radius": 0.9554741845956571,
+      "secondary_radius": 0.9497091360826709,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 17.644629079227144,
+      "secondary_temperature": 2.1298746612440205,
+      "primary_radius": 0.05500161133293118,
+      "secondary_radius": 0.03061725445568638
+     }
+    }
+   },
+   "best_start": "6000/6000",
+   "chi2_min": 0.036957216769009045,
+   "starts_within_dchi2_1": [
+    "published",
+    "4500/4500",
+    "6000/6000",
+    "7500/5500",
+    "5000/7000"
+   ],
+   "teff_range_within_dchi2_1": {
+    "primary": [
+     4356.599121708884,
+     5337.041568177585
+    ],
+    "secondary": [
+     4346.793539610661,
+     5341.392444783062
+    ]
+   }
+  },
+  "HD184467": {
+   "published_teff": [
+    5340.0,
+    5185.0
+   ],
+   "benchmark_grid_files": [
+    "ckp00/ckp00_3500.fits",
+    "ckp00/ckp00_3750.fits",
+    "ckp00/ckp00_4000.fits",
+    "ckp00/ckp00_4250.fits",
+    "ckp00/ckp00_4500.fits",
+    "ckp00/ckp00_4750.fits",
+    "ckp00/ckp00_5000.fits",
+    "ckp00/ckp00_5250.fits",
+    "ckp00/ckp00_5500.fits",
+    "ckp00/ckp00_5750.fits",
+    "ckp00/ckp00_6000.fits",
+    "ckp00/ckp00_6250.fits",
+    "ckp00/ckp00_6500.fits",
+    "ckp00/ckp00_6750.fits",
+    "ckp00/ckp00_7000.fits",
+    "ckp00/ckp00_7250.fits",
+    "ckp00/ckp00_7500.fits",
+    "ckp00/ckp00_7750.fits",
+    "ckp00/ckp00_8000.fits",
+    "ckp00/ckp00_8250.fits",
+    "ckp00/ckp00_8500.fits",
+    "ckp00/ckp00_8750.fits",
+    "ckp00/ckp00_9000.fits",
+    "ckp00/ckp00_9250.fits",
+    "ckp00/ckp00_9500.fits",
+    "ckp00/ckp00_9750.fits",
+    "ckp00/ckp00_10000.fits"
+   ],
+   "benchmark_runner_result": {
+    "fitted": {
+     "primary_temperature": 5154.716805917353,
+     "secondary_temperature": 4983.509499322799,
+     "primary_radius": 0.8181935734980049,
+     "secondary_radius": 0.7763040475712502,
+     "ebv": 0.0
+    },
+    "reduced_chi2": 0.033632491810883604
+   },
+   "runs": {
+    "published": {
+     "chi2": 0.03346987131315411,
+     "reduced_chi2": 0.005578311885525686,
+     "fitted": {
+      "primary_temperature": 5347.414634699842,
+      "secondary_temperature": 4532.565999120788,
+      "primary_radius": 0.8314306293124556,
+      "secondary_radius": 0.7825061398695438,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 0.13885083707569817,
+      "secondary_temperature": 12.583105127853662,
+      "primary_radius": 0.0684339768683135,
+      "secondary_radius": 0.06307281359594757
+     }
+    },
+    "4500/4500": {
+     "chi2": 0.03346987124200163,
+     "reduced_chi2": 0.005578311873666939,
+     "fitted": {
+      "primary_temperature": 5347.414631813464,
+      "secondary_temperature": 4532.566008876333,
+      "primary_radius": 0.8314306290433376,
+      "secondary_radius": 0.7825061397026911,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 0.13885078302367865,
+      "secondary_temperature": 12.583104939704274,
+      "primary_radius": 0.06843400921422096,
+      "secondary_radius": 0.06307283490535279
+     }
+    },
+    "6000/6000": {
+     "chi2": 0.0334698713163144,
+     "reduced_chi2": 0.0055783118860524,
+     "fitted": {
+      "primary_temperature": 5347.414626340954,
+      "secondary_temperature": 4532.566022221318,
+      "primary_radius": 0.8314306291419759,
+      "secondary_radius": 0.7825061400632294,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 0.13885068054220737,
+      "secondary_temperature": 12.583104682327518,
+      "primary_radius": 0.06843399735866704,
+      "secondary_radius": 0.06307278885959725
+     }
+    },
+    "7500/5500": {
+     "chi2": 0.0334698713066841,
+     "reduced_chi2": 0.00557831188444735,
+     "fitted": {
+      "primary_temperature": 5347.414634282519,
+      "secondary_temperature": 4532.565999847964,
+      "primary_radius": 0.8314306294912058,
+      "secondary_radius": 0.7825061396468693,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 0.13885082926065204,
+      "secondary_temperature": 12.583105113829044,
+      "primary_radius": 0.06843395538391003,
+      "secondary_radius": 0.06307284203457267
+     }
+    },
+    "5000/7000": {
+     "chi2": 0.03378494733500381,
+     "reduced_chi2": 0.005630824555833969,
+     "fitted": {
+      "primary_temperature": 4596.685253661877,
+      "secondary_temperature": 5384.738051763833,
+      "primary_radius": 0.8314056523727249,
+      "secondary_radius": 0.7825325157707195,
+      "ebv": 0.0
+     },
+     "success": true,
+     "rel_err_pct": {
+      "primary_temperature": 13.919751804084699,
+      "secondary_temperature": 3.8522285778945617,
+      "primary_radius": 0.07143601289363706,
+      "secondary_radius": 0.059704243841705876
+     }
+    }
+   },
+   "best_start": "4500/4500",
+   "chi2_min": 0.03346987124200163,
+   "starts_within_dchi2_1": [
+    "published",
+    "4500/4500",
+    "6000/6000",
+    "7500/5500",
+    "5000/7000"
+   ],
+   "teff_range_within_dchi2_1": {
+    "primary": [
+     4596.685253661877,
+     5347.414634699842
+    ],
+    "secondary": [
+     4532.565999120788,
+     5384.738051763833
+    ]
+   }
+  }
+ }
+}

@@ -1,30 +1,37 @@
 """
+Changed in 0.2.0: the photometry benchmark files
+(validation/expected_results/Capella_photometry.json and
+AlphaCenAB_photometry.json) now hold REAL catalogue photometry and are
+written by scripts/build_real_sed_benchmarks.py. This script writes only
+the synthetic orbit benchmarks (Capella_orbit, AlphaCenAB_orbit); the
+synthetic photometry below is still generated (for reference) but is no
+longer written unless WRITE_SYNTHETIC_PHOTOMETRY is set to True. The
+real-data orbit benchmarks are scripts/capella_real_data.py and
+scripts/alpha_cen_real_data.py.
+
 Build the Capella and alpha Centauri AB benchmark systems --
 each a real, named, published binary with BOTH a determined
 visual(+RV) orbit AND well-characterized component stellar
 parameters, so each single system exercises both of PySeshat's
 two independent validated capabilities (orbit fitting,
-Al-Wardat-style SED fitting) at once. Requested explicitly by the
-user (2026-08-27): "two benchmark systems that cover both orbit
-determination and photometry" plus "named case studies" (per
-Development_Plan.pdf's Case Studies section, which names Capella
-and Sirius specifically -- alpha Centauri AB is used here in place
-of Sirius; see the module docstring bottom for why).
+grid-based SED fitting) at once. Capella and alpha Centauri AB
+serve as the named case studies (alpha Centauri AB is used in
+place of Sirius; see the end of this docstring for why).
 
 IMPORTANT — what is real data and what is synthetic, stated
 plainly
 --------------------------------------------------------------
 Unlike FIN379/GL765 (real individual WDS-sourced astrometric/RV
-measures) and the four Al-Wardat systems (the source paper's own
+measures) and the four Abushattal et al. (2025) systems (the source paper's own
 real, if synthetic-origin, Table 4 magnitudes), this script does
 NOT have access to the raw individual historical measures behind
 either system's published orbit (Capella's astrometry spans
 Merrill 1922 to CHARA-era interferometry; alpha Cen's spans over a
 century of visual micrometry) -- extracting those from the primary
-literature was attempted and found unreliable within this session
-(see the research notes in docs/paper_reference_notes.md). Rather
-than fabricate "real-looking" data from an unreliable extraction,
-both benchmarks here are built the honest way:
+literature was attempted and found unreliable. Rather than
+fabricate "real-looking" data from an unreliable extraction, both
+benchmarks here are built from literature elements plus explicitly
+synthetic observations:
 
 1. Orbital elements and component stellar parameters are taken
    VERBATIM from the cited literature (see CAPELLA_* / ALPHA_CEN_*
@@ -41,10 +48,10 @@ both benchmarks here are built the honest way:
    uncertainty, since none was available).
 
 This means these two benchmarks validate something specific and
-different from FIN379/GL765/the Al-Wardat four: not "does PySeshat
+different from FIN379/GL765/the Abushattal et al. (2025) four: not "does PySeshat
 reproduce this exact historical dataset's published fit" but "does
 PySeshat's fitter recover a published literature solution to high
-precision from noisy synthetic data honestly generated at that
+precision from noisy synthetic data generated at that
 solution" -- a real, meaningful, and precedented test (the same
 basic pattern `tests/test_perfect_orbit_recovery.py` already uses
 elsewhere in this codebase), just clearly labeled as such rather
@@ -68,10 +75,9 @@ add (four rows total -- orbit + photometry for each system).
 
 Why alpha Centauri AB in place of Sirius
 --------------------------------------------------------------
-Development_Plan.pdf's Case Studies section names "Capella, Sirius"
-as illustrative examples. Sirius is a poor fit for what PySeshat
+A natural pairing for Capella would be Sirius. Sirius is a poor fit for what PySeshat
 validates: its companion (Sirius B) is a white dwarf, not a
-Sun-like SB2 star the Al-Wardat SED method (or this codebase's CK04
+Sun-like SB2 star the binary SED method (or this codebase's CK04
 main-sequence/giant atmosphere grid) targets, and Sirius A itself
 massively outshines B (Delta-mag ~10), making "combined-light SED"
 fitting physically nonsensical for this pair (the method assumes
@@ -97,6 +103,7 @@ from pyseshat.orbit.rv_model import compute_rv_orbit
 from pyseshat.stellar.atmospheres import load_ck04_grid
 from pyseshat.photometry.filters import load_passband
 from pyseshat.photometry.model import synthetic_binary_magnitudes
+from pyseshat.photometry.calibration import vega_zero_points
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -104,27 +111,29 @@ VALIDATION_DIR = REPO_ROOT / "validation"
 SYSTEMS_DIR = VALIDATION_DIR / "benchmark_systems"
 EXPECTED_DIR = VALIDATION_DIR / "expected_results"
 
+# See the module docstring (0.2.0): the photometry files are real data now.
+WRITE_SYNTHETIC_PHOTOMETRY = False
+
 RNG = np.random.default_rng(20260827)
 
 _PASSBAND_FILES = {
     "Johnson U": "johnson_u.dat", "Johnson B": "johnson_b.dat",
-    "Johnson V": "johnson_v.dat", "Johnson R": "johnson_r.dat",
+    "Johnson V": "johnson_v.dat", "Cousins R": "cousins_r.dat",
     "Stromgren v": "stromgren_v.dat", "Stromgren b": "stromgren_b.dat",
     "Stromgren y": "stromgren_y.dat",
     "Tycho BT": "tycho_bt.dat", "Tycho VT": "tycho_vt.dat",
 }
 
-_ZERO_POINTS = {
-    "Johnson U": 3.49719e-9, "Johnson B": 6.72553e-9,
-    "Johnson V": 3.5833e-9, "Johnson R": 1.87529e-9,
-    "Stromgren v": 7.27101e-9, "Stromgren b": 5.78663e-9,
-    "Stromgren y": 3.6203e-9,
-    "Tycho BT": 6.50910e-9, "Tycho VT": 3.99504e-9,
-}
-# Same SVO Filter Profile Service Vega-system zero points as
-# validation/benchmark_runner.py's _ALWARDAT_ZERO_POINTS (Stromgren
-# u excluded here too, for consistency with the other four Al-Wardat
-# systems -- see docs/project_decisions.md for why).
+# Zero points as in validation/benchmark_runner.py: the CALSPEC Vega
+# spectrum integrated through the same passband files, on the standard
+# systems (pyseshat.photometry.calibration; changed in 0.2.0, before
+# which SVO "Vega = 0" values were used). Stromgren u is not generated,
+# so that the random draws, and hence the synthetic orbit data, stay
+# identical to earlier versions.
+_ZERO_POINTS = vega_zero_points({
+    name: load_passband(VALIDATION_DIR / "photometry" / "passbands" / fname, name=name)
+    for name, fname in _PASSBAND_FILES.items()
+})
 
 
 # ==========================================================
@@ -167,7 +176,6 @@ CAPELLA_PHOTOMETRIC = dict(
     ebv=0.0,                       # not published for this system;
                                     # treated as 0 given the 13 pc
                                     # distance -- see module docstring
-                                    # and docs/paper_reference_notes.md
 )
 
 
@@ -192,7 +200,7 @@ CAPELLA_PHOTOMETRIC = dict(
 # orbit paper -- both use the Pourbaix/Jorissen combined
 # astrometric-spectroscopic kappa=M_B/(M_A+M_B) parametrization
 # instead. This benchmark is therefore fit VISUAL-ASTROMETRY-ONLY
-# (no synthetic RV rows), honestly reflecting that gap rather than
+# (no synthetic RV rows), reflecting that limitation rather than
 # inventing K1/K2.
 
 ALPHA_CEN_ELEMENTS = dict(
@@ -230,8 +238,7 @@ ALPHA_CEN_PHOTOMETRIC = dict(
                                     # generated at this same 0.0, so
                                     # fitting at 0.0 keeps the
                                     # benchmark self-consistent; see
-                                    # scripts/ck04_metallicity_rerun_check.py
-                                    # and docs/paper_reference_notes.md.
+                                    # scripts/ck04_metallicity_rerun_check.py.
     ebv=0.0,                       # not published; treated as 0 given
                                     # the 1.34 pc distance (inside the
                                     # Local Bubble)
@@ -272,7 +279,7 @@ def _write_inp(path, object_name, ra, dec, elements, visual_rows, rv_rows):
     lines.append(
         "C Synthetic observations generated from the published "
         "orbital solution -- see scripts/build_joint_benchmarks.py "
-        "module docstring for the full, honest provenance statement."
+        "module docstring for the full provenance statement."
     )
 
     for t, theta, rho, sigma in visual_rows:
@@ -380,7 +387,7 @@ def _generate_photometry(photometric_dict, distance_pc):
         primary_logg=photometric_dict["primary_logg"],
         secondary_logg=photometric_dict["secondary_logg"],
         # The full 608-file CK04 grid (all 8 metallicity slices,
-        # validated 2026-09-02 -- see validation/atmosphere_models/)
+        # see validation/atmosphere_models/)
         # is available in this project, so metallicity here is a
         # deliberate choice, not a data-availability fallback: 0.0
         # is used because both Capella's and alpha Cen AB's
@@ -476,7 +483,7 @@ def build_capella():
     photometry_expected = {
         "system_name": "Capella",
         "aliases": ["alpha Aurigae", "HD 34029", "HIP 24608"],
-        "fitting_path": "alwardat_sed",
+        "fitting_path": "binary_sed",
         "supported": True,
         "reference": "Torres, Claret, Pavlovski & Dotter 2015, ApJ 807, 26, Table 3",
         "data_provenance": (
@@ -498,8 +505,8 @@ def build_capella():
                 "nearest available CK04 grid point (ckp00); "
                 f"literature [Fe/H]={CAPELLA_PHOTOMETRIC['metallicity']} "
                 "(Torres et al. 2015) is not itself used. The full "
-                "608-file CK04 grid (all 8 metallicity slices, "
-                "validated 2026-09-02) is available in this project, "
+                "608-file CK04 grid (all 8 metallicity slices) "
+                "is available in this project, "
                 "but 0.0 is kept: this system's measurements are "
                 "SYNTHETIC, forward-modeled by this same pipeline's "
                 "synthetic_binary_magnitudes() at metallicity=0.0, so "
@@ -507,8 +514,7 @@ def build_capella():
                 "benchmark's actual purpose (recovering the parameters "
                 "used to generate its own synthetic input), not a "
                 "data-availability fallback -- see "
-                "scripts/ck04_metallicity_rerun_check.py and "
-                "docs/project_decisions.md's 2026-09-02 CK04 audit entry."
+                "scripts/ck04_metallicity_rerun_check.py."
             ),
         },
         "primary_logg": {"value": CAPELLA_PHOTOMETRIC["primary_logg"], "source": "Torres et al. 2015"},
@@ -539,15 +545,18 @@ def build_capella():
         "radius_prior_note": (
             "10% relative sigma Gaussian prior on each component's "
             "radius, tied to the literature value -- same convention "
-            "as the other four Al-Wardat systems."
+            "as the other four SED systems."
         ),
     }
 
-    (EXPECTED_DIR / "Capella_photometry.json").write_text(
-        json.dumps(photometry_expected, indent=2) + "\n"
-    )
-
-    print("Capella: wrote Capella_orbit.inp, Capella_orbit.json, Capella_photometry.json")
+    if WRITE_SYNTHETIC_PHOTOMETRY:
+        (EXPECTED_DIR / "Capella_photometry.json").write_text(
+            json.dumps(photometry_expected, indent=2) + "\n"
+        )
+        print("Capella: wrote Capella_orbit.inp, Capella_orbit.json, Capella_photometry.json")
+    else:
+        print("Capella: wrote Capella_orbit.inp, Capella_orbit.json "
+              "(photometry: scripts/build_real_sed_benchmarks.py)")
 
 
 def build_alpha_cen_ab():
@@ -582,7 +591,7 @@ def build_alpha_cen_ab():
             "published (both orbit papers use a combined astrometric-"
             "spectroscopic kappa parametrization instead), so this "
             "system is fit VISUAL-ASTROMETRY-ONLY, with no synthetic RV "
-            "rows -- an honest gap, not filled with invented values. See "
+            "rows -- a documented limitation, not filled with invented values. See "
             "scripts/build_joint_benchmarks.py module docstring."
         ),
         "initial_parameters": {
@@ -608,7 +617,7 @@ def build_alpha_cen_ab():
     photometry_expected = {
         "system_name": "AlphaCenAB",
         "aliases": ["alpha Centauri", "HD 128620/128621"],
-        "fitting_path": "alwardat_sed",
+        "fitting_path": "binary_sed",
         "supported": True,
         "reference": "Heiter et al. 2015, A&A 582, A49 (Teff/L); Kervella et al. 2017, A&A 597, A137 (R/logg)",
         "data_provenance": (
@@ -664,15 +673,18 @@ def build_alpha_cen_ab():
         "radius_prior_note": (
             "10% relative sigma Gaussian prior on each component's "
             "radius, tied to the literature value -- same convention "
-            "as the other Al-Wardat systems."
+            "as the other SED systems."
         ),
     }
 
-    (EXPECTED_DIR / "AlphaCenAB_photometry.json").write_text(
-        json.dumps(photometry_expected, indent=2) + "\n"
-    )
-
-    print("AlphaCenAB: wrote AlphaCenAB_orbit.inp, AlphaCenAB_orbit.json, AlphaCenAB_photometry.json")
+    if WRITE_SYNTHETIC_PHOTOMETRY:
+        (EXPECTED_DIR / "AlphaCenAB_photometry.json").write_text(
+            json.dumps(photometry_expected, indent=2) + "\n"
+        )
+        print("AlphaCenAB: wrote AlphaCenAB_orbit.inp, AlphaCenAB_orbit.json, AlphaCenAB_photometry.json")
+    else:
+        print("AlphaCenAB: wrote AlphaCenAB_orbit.inp, AlphaCenAB_orbit.json "
+              "(photometry: scripts/build_real_sed_benchmarks.py)")
 
 
 if __name__ == "__main__":
@@ -683,7 +695,7 @@ if __name__ == "__main__":
     print(
         "\nAdd to validation/benchmark_registry.csv:\n"
         "Capella_orbit.inp,Capella,combined VB+SB2 (synthetic),yes,joint orbit+photometry case study (Torres et al. 2015); paired with Capella_photometry.json\n"
-        "Capella_photometry.json,Capella (photometry),Al-Wardat SED (synthetic),yes,joint orbit+photometry case study (Torres et al. 2015); paired with Capella_orbit.inp\n"
+        "Capella_photometry.json,Capella (photometry),binary SED (synthetic),yes,joint orbit+photometry case study (Torres et al. 2015); paired with Capella_orbit.inp\n"
         "AlphaCenAB_orbit.inp,alpha Cen AB,visual binary no RV (synthetic),yes,joint orbit+photometry case study (Akeson et al. 2021); Sirius-B-is-a-white-dwarf substitute; paired with AlphaCenAB_photometry.json\n"
-        "AlphaCenAB_photometry.json,alpha Cen AB (photometry),Al-Wardat SED (synthetic),yes,joint orbit+photometry case study (Heiter et al. 2015/Kervella et al. 2017); paired with AlphaCenAB_orbit.inp\n"
+        "AlphaCenAB_photometry.json,alpha Cen AB (photometry),binary SED (synthetic),yes,joint orbit+photometry case study (Heiter et al. 2015/Kervella et al. 2017); paired with AlphaCenAB_orbit.inp\n"
     )

@@ -4,8 +4,7 @@ hierarchical-triple benchmark systems (ZetaAqr, HIP111805).
 
 Uses the SAME fitted solution validation/benchmark_runner.py's
 run_orbit3_benchmark() produces for the paper's Section 3.2 benchmark
-table (ZetaAqr: chi_square~=694.51 -- see docs/paper_reference_notes.md
-Section 3.3 and docs/project_decisions.md's dated ORBIT3 entry) -- NOT
+table (ZetaAqr: chi_square~=686.84 since the 0.2.0 fit fix) -- NOT
 a separately re-fit solution -- so the plotted curve and the reported
 numeric benchmark result cannot silently drift apart. This script
 prints run_orbit3_benchmark()'s own chi_square for each system so that
@@ -21,17 +20,15 @@ already-tested steps run_orbit3_benchmark() itself performs internally
 -> _build_orbit3_elements -> fit_orbit3), reusing benchmark_runner's
 own helper functions verbatim rather than reimplementing any of them.
 
-Uses pyseshat.visualization.triple_orbit_plot.plot_triple_orbit() (new
-this pass -- see that module's docstring) to draw both ORBIT3 visual
+Uses pyseshat.visualization.triple_orbit_plot.plot_triple_orbit() (see
+that module's docstring) to draw both ORBIT3 visual
 observables side by side: POS1 (the resolved inner orbit) and POS2
 (the wobble-corrected wide/outer orbit, POS2 = r_outer + f*r_inner) --
 never a raw, un-wobble-corrected outer orbit against observations that
 actually contain the wobble term (see docs/guide/visualization.md /
-docs/guide/triple_systems.md's "No orbit plot yet for triples" note,
-now resolved).
+docs/guide/triple_systems.md).
 
-ZetaAqr's one known residual-anomaly epoch (2009.7552 -- see
-docs/paper_reference_notes.md Section 3.3) is drawn with a distinct
+ZetaAqr's one known residual-anomaly epoch (2009.7552) is drawn with a distinct
 marker/color on the inner-orbit panel.
 
 Run with:
@@ -42,9 +39,15 @@ Run with:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
+
+_ROOT = Path(__file__).resolve().parents[1]
+for _p in (_ROOT / "src", _ROOT / "validation"):   # works without PYTHONPATH (also on Windows)
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 import matplotlib
 matplotlib.use("Agg")
@@ -73,12 +76,10 @@ ZETAAQR_ANOMALY_EPOCH = 2009.7552
 ZETAAQR_ANOMALY_TOLERANCE = 1e-3
 
 # ------------------------------------------------------------
-# Paper figure-generation pipeline defaults (2026-08-30).
+# Paper figure-generation pipeline defaults.
 #
 # A&A has specifically requested vector PDF without grid lines
-# for this paper's submitted figures -- see
-# docs/project_decisions.md's dated "Plotting-module
-# show_grid/output_format/save_path parameters..." entry. This
+# for this paper's submitted figures. This
 # is a PIPELINE-level default, not a plotting-function-level
 # one: plot_triple_orbit() itself still defaults to
 # output_format="png", show_grid=True (unchanged, for general/
@@ -261,7 +262,7 @@ def generate_for_system(
         title=title,
         inner_highlight_mask=inner_highlight,
         highlight_label=(
-            f"Epoch {anomaly_epoch} (residual anomaly, see Sec. 3.3)"
+            f"Epoch {anomaly_epoch} (residual anomaly, Sect. 3.2)"
             if anomaly_epoch is not None
             else "Flagged observation"
         ),
@@ -277,7 +278,7 @@ def generate_for_system(
     print()
 
     return {
-        "path": str(out_path.relative_to(REPO_ROOT)),
+        "path": out_path.relative_to(REPO_ROOT).as_posix(),
         "chi_square": final_chi2,
         "n_inner_obs": len(i1_obs),
         "n_outer_obs": len(i2_obs),
@@ -292,10 +293,7 @@ def main():
     manifest["ZetaAqr"] = generate_for_system(
         "ZetaAqr",
         SYSTEMS_DIR / "ZetaAqr" / "ZetaAqr.in2",
-        title=(
-            "ζ Aquarii -- ORBIT3 hierarchical-triple solution "
-            "(χ²=694.51)"
-        ),
+        title="ζ Aquarii -- ORBIT3 hierarchical-triple solution",
         out_name="triple_orbit.pdf",
         anomaly_epoch=ZETAAQR_ANOMALY_EPOCH,
         anomaly_tolerance=ZETAAQR_ANOMALY_TOLERANCE,

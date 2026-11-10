@@ -390,8 +390,8 @@ def log_photometric_prior(
     explored, so its bound-prior would only ever contribute a
     constant offset to every point in parameter space, which
     doesn't affect the posterior shape and is dropped for
-    simplicity. ``PhotometricParameters`` objects predating the
-    2026-08-27 fit-flags mechanism have no ``fit_flags``/
+    simplicity. ``PhotometricParameters`` objects lacking the
+    fit-flags mechanism have no ``fit_flags``/
     ``priors`` attributes at all; ``getattr(..., None)`` below
     treats that the same as "everything fitted, no priors" so
     this function stays backward compatible with any such

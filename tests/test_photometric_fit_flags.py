@@ -1,11 +1,9 @@
 """
 Regression tests for PhotometricParameters' fit-flags/Gaussian-
-prior mechanism (added 2026-08-27), mirroring
+prior mechanism, mirroring
 OrbitalElements.fit_flags -- see photometry/parameters.py's
-class docstring and docs/project_decisions.md, "PhotometricParameters
-fit-flags/prior mechanism" for the full design rationale. This
-mechanism replaces validation/benchmark_runner.py's earlier
-near-zero-width-bounds "pinning" workaround: a parameter can now
+class docstring. This
+mechanism replaces a near-zero-width-bounds "pinning" workaround: a parameter can now
 be genuinely held fixed (fit_flags[name]=False, simply absent
 from the optimizer's parameter vector) or freed with a soft
 Gaussian prior tying it to an independent literature estimate,
@@ -218,8 +216,8 @@ def test_log_photometric_prior_skips_fixed_parameter_bounds():
 
 def test_log_photometric_prior_backward_compatible_with_no_fit_flags_attribute():
 
-    # A bare object without fit_flags/priors (predating the
-    # 2026-08-27 mechanism) must still be handled: every bound-
+    # A bare object without fit_flags/priors (lacking the
+    # fit-flags mechanism) must still be handled: every bound-
     # prior applies, matching the original unconditional
     # behavior.
 

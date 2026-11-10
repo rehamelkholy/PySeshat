@@ -4,16 +4,16 @@
     "alpha Centauri",
     "HD 128620/128621"
   ],
-  "fitting_path": "alwardat_sed",
+  "fitting_path": "binary_sed",
   "supported": true,
-  "reference": "Heiter et al. 2015, A&A 582, A49 (Teff/L); Kervella et al. 2017, A&A 597, A137 (R/logg)",
+  "reference": "Heiter et al. 2015, A&A 582, A49 (Teff); Kervella et al. 2017, A&A 597, A137 (R, log g); photometry: Mermilliod 1991 (VizieR II/168)",
   "evolutionary_track_source": {
     "grid": "Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126",
     "metallicity_used": 0.019,
     "overshoot_used": 1,
     "metallicity_note": "Z=0.019 (Y=0.273) is the paper's own identified solar-composition value (Sect. 2: \"almost identical to the Z=0.01886 favoured by Anders & Grevesse 1989\"), appropriate for this Sun-like system.",
     "status": "run",
-    "status_note": "[2026-08-29] Real Girardi (2000) evolutionary-track/isochrone data was obtained and run against this system: VizieR catalog J/A+AS/141/371 (tables mstracks, isochron), Z=0.019 (Y=0.273), Overshoot=1. Source data: Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126. Loader: pyseshat.evolution.parsers.girardi2000.load_girardi2000_vizier_tracks/_isochrones, wired as this project's default grid via pyseshat.evolution.grids.load_default_evolution_model(). Pipeline: pyseshat.evolution.benchmark_checks.run_system_evolutionary_check (nearest_track -> fit_track independently per component -> fit_common_age jointly), the same code scripts/run_evolutionary_checks.py and scripts/generate_benchmark_plots.py's generate_hrdiagrams() both use, so this recorded result, the numeric report, and the HR-diagram figure cannot silently drift apart. mass_source: AlphaCenAB_orbit.json component_masses_Msun (Akeson et al. 2021 Table 8) primary: requested M=1.079 Msun -> nearest track M=1.1 Msun (1.97% off); independent best-fit age=1.981e+09 yr (1.98 Gyr), chi2=3.228, state=dwarf/main-sequence (log g >= 4.0). FLAG (primary): best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 40% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2 secondary: requested M=0.9092 Msun -> nearest track M=0.9 Msun (1.01% off); independent best-fit age=2.080e+09 yr (2.08 Gyr), chi2=0.590, state=dwarf/main-sequence (log g >= 4.0). FLAG (secondary): best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 98% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2 independent-fit age_difference: 9.840e+07 yr (0.10 Gyr) (4.7% of the older independent age). common-age (joint) fit: age=2.080e+09 yr (2.08 Gyr), chi2=3.766, primary log g=4.397 (dwarf/main-sequence (log g >= 4.0)), secondary log g=4.562 (dwarf/main-sequence (log g >= 4.0)). No prior age/mass/evolutionary-stage numbers for this system existed anywhere else in this project's documentation before this run -- there is nothing to compare against for a discrepancy; this is the first time such numbers have been computed here. (Separate comparison against the source paper's own stated age, if any, was not performed as part of this run.)",
+    "status_note": "Real Girardi (2000) evolutionary-track/isochrone data was run against this system: VizieR catalog J/A+AS/141/371 (tables mstracks, isochron), Z=0.019 (Y=0.273), Overshoot=1. Source data: Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126. Loader: pyseshat.evolution.parsers.girardi2000.load_girardi2000_vizier_tracks/_isochrones, wired as the default grid via pyseshat.evolution.grids.load_default_evolution_model(). Pipeline: pyseshat.evolution.benchmark_checks.run_system_evolutionary_check (nearest_track -> fit_track independently per component -> fit_common_age jointly), the same code scripts/run_evolutionary_checks.py and scripts/generate_benchmark_plots.py's generate_hrdiagrams() both use, so this recorded result, the numeric report, and the HR-diagram figure cannot silently drift apart. mass_source: AlphaCenAB_orbit.json component_masses_Msun (Akeson et al. 2021 Table 8) primary: requested M=1.079 Msun -> nearest track M=1.1 Msun (1.97% off); independent best-fit age=1.981e+09 yr (1.98 Gyr), chi2=3.228, state=dwarf/main-sequence (log g >= 4.0). FLAG (primary): best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 40% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2 secondary: requested M=0.9092 Msun -> nearest track M=0.9 Msun (1.01% off); independent best-fit age=2.080e+09 yr (2.08 Gyr), chi2=0.590, state=dwarf/main-sequence (log g >= 4.0). FLAG (secondary): best-fit age point falls in a sparsely-sampled part of this track's age grid (local spacing 98% of the age there, > 20% threshold) -- the age is only as well-constrained as this spacing allows, independent of the fit's chi2 independent-fit age_difference: 9.840e+07 yr (0.10 Gyr) (4.7% of the older independent age). common-age (joint) fit: age=2.080e+09 yr (2.08 Gyr), chi2=3.766, primary log g=4.397 (dwarf/main-sequence (log g >= 4.0)), secondary log g=4.562 (dwarf/main-sequence (log g >= 4.0)). No independent literature age/mass/evolutionary-stage values are recorded for this system, so no discrepancy comparison is made. (No comparison against the source paper's own stated age, if any, is performed.)",
     "data_provenance": "VizieR catalog J/A+AS/141/371 (tables mstracks, isochron), Z=0.019 (Y=0.273), Overshoot=1",
     "result_summary": {
       "mass_source": "AlphaCenAB_orbit.json component_masses_Msun (Akeson et al. 2021 Table 8)",
@@ -51,16 +51,17 @@
     },
     "full_numeric_results": "validation/results/evolutionary_checks.json",
     "hrdiagram_figure": "validation/results/plots/AlphaCenAB/hrdiagram.png",
-    "prior_grid": "None -- no evolutionary-track grid (Girardi, PARSEC, or otherwise) had ever been run against this system before this entry; PARSEC parsing infrastructure existed in the codebase but with zero bundled data and zero benchmark wiring."
+    "prior_grid": "None -- no other evolutionary-track grid (Girardi, PARSEC, or otherwise) has been run against this system; PARSEC parsing infrastructure exists in the codebase but with no bundled data and no benchmark wiring."
   },
-  "data_provenance": "SYNTHETIC measurements: combined-light magnitudes are generated from this file's own literature Teff/R/logg via PySeshat's own synthetic_binary_magnitudes(), plus Gaussian noise at an ASSUMED 0.03 mag representative precision -- a forward-model self-consistency check, not a comparison to independently-observed sky photometry (alpha Cen A/B are individually resolved in reality, so real combined-light photometry isn't the natural observable for this pair -- see scripts/build_joint_benchmarks.py module docstring). [M/H]=0.0 (ckp00) is used as the nearest available grid point to the literature's slightly metal-rich estimate, not itself a literature value.",
+  "data_provenance": "REAL measurements (0.2.0): Johnson UBV of alpha Cen A (V 0.00, B-V 0.69, U-B 0.23) and B (V 1.35, B-V 0.90, U-B 0.63) from VizieR II/168/ubvmeans (two observations, one publication, no errors), combined into total-light magnitudes and B - A magnitude differences. Uncertainties: 0.020 (B-V) and 0.028 (U-B) mag, the typical single-value uncertainties of Maiz Apellaniz (2006) Tables 9-10, and an assumed 0.02 mag in V; correlations between the combined magnitudes and the differences are ignored. Distance = 1/pi_orb from PySeshat's own orbit fit of the Akeson et al. (2021) data (dataset weighting; scripts/build_real_sed_benchmarks.py). Replaces the synthetic photometry used before 0.2.0.",
   "distance_pc": {
-    "value": 1.3318948868555294,
-    "source": "Akeson et al. 2021 (system parallax)"
+    "value": 1.335152,
+    "sigma": 0.001627,
+    "source": "orbital parallax of PySeshat's real-data orbit fit"
   },
   "metallicity": {
-    "value": 0.0,
-    "source": "nearest available CK04 grid point (ckp00, [M/H]=0.0). Literature [Fe/H]~=+0.23 (e.g. Morel 2018, A&A 615, A172: 'a robust value, [Fe/H] ~ +0.23 dex'); +0.2 (ckp02) is the nearest available grid step to that literature value. Re-verified 2026-09-02 after the full 608-file CK04 grid was downloaded: this system's photometric measurements are SYNTHETIC, forward-modeled by this same pipeline's synthetic_binary_magnitudes() at metallicity=0.0 (scripts/build_joint_benchmarks.py), so 0.0 is the self-consistent choice for this benchmark's actual purpose. Empirically tested fitting at +0.2 instead (script: scripts/ck04_metallicity_rerun_check.py) and confirmed it makes the fit WORSE, as expected for a deliberate synthetic-data/fit-grid metallicity mismatch: reduced chi2 2.25->2.92, primary_temperature rel. err. 7.00%->11.69%, secondary_temperature rel. err. 14.70%->19.23%. Kept at 0.0."
+    "value": 0.2,
+    "source": "nearest CK04 grid point (ckp02) to [Fe/H] ~ +0.23 (Morel 2018, A&A 615, A172, Sect. 5.1: 'a robust value, [Fe/H] ~ +0.23 dex')"
   },
   "primary_logg": {
     "value": 4.3117,
@@ -71,74 +72,47 @@
     "source": "Kervella et al. 2017"
   },
   "atmosphere_files": [
-    "ckp00/ckp00_4750.fits",
-    "ckp00/ckp00_5000.fits",
-    "ckp00/ckp00_5250.fits",
-    "ckp00/ckp00_5500.fits",
-    "ckp00/ckp00_5750.fits",
-    "ckp00/ckp00_6000.fits",
-    "ckp00/ckp00_6250.fits"
+    "ckp02/ckp02_4250.fits",
+    "ckp02/ckp02_4500.fits",
+    "ckp02/ckp02_4750.fits",
+    "ckp02/ckp02_5000.fits",
+    "ckp02/ckp02_5250.fits",
+    "ckp02/ckp02_5500.fits",
+    "ckp02/ckp02_5750.fits",
+    "ckp02/ckp02_6000.fits",
+    "ckp02/ckp02_6250.fits",
+    "ckp02/ckp02_6500.fits",
+    "ckp02/ckp02_6750.fits"
   ],
   "measurements": [
     {
       "passband": "Johnson U",
-      "magnitude": 0.3733,
-      "uncertainty": 0.03
+      "magnitude": 0.7547,
+      "uncertainty": 0.0346
     },
     {
       "passband": "Johnson B",
-      "magnitude": 0.4638,
-      "uncertainty": 0.03
+      "magnitude": 0.4585,
+      "uncertainty": 0.0235
     },
     {
       "passband": "Johnson V",
-      "magnitude": -0.3308,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Johnson R",
-      "magnitude": -0.7912,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Stromgren v",
-      "magnitude": 0.6736,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Stromgren b",
-      "magnitude": 0.0655,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Stromgren y",
-      "magnitude": -0.3072,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Tycho BT",
-      "magnitude": 0.5776,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Tycho VT",
-      "magnitude": -0.2166,
-      "uncertainty": 0.03
+      "magnitude": -0.2751,
+      "uncertainty": 0.0162
     }
   ],
   "initial_parameters": {
-    "primary_temperature": 5618.24,
-    "secondary_temperature": 5387.93,
-    "primary_radius": 1.16223,
-    "secondary_radius": 0.90636,
+    "primary_temperature": 5500.0,
+    "secondary_temperature": 5500.0,
+    "primary_radius": 1.2234,
+    "secondary_radius": 0.8632,
     "ebv": 0.0
   },
   "free_parameters": [
     "primary_temperature",
     "secondary_temperature",
     "primary_radius",
-    "secondary_radius",
-    "ebv"
+    "secondary_radius"
   ],
   "literature_component_parameters": {
     "primary": {
@@ -150,5 +124,35 @@
       "radius_Rsun": 0.8632
     }
   },
-  "radius_prior_note": "10% relative sigma Gaussian prior on each component's radius, tied to the literature value -- same convention as the other Al-Wardat systems."
+  "radius_prior_note": "10% relative sigma Gaussian prior on each component's radius, tied to the literature value -- same convention as the other SED systems.",
+  "component_magnitudes": {
+    "A": {
+      "Johnson V": 0.0,
+      "Johnson B": 0.69,
+      "Johnson U": 0.9199999999999999
+    },
+    "B": {
+      "Johnson V": 1.35,
+      "Johnson B": 2.25,
+      "Johnson U": 2.88
+    }
+  },
+  "magnitude_differences": [
+    {
+      "passband": "Johnson U",
+      "value": 1.96,
+      "uncertainty": 0.0563
+    },
+    {
+      "passband": "Johnson B",
+      "value": 1.56,
+      "uncertainty": 0.04
+    },
+    {
+      "passband": "Johnson V",
+      "value": 1.35,
+      "uncertainty": 0.0283
+    }
+  ],
+  "ebv_note": "E(B-V) held at 0 (1.3 pc)."
 }

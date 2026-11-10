@@ -30,11 +30,11 @@ independent best-fit ages actually are. A full common-age fit
 share one age directly rather than just measuring the discrepancy after
 the fact.
 
-## How this connects to Al-Wardat SED fitting
+## How this connects to binary SED fitting
 
-This is the module that gives the real Al-Wardat method its second half
+This is the module that gives the real binary SED-fitting method its second half
 — SED fitting alone cannot separate two unresolved components' radii
-(see `alwardat_sed.md`'s degeneracy finding), so the published method
+(see `binary_sed.md`'s degeneracy finding), so the published method
 uses an evolutionary-track cross-check as the external constraint that
 breaks the degeneracy. `photometry/evolution_adapter.py` and
 `inference/joint_likelihood.py`'s `JointInferenceProblem` already
@@ -53,173 +53,102 @@ evolutionary-track code being missing.
 `tests/test_evolution_adapter.py`, `tests/test_interpolate.py`, and
 `tests/test_hrdiagram_plot.py` cover the individual pieces
 (track/isochrone interpolation, the adapter, and HR-diagram plotting —
-see `visualization.md`) with synthetic tracks. **[2026-08-29]**
+see `visualization.md`) with synthetic tracks.
 `tests/test_evolution_grids.py` and `tests/test_evolution_binary.py`
-now additionally cover the grid-loading/lookup/fitting layer itself
+additionally cover the grid-loading/lookup/fitting layer itself
 (`evolution/grids.py`, `evolution/parsers/parsec.py`,
 `evolution/parsers/girardi2000.py`, `evolution/search.py`,
-`evolution/age.py`, `evolution/binary.py`) — previously untested: this
-parsing/fitting layer had zero direct test coverage before this entry.
-None of the six
-registered systems that would use it (the four Al-Wardat SED systems
-plus Capella/AlphaCenAB's photometry rows) currently run a real
-evolutionary-track cross-check as part of
-`validation/benchmark_runner.py` — this is the same gap as the missing
-radius-prior wiring above, and is tracked the same way.
+`evolution/age.py`, `evolution/binary.py`).
+`validation/benchmark_runner.py` does not itself run the evolutionary-track
+cross-check for the six registered systems that use it (the four binary SED
+systems plus Capella/AlphaCenAB's photometry rows); it is run separately via
+`scripts/run_evolutionary_checks.py` (see below). This is the same gap as the
+missing radius-prior wiring above.
 
-## Evolutionary-track grid: which one, and its current state (2026-08-29)
+## Evolutionary-track grid: which one
 
-**Decision: Girardi et al. (2000), A&AS, 141, 371,
-doi:10.1051/aas:2000126, at Z=0.019 (solar), is this project's default
-evolutionary-track/isochrone grid**, for direct comparability with the
-Al-Wardat SED-fitting literature this project benchmarks against — the
-HD25811, HIP70973/HIP72479, and HIP102029 papers, and by extension
-Abushattal et al. 2025 (arXiv:2512.23652), whose four SB2 systems
-(HD214222, HD191854, HD130669, HD184467) are this project's own SED
-benchmarks, all consistently place their fitted components on Girardi
-(2000) tracks/isochrones.
+**Default grid: Girardi et al. (2000), A&AS, 141, 371,
+doi:10.1051/aas:2000126, at Z=0.019 (solar)**, chosen for direct
+comparability with the binary SED-fitting literature this package
+benchmarks against — the HD25811, HIP70973/HIP72479, and HIP102029
+papers, and by extension Abushattal et al. 2025 (arXiv:2512.23652),
+whose four SB2 systems (HD214222, HD191854, HD130669, HD184467) are
+this package's SED benchmarks, all consistently place their fitted
+components on Girardi (2000) tracks/isochrones.
 
-**Prior state, confirmed by direct audit before this change.** No
-evolutionary-track grid — Girardi, PARSEC, or otherwise — was
-previously wired in with any real data, and no prior decision on grid
-choice existed in this repo's own documentation. Specifically:
+Grid-selection layering:
 
 - `evolution/binary.py`'s functions (`fit_binary_tracks`,
-  `fit_binary_evolution_from_orbit`) are, and remain, fully
-  grid-agnostic — they take an `EvolutionModel` as an explicit
-  parameter and never import or reference any specific grid by name.
-  There was nothing to "replace" at that layer.
-- `photometry/evolution_adapter.py` is, and remains, a pure
-  data-format bridge (`PhotometricParameters` → `StellarObservables`)
-  with no grid-selection logic of any kind.
-- `evolution/grids.py`/`evolution/parsers/parsec.py` provided parsing
-  *infrastructure* for exactly one grid family (PARSEC), but **zero
-  PARSEC data files were ever bundled or referenced anywhere in the
-  codebase** — `load_parsec()` requires the caller to supply
-  `track_files`/`isochrone_files` explicitly and defaults to empty
-  tuples. No external track files were ever referenced or needed
-  anywhere in the codebase at this layer. "PARSEC" was never a
-  considered literature-comparability decision — it was simply the one
-  parser format that happened to be implemented, with no data behind
-  it.
-- The commonly-cited `tests/test_parsec.py` "exercising the parser
-  against synthetic fixture data" did not actually exist in the
-  repository (see the section above) — the parser had literally never
-  been run against any file, synthetic or real, before 2026-08-29.
+  `fit_binary_evolution_from_orbit`) are fully grid-agnostic — they take
+  an `EvolutionModel` as an explicit parameter and never import or
+  reference any specific grid by name.
+- `photometry/evolution_adapter.py` is a pure data-format bridge
+  (`PhotometricParameters` → `StellarObservables`) with no grid-selection
+  logic of any kind.
+- `evolution/grids.py` registers parsers for two grid families,
+  `"girardi2000"` (the default, `DEFAULT_EVOLUTION_MODEL_NAME`) and
+  `"parsec"`, in `load_model()`'s supported-models table.
+  `load_parsec()` requires the caller to supply
+  `track_files`/`isochrone_files` explicitly; no PARSEC data files are
+  bundled.
+- `evolution/parsers/girardi2000.py` documents the grid's citation,
+  metallicity coverage (Z = 0.0004, 0.001, 0.004, 0.008, 0.019, 0.03;
+  Z=0.019 is the paper's own identified solar value), and mass coverage
+  (0.15-7 Msun, solar-scaled, not alpha-enhanced composition).
+  `load_default_evolution_model()` loads the copy bundled with the
+  package (`pyseshat/evolution/data/girardi2000/`) and raises a clear
+  `FileNotFoundError` if the files are missing from the given
+  `data_dir`, rather than silently returning an empty or fabricated
+  grid.
+- The shared `_load_ascii_table()` helper used by the generic parsers
+  pre-filters whole comment lines before handing the text to
+  `numpy.genfromtxt`, because `genfromtxt(..., comments="#")` only strips
+  the `#` character from a line, not the whole line, so a descriptive
+  comment header with a different word count than the real data header
+  would otherwise break column-count detection; this is covered in
+  `tests/test_evolution_grids.py`.
 
-**What changed on 2026-08-29 (code-level integration).**
-`evolution/parsers/girardi2000.py` was added, mirroring the PARSEC
-parser's design exactly (a caller-supplied `column_map` from canonical
-field name to actual file column name, so the parser does not need to
-assume the literal CDS header spelling of a real downloaded copy of
-the tables) and documenting the grid's real citation, metallicity
-coverage (Z = 0.0004, 0.001, 0.004, 0.008, 0.019, 0.03; Z=0.019 is the
-paper's own identified solar value), and mass coverage (0.15-7 Msun,
-solar-scaled, not alpha-enhanced composition) directly from the
-published paper. `evolution/grids.py` registers it as `"girardi2000"`
-in `load_model()`'s supported-models table, alongside the pre-existing
-`"parsec"` entry (kept, unchanged, exactly as it was — nothing was
-removed), and adds `DEFAULT_EVOLUTION_MODEL_NAME = "girardi2000"` plus
-a `load_default_evolution_model()` convenience function that raises a
-clear, informative `FileNotFoundError` when no data has actually been
-placed at the conventional `data/evolution/girardi2000/` location —
-an honest failing default rather than a stub that would silently
-return an empty or fabricated grid. While fixing up this parsing layer
-a real, previously-latent bug was also found and fixed in *both*
-parsers' shared `_load_ascii_table()` helper: `numpy.genfromtxt(...,
-comments="#")` only strips the `#` character from a line, not the
-whole line, so a descriptive comment header whose remaining text
-happens to have a different word count than the real data header
-(exactly the kind of comment line a real downloaded CDS table has)
-made column-count detection fail on every data row. This had never
-been caught because, per the point above, the parser had never
-actually been run against any file with a comment line before. Fixed
-by pre-filtering whole comment lines before handing the text to
-`genfromtxt`; regression-tested in `tests/test_evolution_grids.py`.
+## Obtaining the Girardi (2000) data
 
-**What did *not* change, and why: no real numeric grid data has been
-sourced.** Actually obtaining the Girardi (2000) tabulated
-tracks/isochrones requires reaching an external astronomy data
-service, and every avenue available from this development environment
-was tried and confirmed blocked on 2026-08-29:
+The Z = 0.019 grid used by default is bundled with the package (the
+VizieR tables, unchanged; see
+`src/pyseshat/evolution/data/girardi2000/README.md`), so no download is
+needed. To use another copy, pass `data_dir=` to
+`load_default_evolution_model()`. The tables are available from:
 
-- Direct network access (`curl`/`urllib`) from the cloud sandbox is
-  blocked at the organization egress-proxy level — confirmed not just
-  for astronomy-specific hosts but for a plain `google.com` request
-  too (`CONNECT tunnel failed, response 403`), so this is a blanket
-  policy, not a per-domain block.
-- The same egress restriction was independently confirmed on the
-  user's own linked device (`device_bash`) — `stev.oapd.inaf.it`,
-  `vizier.cds.unistra.fr`, and `cdsarc.cds.unistra.fr` all returned
-  `403` through that machine's proxy too.
-- `WebFetch` (a page-fetch-and-summarize tool, not a general HTTP
-  client) *does* reach some of these hosts read-only — it confirmed
-  the Padova group's **legacy** CMD 2.7 interface
-  (`https://stev.oapd.inaf.it/cgi-bin/cmd_2.7`) still lists "Girardi
-  et al. (2000) + simplified TP-AGB (for M<=7 Msun) + Bertelli et al.
-  (1994)" as a selectable track/isochrone set (the *current*
-  PARSEC-only CMD form at `/cgi-bin/cmd` does not offer it at all) —
-  but it cannot submit the resulting CGI form or download the
-  computed output table, only view static page text.
-- VizieR (`vizier.cds.unistra.fr`, catalog J/A+AS/141/371) and the CDS
-  FTP archive (`cdsarc.cds.unistra.fr`) both refuse `WebFetch` as well
-  — VizieR with an active bot-detection "Access Denied" page, CDS FTP
-  via `robots.txt`.
-- No browser-automation session was available (the Chrome extension
-  bridge reported "not connected") to drive the CMD 2.7 form
-  interactively instead.
+- VizieR catalog **J/A+AS/141/371** (tables `mstracks` and `isochron`),
+  exported as ASU-TSV;
+- the Padova group's legacy CMD 2.7 interface
+  (`https://stev.oapd.inaf.it/cgi-bin/cmd_2.7`), which still lists
+  "Girardi et al. (2000) + simplified TP-AGB (for M<=7 Msun) + Bertelli
+  et al. (1994)" as a selectable track/isochrone set (the current
+  PARSEC-only CMD form does not offer it).
 
-This is a confirmed external blocker, the same category as the
-Gaia-archive network block already documented for `io/gaia_parser.py`
-(see `data_formats.md`'s Gaia section) — not something fixable from
-within this session, and not
-something to work around by approximating or fabricating grid values:
-per this project's own standing rule, no evolutionary-track numeric
-data is invented. **Consequently, no evolutionary consistency check
-has been run against any of the six systems that would use this grid**
-(the four Al-Wardat SED systems, plus Capella and alpha Cen AB's
-photometry rows) — each system's `validation/expected_results/*.json`
-now carries an `evolutionary_track_source` provenance block recording
-this decision and this exact blocker (`"status": "not yet run"`), so
-that nobody mistakes silence in that file for a completed check. No
-system's evolutionary-stage placement changed as a result of unblocking
-this, because none was ever computed against a real grid to begin with
-(there is nothing to have shifted from).
-
-**To unblock this**, a real copy of the Girardi (2000) tracks and
-isochrones at Z=0.019 needs to reach this repository from a network
-that isn't behind the same egress restriction — e.g. downloaded by the
-user directly from the CMD 2.7 form
-(`https://stev.oapd.inaf.it/cgi-bin/cmd_2.7`) or from VizieR catalog
-J/A+AS/141/371 on an unrestricted connection, then supplied as
-attached files or placed at `data/evolution/girardi2000/`. Once real
-files are in hand, `load_model("girardi2000", track_files=...,
-isochrone_files=..., track_column_map=..., isochrone_column_map=...,
-track_metadata=..., isochrone_metadata=...)` loads them directly (see
+`load_default_evolution_model()` returns a loaded `EvolutionModel`;
+alternatively call
+`load_model("girardi2000", track_files=..., isochrone_files=...,
+track_column_map=..., isochrone_column_map=..., track_metadata=...,
+isochrone_metadata=...)` directly (see
 `evolution/parsers/girardi2000.py`'s module docstring for the expected
-column semantics), and `evolution/binary.py`'s existing
-`fit_binary_evolution_from_orbit()` — unchanged, since it was already
-grid-agnostic — runs the actual cross-check.
+column semantics). `evolution/binary.py`'s
+`fit_binary_evolution_from_orbit()` then runs the actual cross-check.
+No evolutionary-track numeric data is ever invented or approximated: if
+the grid is absent, the check cannot be run.
 
-## Blocker closed (2026-08-29): real Girardi (2000) data obtained, six-system check run
+## Real Girardi (2000) data: six-system check
 
-The network blocker documented above is now closed. The user downloaded
-the two real tables directly from VizieR (not through this session's
-egress-restricted network) and supplied them as attached files:
+The VizieR export consists of two tables:
 
 - `mstracks.tsv` — VizieR catalog **J/A+AS/141/371**, table
   **mstracks** ("main sequence from ZAMS on"), 13,723 rows.
 - `isochrones.tsv` — same catalog, table **isochron** (isochrones),
   64,381 rows.
 
-Both files were placed at `data/evolution/girardi2000/` (repo root,
-per this project's `src/`-layout convention: data files live outside
-`src/pyseshat/`, not inside it). Neither file matched the generic
-`column_map`-based schema the code-level integration above had
-assumed sight-unseen; the actual VizieR ASU-TSV export format,
-column set, and several real-data quirks were inspected directly
-before writing any loader code, and are documented in full in
-`evolution/parsers/girardi2000.py`'s module docstring:
+Both files live at `src/pyseshat/evolution/data/girardi2000/`. The generic
+`column_map`-based schema does not apply to them; the actual VizieR
+ASU-TSV export format, column set, and several real-data quirks are
+documented in full in `evolution/parsers/girardi2000.py`'s module
+docstring:
 
 - **File format**: VizieR ASU-TSV — a metadata block of `#`-prefixed
   lines, then exactly 3 non-`#` lines (tab-separated column header,
@@ -231,7 +160,7 @@ before writing any loader code, and are documented in full in
   its already-documented comment-stripping bug), so that bug does not
   recur here.
 - **Overshoot column** (0/1): 1 = the grid's full/main set (complete
-  0.15–7.0 Msun coverage, 34 masses at Z=0.019) = the new
+  0.15–7.0 Msun coverage, 34 masses at Z=0.019) = the
   `DEFAULT_OVERSHOOT = 1`; 0 is a smaller comparison-only subset
   (1.2–8.0 Msun, 17 masses).
 - **No radius column** in either table. `log_radius` is derived via
@@ -254,20 +183,19 @@ before writing any loader code, and are documented in full in
   track/isochrone interpolation needs strictly increasing x-values).
 
 `load_girardi2000_vizier_tracks()` / `load_girardi2000_vizier_isochrones()`
-(new, in `evolution/parsers/girardi2000.py`) load these files directly.
-`evolution/grids.py`'s `load_default_evolution_model()` — previously a
-stub raising `FileNotFoundError` — now looks for `mstracks.tsv` /
-`isochrones.tsv` at `data/evolution/girardi2000/` and, when present,
+(in `evolution/parsers/girardi2000.py`) load these files directly.
+`evolution/grids.py`'s `load_default_evolution_model()` looks for `mstracks.tsv` /
+`isochrones.tsv` in the bundled `evolution/data/girardi2000/` (or a given
+`data_dir`) and, when present,
 returns a real, loaded `EvolutionModel` (34 tracks, 50 isochrones,
-Z=0.019). `DEFAULT_EVOLUTION_MODEL_NAME = "girardi2000"` now resolves
-to this real data, closing out this section's "no real numeric grid
-data has been sourced" limitation.
+Z=0.019). `DEFAULT_EVOLUTION_MODEL_NAME = "girardi2000"` resolves
+to this data.
 
 ### Six-system results
 
 The evolutionary consistency check (independent per-component
 best-fit age, then a joint common-age fit) was run for all six
-systems that need it — the four Al-Wardat SED systems (HD214222,
+systems that need it — the four binary SED systems (HD214222,
 HD191854, HD130669, HD184467) plus the two joint case studies
 (Capella, alpha Cen AB) — via the shared pipeline in
 `evolution/benchmark_checks.py` (`scripts/run_evolutionary_checks.py`
@@ -322,11 +250,8 @@ the joint common-age fit) are in
 system's own `validation/expected_results/*.json` under
 `evolutionary_track_source.result_summary`.
 
-**No prior age/mass/evolutionary-stage number existed anywhere else
-in this project's documentation for any of these six systems before
-this run** (confirmed by direct search) — so there is nothing for
-these results to disagree with; this is the first time such numbers
-have been computed in this project. This is distinct from — and does
-not include — a comparison against each source paper's *own*
-separately-published age/mass values, which was not performed as
-part of this run and remains open if wanted.
+No independent age/mass/evolutionary-stage values are recorded for
+these six systems, so these results are not compared against any
+prior numbers. They are also distinct from — and do not include — a
+comparison against each source paper's *own* separately-published
+age/mass values, which has not been performed.

@@ -3,13 +3,11 @@ Tests for the evolutionary-track search/fitting layer:
 pyseshat.evolution.search, pyseshat.evolution.age, and
 pyseshat.evolution.binary.
 
-Before this file was added, none of this layer had direct test
-coverage -- only the downstream photometry adapter
-(tests/test_evolution_adapter.py), track/isochrone interpolation
-(tests/test_interpolate.py), and HR-diagram plotting
-(tests/test_hrdiagram_plot.py) were tested. See
-docs/guide/evolutionary_checks.md's 2026-08-29 entry for the audit
-that found this gap.
+This file gives the search/fitting layer direct test coverage; the
+downstream photometry adapter (tests/test_evolution_adapter.py),
+track/isochrone interpolation (tests/test_interpolate.py), and
+HR-diagram plotting (tests/test_hrdiagram_plot.py) are tested
+separately.
 
 All tracks/isochrones here are small synthetic fixtures built
 in-process (no external grid files), consistent with this project's

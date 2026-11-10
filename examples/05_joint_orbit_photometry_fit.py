@@ -5,21 +5,18 @@ inference/joint_problem.py's JointInferenceProblem and
 inference/joint_parameters.py's JointParameters combine an orbital
 InferenceProblem and a PhotometricInferenceProblem into one
 simultaneous fit -- a real, tested capability with no example
-anywhere else in the repo (see docs/development_plan_phase2.md,
-Phase 2 item 5). Unlike Examples 1-4, there is currently no
+anywhere else in the repo. Unlike Examples 1-4, there is currently no
 convenience ``fit_joint(...)`` wrapper: this example builds one
 from the pieces the package already provides (the same small
 "rebuild a trial problem at the optimizer's current vector" pattern
-used internally by inference/photometric_optimizer.py -- see
-CLAUDE.md's "Photometry / stellar / evolution" section), which is
+used internally by inference/photometric_optimizer.py), which is
 itself worth seeing since it shows how the lower-level pieces
 compose.
 
 The dataset here is deliberately SYNTHETIC: this repo's real
 benchmark systems each validate one side only (FIN379/GL765/
 ZetaAqr/HIP111805 have real orbit data but no photometry; the four
-Al-Wardat systems have real photometry but no orbit data file --
-see CLAUDE.md's "Validation & reference data" section) so there is
+SED systems have real photometry but no orbit data file) so there is
 no real combined dataset to fit yet. A known "truth" is chosen,
 synthetic visual+RV astrometry and synthetic photometry are
 generated from it with added noise, and the joint fit is checked
@@ -69,6 +66,10 @@ from pyseshat.photometry.parameters import (
 
 from pyseshat.photometry.observations import (
     PhotometricMeasurement,
+)
+
+from pyseshat.photometry.calibration import (
+    vega_zero_points,
 )
 
 from pyseshat.photometry.model import (
@@ -202,12 +203,9 @@ def make_synthetic_photometric_context():
         )
     }
 
-    zero_points = {
-        "Johnson B": 6.72553e-9,
-        "Johnson V": 3.5833e-9,
-        "Tycho BT": 6.50910e-9,
-        "Tycho VT": 3.99504e-9,
-    }
+    # Zero points on the standard photometric systems (CALSPEC Vega
+    # through these passbands; see pyseshat.photometry.calibration).
+    zero_points = vega_zero_points(passbands)
 
     true_magnitudes = synthetic_binary_magnitudes(
         atmosphere_grid=atmosphere_grid,
@@ -422,8 +420,8 @@ def main():
         "do not (this run has no Gaussian prior on either radius "
         "-- see JointParameters/PhotometricParameters.priors). "
         "This is the SAME unresolved-photometry (Teff, R) "
-        "degeneracy documented in docs/project_decisions.md, and "
-        "the reason Example 4 fits radius WITH a Gaussian prior "
+        "degeneracy, and the reason "
+        "Example 4 fits radius WITH a Gaussian prior "
         "rather than leaving it fully free -- add one the same "
         "way here (photometric.priors={'primary_radius': (mean, "
         "sigma), ...}) for a real fit, not just this "

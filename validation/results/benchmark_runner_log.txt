@@ -1,0 +1,16 @@
+
+System      Path    Success     RedChi2    WorstParam  WorstRelErr
+--------------------------------------------------------------------
+FIN379      binary  True         1.7142            V0      0.7538%
+GL765       binary  True         1.4636         omega      0.8970%
+ZetaAqr     orbit3  True         1.0737             i     18.4749%
+HIP111805   orbit3  True         1.6856             f      1.8037%
+HD214222    alwardat_sedTrue         0.1431primary_temperature      5.3476%
+HD191854    alwardat_sedTrue         0.1070primary_temperature      5.0129%
+HD130669    alwardat_sedTrue         0.1516secondary_temperature      4.3977%
+HD184467    alwardat_sedTrue         0.1117primary_temperature      6.3670%
+Capella_orbitbinary  True         0.9246             e    260.0296%
+Capella_photometryalwardat_sedTrue         2.1249secondary_radius      4.2413%
+AlphaCenAB_orbitbinary  True         1.0495             e      0.0007%
+AlphaCenAB_photometryalwardat_sedTrue         2.2514secondary_temperature     14.7008%
+

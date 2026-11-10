@@ -32,6 +32,14 @@ from pyseshat.triple.orbit3_likelihood import (
 )
 
 
+from pyseshat.triple.triple_elements import (
+    ORBIT3_PARAMETER_ORDER,
+)
+
+from pyseshat.inference.optimizer import (
+    _wrap_periodic_mcmc_samples,
+)
+
 from pyseshat.inference.mcmc_engine import (
     run_emcee
 )
@@ -300,25 +308,52 @@ def fit_orbit3(
     elements,
     observations,
     rv_observations,
-    method="lm",
+    method="trf",
     loss="linear",
     f_scale=1.0,
-    bounds=None
+    bounds=None,
+    jac="2-point"
 ):
     """
     Fit a hierarchical triple system using the ORBIT3
     formulation.
 
-    The forward model, parameterization, fit mask,
-    residual ordering, and ORBIT3 finite-difference
-    Jacobian are retained.
+    The forward model, parameterization, fit mask and
+    residual ordering of ORBIT3 are retained.
 
-    The LM path uses the translated ORBIT3 finite-difference
-    Jacobian rather than SciPy's default local numerical
-    Jacobian.
+    Parameters
+    ----------
+    method : {"trf", "dogbox", "lm"}
+        SciPy least-squares method. The default "trf" is
+        bounded (``build_orbit3_bounds``), which keeps e, a,
+        K, P and the angles in their physical ranges, so the
+        solution needs no normalisation. "lm" is unbounded
+        and can return equivalent mirrored solutions
+        (negative e or K, angles outside [0, 360)).
+    jac : {"2-point", "3-point", "orbit3"}
+        Jacobian. The default is SciPy's local numerical
+        Jacobian. "orbit3" selects the translated ORBIT3
+        forward-difference Jacobian (``orbit3_jacobian``),
+        whose increments are fixed fractions of the element
+        values (1 per cent; 1 degree for angles), as in
+        orbit3.pro ``alleph``. It is kept only to reproduce
+        the IDL behaviour (``method="lm", jac="orbit3"``):
+        its increments are far larger than the parameter
+        uncertainties (e.g. 20 yr in the outer T0 when
+        T0 ~ 2000), and with it the optimizer stops after a
+        few iterations without reaching the chi2 minimum
+        (scripts/hip111805_recovery.py,
+        scripts/orbit3_convergence_check.py).
 
-    Non-LM methods use SciPy's local numerical Jacobian.
+    Changed in 0.2.0: the default was method="lm" with the
+    ORBIT3 Jacobian.
     """
+
+    if jac not in ("2-point", "3-point", "orbit3"):
+        raise ValueError(
+            "jac must be '2-point', '3-point' or 'orbit3'; "
+            f"received {jac!r}."
+        )
 
     # ------------------------------------------------------
     # Initial fitted parameter vector
@@ -427,21 +462,18 @@ def fit_orbit3(
     # ------------------------------------------------------
     #
     # ORBIT3 uses its own forward finite-difference
-    # construction for the differential-correction path.
-    #
-    # Therefore the translated ORBIT3 Jacobian is supplied
-    # to the LM optimizer.
-    #
-    # Non-LM methods retain SciPy's numerical Jacobian.
+    # construction for the differential-correction path;
+    # it is available as jac="orbit3" (see docstring).
+    # The default is SciPy's numerical Jacobian.
     # ------------------------------------------------------
 
-    if method == "lm":
+    if jac == "orbit3":
 
         jacobian = orbit3_jacobian
 
     else:
 
-        jacobian = "2-point"
+        jacobian = jac
 
     # ------------------------------------------------------
     # Optimization
@@ -622,6 +654,20 @@ def fit_orbit3_mcmc(
 
     )
 
+    # Fold the angles into [0, 360) and the epochs to within half a
+    # period of the least-squares values, as for binaries (0.2.0): the
+    # log-posterior is invariant under these shifts, so nothing is
+    # reweighted.
+    samples = _wrap_periodic_mcmc_samples(
+        engine["samples"],
+        fitted_elements.fitted_parameter_names(),
+        reference_elements=dict(zip(
+            ORBIT3_PARAMETER_ORDER, orbit3_to_array(fitted_elements)
+        )),
+        angle_names=("Omega", "omega", "Omega2", "omega2"),
+        epoch_period_pairs=(("T0", "P"), ("T02", "P2")),
+    )
+
     return MCMCResult(
 
         elements=fitted_elements,
@@ -634,7 +680,7 @@ def fit_orbit3_mcmc(
 
         uncertainties=fit_result.uncertainties,
 
-        samples=engine["samples"],
+        samples=samples,
 
         log_probability=engine["log_probability"],
 

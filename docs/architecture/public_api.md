@@ -458,6 +458,14 @@
 ### Classes
 - InferenceProblem
 
+## pyseshat.inference.reparameterization
+
+### Classes
+- SqrtEParameterization
+
+### Functions
+- sqrt_e_log_probability()
+
 ## pyseshat.inference.solver
 
 ### Functions

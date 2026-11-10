@@ -706,8 +706,8 @@ def test_fit_orbit3_recovers_synthetic_solution():
 
 
     # ------------------------------------------------------
-    # This was `< 1e-10` before 2026-08-27. That threshold
-    # assumed the LM optimizer would drive chi2 essentially to
+    # A threshold of `< 1e-10` would assume the LM optimizer
+    # drives chi2 essentially to
     # machine precision on this noiseless synthetic problem; in
     # practice `fit_orbit3`'s default scipy least_squares run
     # terminates on `xtol` (relative parameter-change
@@ -718,7 +718,7 @@ def test_fit_orbit3_recovers_synthetic_solution():
     # environment noise. `< 1e-4` still meaningfully asserts
     # strong convergence (three orders of magnitude of margin
     # below it) without being brittle to the exact xtol/BLAS-
-    # dependent stopping point. See docs/project_decisions.md.
+    # dependent stopping point.
     # ------------------------------------------------------
 
     assert final_chi2 < 1e-4
@@ -771,7 +771,7 @@ def test_fit_orbit3_recovers_synthetic_solution():
     # Recovered outer orbit
     # ------------------------------------------------------
 
-    # Was abs=1e-5 before 2026-08-27; the outer period
+    # The outer period
     # reproducibly lands ~3.9e-5 from truth at this optimizer's
     # xtol stopping point (see the final_chi2 comment above) --
     # loosened to keep matching margin, not to mask a
@@ -805,7 +805,7 @@ def test_fit_orbit3_recovers_synthetic_solution():
     )
 
 
-    # Was abs=1e-6 before 2026-08-27; reproducibly lands
+    # Reproducibly lands
     # ~2.5e-6 from truth at this optimizer's xtol stopping
     # point, same story as final_chi2/outer.P above -- loosened
     # to match the other outer-orbit parameters' 1e-5 scale.

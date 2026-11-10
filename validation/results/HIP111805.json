@@ -4,139 +4,161 @@
   "fitting_path": "orbit3",
   "paper_table_row": null,
   "statistics": {
-    "initial_chi_square": 502.10381623935166,
-    "chi_square": 502.10381623935166,
-    "reduced_chi_square": 1.7136649018407906,
-    "rms": 1.266556570821288,
+    "initial_chi_square": 502.10381623935154,
+    "chi_square": 385.4395305399109,
+    "reduced_chi_square": 1.3154932782932112,
+    "rms": 1.1097009506204913,
     "n_data": 313,
     "n_params": 20
   },
   "parameter_errors": {
     "P": {
       "expected": 1.50119,
-      "fitted": 1.50119,
-      "relative_error": 0.0
+      "fitted": 1.5004195960390678,
+      "relative_error": 0.000513195505520419
     },
     "T0": {
       "expected": 1986.093,
-      "fitted": 1986.093,
-      "relative_error": 0.0
+      "fitted": 1986.137653808704,
+      "relative_error": 2.2483241572257615e-05
     },
     "e": {
       "expected": 0.022,
-      "fitted": 0.022,
-      "relative_error": 0.0
+      "fitted": 0.02472031331560162,
+      "relative_error": 0.12365060525461909
     },
     "a": {
       "expected": 0.0385,
-      "fitted": 0.0385,
-      "relative_error": 0.0
+      "fitted": 0.03980319901819949,
+      "relative_error": 0.033849325148038664
     },
     "Omega": {
       "expected": 334.5,
-      "fitted": 334.5,
-      "relative_error": 0.0
+      "fitted": 334.28914142341034,
+      "relative_error": 0.0011714365366092098
     },
     "omega": {
       "expected": 232.9,
-      "fitted": 232.9,
-      "relative_error": 0.0
+      "fitted": 243.31771613468126,
+      "relative_error": 0.0578762007482292
     },
     "i": {
       "expected": 85.8,
-      "fitted": 85.8,
-      "relative_error": 0.0
+      "fitted": 86.07805691588612,
+      "relative_error": 0.0032407565954093876
     },
     "K1": {
       "expected": 13.13,
-      "fitted": 13.13,
-      "relative_error": 0.0
+      "fitted": 13.083532671360482,
+      "relative_error": 0.003539019698363973
     },
     "K2": {
       "expected": 19.21,
-      "fitted": 19.21,
-      "relative_error": 0.0
+      "fitted": 17.36261844147723,
+      "relative_error": 0.09616770216151846
     },
     "f": {
       "expected": -0.33,
-      "fitted": -0.33,
-      "relative_error": 0.0
+      "fitted": -0.33538761520509164,
+      "relative_error": 0.016326106682095824
     },
     "P2": {
       "expected": 30.127,
-      "fitted": 30.127,
-      "relative_error": 0.0
+      "fitted": 29.976489032418403,
+      "relative_error": 0.004995883014624619
     },
     "T02": {
       "expected": 2010.179,
-      "fitted": 2010.179,
-      "relative_error": 0.0
+      "fitted": 2010.0000437336907,
+      "relative_error": 8.902504021250944e-05
     },
     "e2": {
       "expected": 0.324,
-      "fitted": 0.324,
-      "relative_error": 0.0
+      "fitted": 0.32196993004555924,
+      "relative_error": 0.006265648007533246
     },
     "a2": {
       "expected": 0.3361,
-      "fitted": 0.3361,
-      "relative_error": 0.0
+      "fitted": 0.3333988685606358,
+      "relative_error": 0.008036689792812362
     },
     "Omega2": {
       "expected": 154.25,
-      "fitted": 154.25,
-      "relative_error": 0.0
+      "fitted": 154.2583965131328,
+      "relative_error": 4.66472951820328e-05
     },
     "omega2": {
       "expected": 84.92,
-      "fitted": 84.92,
-      "relative_error": 0.0
+      "fitted": 84.54014218340512,
+      "relative_error": 0.002110321203304879
     },
     "i2": {
       "expected": 88.28,
-      "fitted": 88.28,
-      "relative_error": 0.0
+      "fitted": 88.21514636977597,
+      "relative_error": 0.0007346355938381955
     },
     "K3": {
       "expected": 6.057,
-      "fitted": 6.057,
-      "relative_error": 0.0
+      "fitted": 6.131317031321915,
+      "relative_error": 0.012269610586414823
     },
     "K4": {
       "expected": 8.6,
-      "fitted": 8.6,
-      "relative_error": 0.0
+      "fitted": 8.607620834514742,
+      "relative_error": 0.0008861435482259099
     },
     "V0": {
       "expected": -22.575,
-      "fitted": -22.575,
-      "relative_error": 0.0
+      "fitted": -22.539722649053022,
+      "relative_error": 0.0015626733531329806
     }
   },
   "fitted_elements": {
-    "P": 1.50119,
-    "T0": 1986.093,
-    "e": 0.022,
-    "a": 0.0385,
-    "Omega": 334.5,
-    "omega": 232.9,
-    "i": 85.8,
-    "K1": 13.13,
-    "K2": 19.21,
-    "f": -0.33,
-    "P2": 30.127,
-    "T02": 2010.179,
-    "e2": 0.324,
-    "a2": 0.3361,
-    "Omega2": 154.25,
-    "omega2": 84.92,
-    "i2": 88.28,
-    "K3": 6.057,
-    "K4": 8.6,
-    "V0": -22.575
+    "P": 1.5004195960390678,
+    "T0": 1986.137653808704,
+    "e": 0.02472031331560162,
+    "a": 0.03980319901819949,
+    "Omega": 334.28914142341034,
+    "omega": 243.31771613468126,
+    "i": 86.07805691588612,
+    "K1": 13.083532671360482,
+    "K2": 17.36261844147723,
+    "f": -0.33538761520509164,
+    "P2": 29.976489032418403,
+    "T02": 2010.0000437336907,
+    "e2": 0.32196993004555924,
+    "a2": 0.3333988685606358,
+    "Omega2": 154.2583965131328,
+    "omega2": 84.54014218340512,
+    "i2": 88.21514636977597,
+    "K3": 6.131317031321915,
+    "K4": 8.607620834514742,
+    "V0": -22.539722649053022
+  },
+  "parameter_uncertainties": {
+    "P": 0.00030416125506420354,
+    "T0": 0.0733132621243057,
+    "e": 0.010691922158271847,
+    "a": 0.0007512028688004788,
+    "Omega": 0.9854377750505152,
+    "omega": 17.653940901103024,
+    "i": 1.5489063424560743,
+    "K1": 0.1336656916097635,
+    "K2": 3.0587545145075516,
+    "f": 0.015382730926695405,
+    "P2": 0.030394825935289423,
+    "T02": 0.026035738156020775,
+    "e2": 0.003707305257919053,
+    "a2": 0.0007183237656715759,
+    "Omega2": 0.08810143244654858,
+    "omega2": 0.2493402437004103,
+    "i2": 0.10067890293160758,
+    "K3": 0.13751549719931508,
+    "K4": 0.2250314471660301,
+    "V0": 0.08363018689874088
   },
   "optimizer_success": true,
-  "optimizer_message": "`xtol` termination condition is satisfied.",
+  "optimizer_message": "`ftol` termination condition is satisfied.",
   "mass_dynamical_Msun": null,
   "mass_sigma_Msun": null,
   "mass_relative_sigma": null

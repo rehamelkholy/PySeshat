@@ -4,7 +4,7 @@ Regression tests for the unresolved-binary photometric Bayesian
 
 Same defect class as tests/test_photometric_optimizer_fit.py's
 target, in the MCMC sibling: sample_photometry_from_problem()
-(and therefore sample_photometry(), the Al-Wardat photometric
+(and therefore sample_photometry(), the binary photometric
 posterior-sampling entry point) passed
 photometric_posterior.photometric_log_posterior_from_problem
 directly to inference.mcmc_engine.run_emcee() as its
@@ -19,8 +19,7 @@ vector. Every walker evaluation therefore raised
     positional argument but 2 were given
 
 before a single MCMC step was ever taken. See
-tests/test_photometric_optimizer_fit.py and
-docs/project_decisions.md for the full write-up (the optimizer
+tests/test_photometric_optimizer_fit.py (the optimizer
 and MCMC entry points share the same bug pattern and the same
 fix pattern: a small wrapper that rebuilds a trial
 PhotometricInferenceProblem at the sampler's/optimizer's current
@@ -158,9 +157,8 @@ def test_photometric_log_posterior_for_sampler_accepts_emcee_call_signature():
 
 def test_log_posterior_returns_neg_inf_outside_loaded_grid_range():
     """
-    Regression guard for a real crash found while running full-suite
-    MCMC exploration during Al-Wardat benchmark validation
-    (2026-08-27, see docs/project_decisions.md): a walker proposing a
+    Regression guard for a real crash found while running MCMC
+    exploration during SED benchmark validation: a walker proposing a
     temperature inside the generic physical prior (2500-50000K) but
     outside the specific CK04 FITS files this problem's atmosphere_grid
     has loaded (here, 5750-6250K) used to raise ValueError from

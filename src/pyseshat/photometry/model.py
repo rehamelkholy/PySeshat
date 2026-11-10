@@ -11,7 +11,8 @@ from pyseshat.photometry.synthetic import (
 )
 
 from pyseshat.stellar.sed_model import (
-    composite_binary_sed
+    composite_binary_sed,
+    scale_surface_flux
 )
 
 from pyseshat.photometry.residuals import (
@@ -869,9 +870,8 @@ def synthetic_binary_sed(
     (wavelength vs. flux) of an unresolved binary, for plotting.
 
     This is a sibling of ``synthetic_binary_magnitudes()`` above,
-    added 2026-09-02 to support ``visualization.sed_plot.plot_sed_fit()``
-    (see ``docs/guide/visualization.md``'s "SED fit" section and
-    ``docs/project_decisions.md``'s dated entry). It performs
+    provided to support ``visualization.sed_plot.plot_sed_fit()``
+    (see ``docs/guide/visualization.md``'s "SED fit" section). It performs
     EXACTLY the same physical steps as
     ``synthetic_binary_magnitudes()`` -- atmosphere interpolation
     (``atmosphere_grid.interpolate()``), unresolved-binary flux
@@ -1142,3 +1142,49 @@ def synthetic_binary_sed(
         "primary_flux": extincted_primary_flux,
         "secondary_flux": extincted_secondary_flux,
     }
+
+
+def synthetic_magnitude_differences(
+    atmosphere_grid,
+    passbands,
+    primary_temperature,
+    secondary_temperature,
+    primary_logg,
+    secondary_logg,
+    metallicity,
+    primary_radius,
+    secondary_radius,
+    distance
+):
+    """
+    Synthetic magnitude difference m_secondary - m_primary in
+    each passband, -2.5 log10(F_2 / F_1) of the band fluxes.
+
+    Zero points cancel. Interstellar extinction is not applied:
+    it dims both components equally, so its effect on the
+    difference is only the second-order change of the effective
+    wavelength between two stars of different temperature.
+
+    Returns
+    -------
+    dict
+        Mapping from passband identifiers to magnitude differences.
+    """
+    primary = scale_surface_flux(
+        atmosphere_grid.interpolate(teff=primary_temperature, logg=primary_logg,
+                                    metallicity=metallicity),
+        primary_radius, distance)
+    secondary = scale_surface_flux(
+        atmosphere_grid.interpolate(teff=secondary_temperature, logg=secondary_logg,
+                                    metallicity=metallicity),
+        secondary_radius, distance)
+    out = {}
+    for name, passband in passbands.items():
+        f1 = synthetic_band_flux(wavelength=primary.wavelength, flux=primary.flux,
+                                 passband=passband)
+        f2 = synthetic_band_flux(wavelength=secondary.wavelength, flux=secondary.flux,
+                                 passband=passband)
+        if not (f1 > 0.0 and f2 > 0.0):
+            raise ValueError(f"Non-positive component band flux in passband {name}.")
+        out[name] = -2.5 * np.log10(f2 / f1)
+    return out

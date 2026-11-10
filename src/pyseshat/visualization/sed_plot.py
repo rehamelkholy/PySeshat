@@ -1,25 +1,18 @@
 """
-Al-Wardat SED-fit plot (essential figure 4, ``Paper_Roadmap.pdf``).
+Binary SED-fit plot.
 
-Why this module exists (2026-09-02)
+Why this module exists
 ------------------------------------------------------------
-No plotting function for ``fit_photometry()``'s output existed
-anywhere in ``pyseshat.visualization`` before this module -- confirmed
-by grepping the whole ``visualization/`` package and
-``validation/results/plots/`` for anything SED/photometry-plot related
-(nothing beyond ``plot_binary_hrdiagram()``, a different figure) before
-writing this. Tracked as future-work item 9 in
-``docs/paper_reference_notes.md`` ("Build a SED-fit figure ... no
-plotting function currently exists for ``fit_photometry()``'s output")
-and as a genuine gap in ``docs/paper_reproduction_notes.md``'s essential-
-figures table.
+This module provides a plotting function for ``fit_photometry()``'s
+output (the other photometry-related figure in
+``pyseshat.visualization`` is ``plot_binary_hrdiagram()``, a different
+plot).
 
 Visual convention, and why
 ------------------------------------------------------------
-Checked the actual Al-Wardat-method literature rather than assuming a
-convention: Al-Wardat (2002, 2012)'s own SED-fit figures plot flux
+The convention follows the binary-SED literature: Al-Wardat (2002, 2012)'s own SED-fit figures plot flux
 density versus wavelength ("Figure 1 shows the best fit between the
-total synthetic SED and the observational one" -- ``wardat_2012.pdf``),
+total synthetic SED and the observational one"),
 and Abushattal et al. 2025 (arXiv:2512.23652, the direct source of this
 package's four benchmark systems) follows the same convention in its
 own Figures 1-4: wavelength (Angstrom) on the x-axis, flux on the
@@ -45,19 +38,16 @@ own docstring for how the two are kept numerically self-consistent)
 and each ``PhotometricPassband.pivot_wavelength`` for the point
 placement.
 
-Passband-label placement (2026-09-02, second pass)
+Passband-label placement
 ------------------------------------------------------------
-The first version of this function drew each ``observed_labels``/
-``excluded_labels`` entry at a fixed offset (8 points straight above
-its point, via ``Axes.annotate``). That collides for any two passbands
-close enough in wavelength/flux to place their labels on top of each
-other -- confirmed for real in the HD191854 figure, where "Stromgren
-b"/"Johnson B" (~4400-4670 A) and "Johnson V"/"Tycho VT"/"Stromgren y"
-(~5340-5500 A) overlapped into unreadable text, reported by the user
-rather than caught in review.
+Drawing each ``observed_labels``/``excluded_labels`` entry at a fixed
+offset above its point would collide for any two passbands close
+enough in wavelength/flux to place their labels on top of each other
+(for example "Stromgren b"/"Johnson B" at ~4400-4670 A, or "Johnson
+V"/"Tycho VT"/"Stromgren y" at ~5340-5500 A in the HD191854 system).
 
-Fixed with `adjustText <https://github.com/Phlya/adjustText>`_ (added
-as a new pinned dependency, ``pyproject.toml``/``requirements.txt``),
+Labels are therefore placed with `adjustText <https://github.com/Phlya/adjustText>`_ (a pinned
+dependency, see ``pyproject.toml``/``requirements.txt``),
 an automatic label-collision-avoidance library rather than a manual
 per-system offset scheme: every observed and excluded label is drawn
 as a plain ``Axes.text`` at its point first, then ``adjust_text()`` is
@@ -81,17 +71,15 @@ curve. Every label is therefore also drawn with a 3.5-point white halo
 (``matplotlib.patheffects.withStroke``, module-level ``_LABEL_HALO``)
 at ``zorder=20`` (above every curve/point in this figure) so it stays
 legible regardless of what's directly behind it, rather than trying to
-make ``adjust_text`` curve-aware -- confirmed necessary, not
-decorative: HD130669's "Stromgren y" sits over a fast-oscillating
-stretch of the composite curve even after ``adjust_text`` moved it
-clear of every other label, and a thinner 2.5-point halo (the first
-value tried) still let that oscillation show through legibly enough to
-matter; 3.5 points at zorder 20 does not.
+make ``adjust_text`` curve-aware. The halo is needed, not decorative:
+HD130669's "Stromgren y" sits over a fast-oscillating stretch of the
+composite curve even after ``adjust_text`` moves it clear of every
+other label, and a thinner 2.5-point halo still lets that oscillation
+show through.
 
 See ``tests/test_sed_plot.py::test_plot_sed_fit_avoids_overlapping_labels``
 for the regression test (asserts zero pairwise label bounding-box
-overlap, not just "it ran"), and ``docs/project_decisions.md``'s dated
-entry for the before/after visual comparison.
+overlap, not just "it ran").
 """
 
 from __future__ import annotations
@@ -131,14 +119,14 @@ def plot_sed_fit(
     excluded_flux=None,
     excluded_flux_uncertainty=None,
     excluded_labels=None,
-    title="Al-Wardat SED Fit",
+    title="binary SED Fit",
     show=True,
     show_grid=True,
     output_format="png",
     save_path=None,
 ):
     """
-    Plot a fitted Al-Wardat unresolved-binary SED against observed
+    Plot a fitted unresolved-binary SED against observed
     photometric points, following the visual convention of
     Al-Wardat (2002, 2012) and Abushattal et al. 2025 (see module
     docstring): flux density vs. wavelength, with the composite
@@ -184,7 +172,7 @@ def plot_sed_fit(
     excluded_wavelength, excluded_flux, excluded_flux_uncertainty : array_like, optional
         Measurements that exist but were excluded from the fit
         (e.g. this codebase's Stromgren-u exclusion -- see
-        ``docs/guide/alwardat_sed.md``'s "Stromgren u" section).
+        ``docs/guide/binary_sed.md``'s "Stromgren u" section).
         Drawn as open, distinctly-colored markers so the reader can
         see they exist and were deliberately not fit, rather than
         being silently omitted from the figure the way they are

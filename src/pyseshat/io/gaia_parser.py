@@ -3,7 +3,7 @@ Parse Gaia DR3 Non-Single-Star (NSS) two-body-orbit solutions
 (the ``gaiadr3.nss_two_body_orbit`` archive table) into this
 codebase's ``OrbitalElements``.
 
-Scope (2026-08-27)
+Scope
 --------------------------------------------------------------
 Gaia DR3's NSS orbital catalogue covers several distinct
 ``nss_solution_type`` values, each with a different fitted
@@ -11,7 +11,7 @@ parametrization (see
 ``gea.esac.esa.int/archive/documentation/GDR3/Gaia_archive/
 chap_datamodel/sec_dm_non--single_stars_tables/
 ssec_dm_nss_two_body_orbit.html``, the archive's own column-by-
-column data model documentation, cross-checked 2026-08-27):
+column data model documentation):
 
 - ``Orbital`` / ``OrbitalAlternative`` / ``OrbitalAlternativeValidated``
   / ``OrbitalTargetedSearch`` / ``OrbitalTargetedSearchValidated``:
@@ -60,15 +60,13 @@ P/M-ratio derivation is used in place of the paper's d1/d2
 branching -- see ``thiele_innes_to_campbell``'s inline comment)
 was independently re-derived from ``orbit_model.thiele_innes()``'s
 own forward formula rather than transcribed sign-for-sign from
-the paper (whose exact equations this session could only access
-through a summarized secondary reading of the PDF, not the
-typeset original), and its CORRECTNESS is established the
-authoritative way for this codebase: cross-verified (2026-08-27,
-see ``tests/test_gaia_parser.py``) by round-tripping it against
+the paper, and its CORRECTNESS is established the
+authoritative way for this codebase: cross-verified
+(see ``tests/test_gaia_parser.py``) by round-tripping it against
 ``orbit.orbit_model.thiele_innes()`` (this codebase's OWN A,B,F,G
 forward formula, itself independently cross-checked against Gaia's
-own documented formula in Sect. 7.2.5 of the GDR3 documentation --
-see ``docs/project_decisions.md``): for many random Campbell
+own documented formula in Sect. 7.2.5 of the GDR3 documentation):
+for many random Campbell
 element sets, computing A,B,F,G via ``thiele_innes()`` and then
 inverting them via this module's ``thiele_innes_to_campbell()``
 recovers the original (a, i, Omega, omega) to within floating-
@@ -169,14 +167,8 @@ def _is_present(value):
     it to ``None``, but a real archive export cannot. Checking only
     ``row.get(key) is not None`` therefore silently accepts NaN as
     "present" and lets it propagate into a NaN ``OrbitalElements``
-    field for every downstream calculation -- confirmed as a real,
-    reproducible bug (2026-09-01) via a CSV round-trip smoke test
-    performed while preparing this module's first genuine
-    retrieved-archive-data validation (see
-    ``scripts/validate_gaia_archive_export.py`` and
-    ``docs/project_decisions.md``'s dated entry), before any real
-    archive data was in hand -- i.e. caught proactively, not
-    discovered by a downstream NaN making it into a paper figure.
+    field for every downstream calculation -- confirmed via a CSV round-trip
+    smoke test (see ``scripts/validate_gaia_archive_export.py``).
     """
 
     if value is None:

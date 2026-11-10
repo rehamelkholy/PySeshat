@@ -291,9 +291,8 @@ def test_build_binary_consistency_from_fit_results():
         abs=1e-10,
     )
 
-    # Was `primary_luminosity_sigma` before 2026-08-27:
-    # `BinaryConsistencyResult` has no such field (and never
-    # did in this shape -- see its docstring). The actual field
+    # `BinaryConsistencyResult` has no `primary_luminosity_sigma`
+    # field (see its docstring). The actual field
     # is `primary_luminosity_z_score`, a dimensionless
     # (observed - evolutionary) / sigma_observed significance,
     # not a raw sigma; for this deliberately self-consistent

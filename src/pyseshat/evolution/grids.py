@@ -19,8 +19,7 @@ from pyseshat.evolution.parsers.girardi2000 import (
 )
 
 #: Conventional filenames for the real VizieR J/A+AS/141/371 export,
-#: as downloaded 2026-08-29 (see docs/project_decisions.md's dated
-#: entry for the exact query/provenance). load_default_evolution_model()
+#: as downloaded from VizieR. load_default_evolution_model()
 #: looks for exactly these two names at its data directory.
 VIZIER_TRACKS_FILENAME = "mstracks.tsv"
 VIZIER_ISOCHRONES_FILENAME = "isochrones.tsv"
@@ -37,9 +36,8 @@ _SUPPORTED_MODELS = {
 
 #: Default evolutionary-track/isochrone grid for this project's own
 #: evolutionary consistency checks, chosen for direct comparability
-#: with the Al-Wardat SED-fitting literature this project benchmarks
-#: against (see docs/guide/evolutionary_checks.md and
-#: docs/project_decisions.md's 2026-08-29 dated entry for the full
+#: with the binary SED-fitting literature this project benchmarks
+#: against (see docs/guide/evolutionary_checks.md for the
 #: rationale). PARSEC remains fully supported as an alternate model
 #: -- this only changes which grid callers get if they don't specify
 #: one, via load_default_evolution_model() below; load_model() itself
@@ -80,12 +78,7 @@ def load_model(
 
 def _default_data_dir():
 
-    return (
-        Path(__file__).resolve().parents[3]
-        / "data"
-        / "evolution"
-        / "girardi2000"
-    )
+    return Path(__file__).resolve().parent / "data" / "girardi2000"
 
 
 def load_girardi2000_from_vizier(
@@ -166,25 +159,20 @@ def load_default_evolution_model(
     ``pyseshat.evolution.parsers.girardi2000``'s module
     docstring).
 
-    **[2026-08-29] Now backed by real data.** Looks for
-    ``mstracks.tsv`` and ``isochrones.tsv`` (the real VizieR
-    J/A+AS/141/371 exports -- see
-    ``docs/project_decisions.md``'s dated entry for the exact
-    provenance) at ``data_dir`` and, if both are present, loads
-    them via :func:`load_girardi2000_from_vizier`. This was a
-    stub raising ``FileNotFoundError``/``NotImplementedError``
-    before real data was obtained; that failure mode is preserved
-    below for the case where the files genuinely are not there
-    yet, so a caller in an environment without this data still
-    gets an honest, informative error rather than a silent empty
-    model.
+    Looks for ``mstracks.tsv`` and ``isochrones.tsv`` (the real
+    VizieR J/A+AS/141/371 exports) at ``data_dir`` and, if both are
+    present, loads them via :func:`load_girardi2000_from_vizier`.
+    If the files are not there, a ``FileNotFoundError`` with an
+    informative message is raised below, so a caller in an
+    environment without this data gets a clear error rather than
+    a silent empty model.
 
     Parameters
     ----------
     data_dir : path-like, optional
         Directory expected to contain ``mstracks.tsv`` and
-        ``isochrones.tsv``. Defaults to
-        ``<repo>/data/evolution/girardi2000/``.
+        ``isochrones.tsv``. Defaults to the copy bundled with the
+        package, ``pyseshat/evolution/data/girardi2000/``.
 
     metallicity : float, default SOLAR_METALLICITY (0.019)
 
@@ -223,12 +211,12 @@ def load_default_evolution_model(
         raise FileNotFoundError(
 
             "Girardi (2000) evolutionary-track/isochrone data "
-            f"not found: missing {missing}. This grid is "
-            "external data and is not bundled with the "
-            "repository by default (see "
+            f"not found: missing {missing}. The default grid is "
+            "bundled with the package; if a custom data_dir was "
+            "given, check the path (see "
             "pyseshat.evolution.parsers.girardi2000's module "
             "docstring and docs/guide/evolutionary_checks.md). "
-            "Download the VizieR J/A+AS/141/371 'mstracks' and "
+            "The tables can also be downloaded: the the VizieR J/A+AS/141/371 'mstracks' and "
             "'isochron' tables (ASU-TSV format) from "
             "https://vizier.cds.unistra.fr/viz-bin/VizieR?"
             "-source=J/A+AS/141/371, or the tracks/isochrones "

@@ -4,27 +4,24 @@ Section 2.4/2.7 representative-MCMC-posterior figure (the
 near-circular-orbit eccentricity-argument-of-periastron
 degeneracy).
 
-Why this script exists (investigation outcome, 2026-08-30)
+Why this script exists
 ------------------------------------------------------------
 ``MCMCResult.corner_plot()`` (src/pyseshat/inference/mcmc_result.py)
-has existed and been unit-tested since 2026-08-27
-(tests/test_corner_plot.py) and is demonstrated in
+is unit-tested (tests/test_corner_plot.py) and is demonstrated in
 examples/02_mcmc_posterior_exploration.py -- but neither of those
 ever writes a corner-plot figure to disk (the test calls
 ``plt.close(fig)`` immediately; the example script only calls
 ``plt.show()``), and no benchmark-generation script
 (``scripts/generate_benchmark_plots.py``,
 ``scripts/generate_triple_orbit_plots.py``) has ever invoked it
-either -- both of those only ever call
+either -- both of those only call
 ``pyseshat.inference.optimizer.fit_visual_orbit`` (the point-estimate
-optimizer), never ``fit_visual_orbit_mcmc``. Confirmed via
-``grep -rn "corner_plot"`` across the repo and
-``find validation/results/plots -iname "*corner*"`` (empty).
+optimizer), never ``fit_visual_orbit_mcmc``.
 
-So: corner_plot() is real, tested, and used in exactly one
-demonstration example -- but had never been run for a benchmark
-system, and no MCMC chain/samples existed on disk for Capella (or
-any other system) before this script.
+So: corner_plot() is tested and demonstrated in one example, but no
+benchmark-generation script runs it, and no MCMC chain/samples for
+Capella (or any other system) exist on disk apart from those this
+script produces.
 
 Why Capella
 ------------------------------------------------------------
@@ -49,8 +46,7 @@ What this script does
 1. Parses Capella_orbit's data file exactly as
    scripts/generate_benchmark_plots.py's own ``_fit()`` helper does.
 2. Runs ``fit_visual_orbit_mcmc`` (least-squares starting point,
-   then emcee posterior sampling) -- this IS the MCMC run item 3
-   asked to confirm exists or perform.
+   then emcee posterior sampling) -- this is the MCMC run itself.
 3. Saves the resulting chain/samples as a compressed .npz archive
    under validation/results/ (so the MCMC run itself is a durable,
    inspectable artifact, not just a transient in-memory object) --
@@ -168,7 +164,7 @@ def _recenter_omega_for_plotting(posterior):
     (see ``optimizer.py``'s ``_wrap_periodic_mcmc_samples`` and its
     docstring) into (-180, 180].
 
-    Why this exists (2026-09-02, follow-up to the ω axis-range fix)
+    Why this exists
     --------------------------------------------------------------
     Wrapping ``omega`` into [0, 360) fixed the real bug (an
     unbounded, unwrapped raw MCMC chain blowing the axis out to
@@ -306,16 +302,15 @@ def main():
 
     # Reuse the saved chain when one already exists, rather than
     # re-running the MCMC: this script's RNG seed does not give a
-    # bit-reproducible chain across separate process runs (confirmed
-    # 2026-09-02 -- non-angular columns differ at the float level
+    # bit-reproducible chain across separate process runs
+    # (non-angular columns differ at the float level
     # between two same-seed runs, most likely due to BLAS/scipy
     # optimizer floating-point-order nondeterminism upstream of the
     # sampler, not this script's own logic), so re-running here would
     # silently produce a slightly different "final" posterior than
-    # the one already checked and recorded in docs/project_decisions.md
-    # and docs/paper_reproduction_notes.md's 2026-09-02 entries. A
-    # plot-only change (like this one, recentering omega's display
-    # range) should not perturb those already-reported numbers.
+    # the one already checked and reported. A plot-only change (like
+    # recentering omega's display range) should not perturb those
+    # already-reported numbers.
 
     if SAMPLES_PATH.exists():
 

@@ -1,11 +1,6 @@
 """
 Regression test for analysis.dynamics/visualization.dynamics_plot,
-rewritten 2026-08-27 from a print-only demo script (no
-``def test_...`` function, no assertions -- the same defect fixed
-for several other files in docs/project_decisions.md's "Whole-
-codebase audit" section) into a real assertion-bearing test, per
-docs/development_plan_phase2.md Phase 4's charge to strengthen
-plot-correctness coverage.
+with assertions on the computed values and plotted data.
 """
 
 import matplotlib
@@ -79,8 +74,8 @@ def test_separation_vs_time_matches_orbit_model_and_plots_correctly():
 # ==========================================================
 # show_grid / output_format / save_path
 #
-# Added 2026-08-30 alongside the new parameters themselves
-# (docs/project_decisions.md) -- same coverage pattern as
+# Tests for the show_grid/output_format/save_path parameters --
+# same coverage pattern as
 # tests/test_orbit_plot.py.
 # ==========================================================
 

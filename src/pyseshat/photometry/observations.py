@@ -215,3 +215,44 @@ class PhotometricMeasurement:
             normalized_uncertainty
 
         )
+
+
+@dataclass(frozen=True)
+class MagnitudeDifference:
+    """
+    Observed magnitude difference between the two components of
+    an unresolved binary, e.g. from speckle interferometry.
+
+    Parameters
+    ----------
+    passband : str
+        Passband in which the difference was measured.
+    value : float
+        m_secondary - m_primary, in magnitudes.
+    uncertainty : float
+        One-standard-deviation uncertainty in magnitudes (> 0).
+
+    Notes
+    -----
+    Combined-light photometry constrains only the sum of the two
+    components' fluxes; for components of similar temperature it
+    cannot separate the individual temperatures. A measured
+    magnitude difference supplies the flux ratio, as in the
+    synthetic-photometry approach of Al-Wardat (2002, 2012).
+    """
+
+    passband: str
+    value: float
+    uncertainty: float
+
+    def __post_init__(self):
+        if not isinstance(self.passband, str) or not self.passband.strip():
+            raise TypeError("passband must be a non-empty string.")
+        object.__setattr__(self, "passband", self.passband.strip())
+        for name in ("value", "uncertainty"):
+            v = float(getattr(self, name))
+            if not np.isfinite(v):
+                raise ValueError(f"{name} must be finite.")
+            object.__setattr__(self, name, v)
+        if self.uncertainty <= 0.0:
+            raise ValueError("uncertainty must be positive.")

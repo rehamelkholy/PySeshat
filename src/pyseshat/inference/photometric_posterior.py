@@ -61,8 +61,7 @@ def photometric_log_posterior_from_problem(
     # sampler naturally steers away from it, rather than the
     # exception propagating up through emcee and killing the
     # whole run (as it did during real MCMC exploration while
-    # validating the Al-Wardat benchmarks -- see
-    # docs/project_decisions.md, 2026-08-27).
+    # validating the SED benchmarks).
 
     try:
 

@@ -59,6 +59,39 @@ and `MCMCResult`'s `effective_sample_size`/`has_autocorrelation_time`
 give you the standard emcee convergence signals rather than assuming
 `n_steps` was enough by construction.
 
+Two things are folded before the samples are returned: Omega and omega into
+[0, 360), and T0 to within half a period of the least-squares T0 (the model
+depends on T0 only modulo P, and on near-circular orbits the walkers can
+otherwise drift across many periods).
+
+### Near-circular orbits: `parameterization="sqrt_e"`
+
+When e is small, only the mean longitude is constrained: T0 and omega trade
+off along a curved ridge, and the affine-invariant sampler mixes very slowly
+in (T0, e, omega). The option
+
+```python
+posterior = fit_visual_orbit_mcmc(
+    elements, t, X, Y, sigma, sigma, rv_data=rv,
+    n_walkers=32, n_steps=20000, burn_in=4000, thin=5,
+    parameterization="sqrt_e",
+)
+```
+
+samples h = sqrt(e) sin(omega), k = sqrt(e) cos(omega) and the mean longitude
+L = omega + 360 (t_ref - T0) / P at t_ref = the least-squares T0, with the other
+elements unchanged. The log-density includes the Jacobian of the change of
+variables (log P when P is fitted), so the flat priors in (T0, e, omega) are
+kept and the posterior is the same; only the sampling changes. T0, e and omega
+must all be fitted. `samples`, `log_probability` and `parameter_names` are in
+the standard elements; `acceptance_fraction` and `autocorrelation_time` come
+from the sampler, i.e. refer to the sampled parameters. See
+`pyseshat/inference/reparameterization.py` and
+`scripts/generate_capella_real_corner_plot.py` (Capella, e ~ 0.001).
+
+Without RV data, K1, K2 and V0 are held fixed (they do not enter the model),
+whatever their fit flags.
+
 ## Reading a fit's quality
 
 `inference/likelihood.py`'s `visual_xy_residuals`/`rv_residuals` give
@@ -66,7 +99,7 @@ you the same Cartesian residuals the optimizer minimized;
 `analysis/statistics.py`'s `combined_fit_summary()` turns those into
 chi-square, reduced chi-square, and RMS, normalized to the same key
 schema (`chi_square`, `reduced_chi_square`, `rms`, `n_data`, `n_params`)
-regardless of which fitting path (plain binary, ORBIT3 triple, Al-Wardat
+regardless of which fitting path (plain binary, ORBIT3 triple, binary
 SED) produced them.
 
 ## Angle and sign conventions

@@ -94,17 +94,25 @@ observations = parsed["observations"]      # outer-orbit visual astrometry
 rv_observations = parsed["rv_observations"]
 ```
 
-## Al-Wardat SED JSON
+## binary SED JSON
 
-Unlike the two formats above, an Al-Wardat unresolved-binary SED
+Unlike the two formats above, an unresolved-binary SED
 benchmark is not a raw instrument-format file — it's a JSON file per
 system under `validation/expected_results/<SYSTEM>.json`, since there is
-no orbital fit involved at all (see `alwardat_sed.md`). Key fields (see
+no orbital fit involved at all (see `binary_sed.md`). Key fields (see
 `validation/expected_results/HD214222.json` for a complete real
 example):
 
 - `measurements` — list of `{passband, magnitude, uncertainty}`, the
-  actual data being fit.
+  actual data being fit. The benchmark runner knows the passbands
+  "Johnson U/B/V", "Cousins R", "Stromgren u/v/b/y" and "Tycho BT/VT"
+  (curves and sources: `validation/photometry/passbands/README.md`).
+
+Passband files are two-column ASCII (wavelength in Angstrom,
+sensitivity). A header line `# detector: photon` marks a photon-counting
+curve P(λ), integrated with a λ weight (Maíz Apellániz 2006, Eq. A1);
+`# detector: energy` or no such line means an energy-integrating curve.
+`load_passband(..., photon_counting=True/False)` overrides the header.
 - `initial_parameters` — starting `primary_temperature`,
   `secondary_temperature`, `primary_radius`, `secondary_radius`, `ebv`.
 - `atmosphere_files` — which CK04 grid FITS files (under
@@ -115,11 +123,15 @@ example):
   comparison target this benchmark's fit is checked against.
 - `distance_pc`, `metallicity`, `primary_logg`, `secondary_logg` — held
   fixed during the fit (not free parameters).
-- `excluded_measurements` — measurements present in the source data but
-  deliberately excluded from fitting, with a `note` explaining why (e.g.
-  Stromgren u — see `alwardat_sed.md`).
+- `excluded_measurements` (optional) — measurements present in the source
+  data but deliberately excluded from fitting, with a `note` explaining
+  why. None of the current benchmarks uses it (Strömgren u was excluded
+  before 0.2.0 because of a zero-point error; see `binary_sed.md`).
+- `magnitude_differences` (optional) — component magnitude differences
+  (`passband`, `value` = m_secondary - m_primary, `uncertainty`) added
+  to the fit as extra residuals.
 - `radius_prior_note` — documents the assumed relative sigma used for
-  each system's radius Gaussian prior (see `alwardat_sed.md`).
+  each system's radius Gaussian prior (see `binary_sed.md`).
 
 This JSON format is specific to this project's benchmark suite, not a
 standard the source paper defines — building your own system's file by
@@ -163,36 +175,32 @@ full scope, the Thiele-Innes→Campbell inversion method (Halbwachs et
 al. 2023), and the ascending/descending-node ±180° ambiguity that pure
 astrometric (no-RV) solutions carry.
 
-**A real robustness bug, caught before any real archive data was even
-available (2026-09-01)**: a genuine CSV/VOTable export represents an
+**Optional NaN columns**: a genuine CSV/VOTable export represents an
 unpopulated *optional* column (e.g. `inclination`/`arg_periastron` on
 a pure-astrometric `Orbital` row, which Gaia's own pipeline never
 populates for that solution type) as NaN once loaded through
 pandas/astropy — not Python `None`, which only a hand-built dict can
-produce. The original `row.get(key) is not None` checks silently
-accepted NaN as "present" and propagated it straight into a NaN
-`OrbitalElements` field. Fixed via `gaia_parser._is_present()`, which
-treats NaN and `None` identically; regression-tested in
+produce. A plain `row.get(key) is not None` check would silently
+accept NaN as "present" and propagate it straight into a NaN
+`OrbitalElements` field, so `gaia_parser._is_present()` treats NaN and
+`None` identically; regression-tested in
 `tests/test_gaia_parser.py`. Worth knowing if you write your own
 row-loading code against a real archive export: don't assume `is not
 None` is enough for an optional numeric column.
 
-**Validation status: [RESOLVED 2026-09-01] validated against a real,
-retrieved Gaia Archive export**, not just a round-trip. `tests/
+**Validation status: validated against a real, retrieved Gaia Archive
+export**, not just a round-trip. `tests/
 test_gaia_parser.py` forward-transforms El-Badry et al. 2023's own
 *published* Campbell elements for Gaia BH1 (source_id
 `4373465352415301632`) through this codebase's own `thiele_innes()`
 and checks they round-trip back out through `parse_nss_orbital_row()`
 — this validates the inversion algebra and unit conversions, but was
 never a check against archive-retrieved data on its own. A live TAP
-query (`astroquery.gaia`) is blocked by this project's org network
-egress policy from every environment tested — the cloud sandbox,
-`WebFetch`, and the user's own linked-device shell (all return an HTTP
-403 for `gea.esac.esa.int`) — so this gap was closed via the same
-manual-export path that resolved the Girardi (2000) evolutionary-track
-data gap: the user ran an ADQL query through the Gaia Archive's own web
-interface (<https://gea.esac.esa.int/archive/>) and supplied a real CSV
-export.
+query (`astroquery.gaia`) may be blocked in environments with restricted
+network access (for example an HTTP 403 for `gea.esac.esa.int`); the
+real export was obtained via a manual path instead: an ADQL query run
+through the Gaia Archive's own web interface
+(<https://gea.esac.esa.int/archive/>), exported as CSV.
 
 The script originally targeted Gaia BH1 and Gaia BH2, but the query
 for that pair returned zero rows for both — Ryu et al. 2025
@@ -203,10 +211,9 @@ validate_gaia_archive_export.py` was rewritten to target **RX Cam**
 (source_id `470361114339849472`) and **HIP 36189** (source_id
 `3162827836766605440`) instead — both explicitly named by source_id,
 with real Gaia-fitted parameters, in Gaia Collaboration 2023's own DR3
-companion paper (arXiv:2206.05595). (SIMBAD/VizieR were checked first,
-as the route to this paper's own benchmark systems Capella/alpha Cen
-AB, but are unreachable by any tool this session has, so their NSS
-status remains undetermined rather than ruled out.)
+companion paper (arXiv:2206.05595). (Whether this paper's own benchmark systems Capella/alpha Cen AB
+have Gaia NSS solutions was not determined; their NSS status remains
+undetermined rather than ruled out.)
 
 Run against the real export, `scripts/validate_gaia_archive_export.py`
 reports:

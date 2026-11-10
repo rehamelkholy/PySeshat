@@ -9,8 +9,8 @@ must for two components of a real binary that formed together.
 
 This uses this project's default grid, Girardi et al. (2000), A&AS,
 141, 371 (Z=0.019, solar), loaded from the real VizieR J/A+AS/141/371
-export already checked into this repo at
-``data/evolution/girardi2000/`` -- no download needed to run this
+export bundled with the package at
+``pyseshat/evolution/data/girardi2000/`` -- no download needed to run this
 example. See ``docs/guide/evolutionary_checks.md`` for the grid
 choice, its real-data quirks, and the six-system validation results
 this same pipeline produced.
@@ -42,8 +42,8 @@ from pyseshat.evolution.search import nearest_track
 
 
 # ==========================================================
-# 1. Load the real Girardi (2000) grid already checked into
-#    this repo (data/evolution/girardi2000/).
+# 1. Load the real Girardi (2000) grid bundled with the
+#    package (pyseshat/evolution/data/girardi2000/).
 # ==========================================================
 
 model = load_default_evolution_model()

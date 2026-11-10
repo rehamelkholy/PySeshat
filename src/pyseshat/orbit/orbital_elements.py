@@ -227,8 +227,7 @@ class OrbitalElements:
         directly for both components. That unshifted
         convention has been validated against real published
         joint visual+RV solutions (FIN379, GL765: see
-        tests/test_rv_sign_convention_validation.py and
-        docs/project_decisions.md), which converge to the
+        tests/test_rv_sign_convention_validation.py), which converge to the
         literature omega/K1/K2 without needing this +180 deg
         shift. Do not wire this function into compute_rv_orbit
         (or anywhere else) without re-deriving why those two

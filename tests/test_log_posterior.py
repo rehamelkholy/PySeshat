@@ -228,6 +228,10 @@ def test_fit_visual_orbit_from_problem_matches_legacy(
         node_disambiguation=problem.node_disambiguation,
 
         node_rtol=problem.node_rtol,
+
+        # fit_visual_orbit_from_problem uses the supplied errors
+        # as given, so compare against fixed weighting.
+        weighting="fixed",
     )
 
     # ------------------------------------------------------

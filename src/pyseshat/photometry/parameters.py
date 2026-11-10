@@ -30,7 +30,7 @@ class PhotometricParameters:
         Mirrors ``OrbitalElements.fit_flags``: True -> parameter
         is fitted, False -> parameter is held fixed at its
         current value. Defaults to all-True (every parameter
-        fitted), matching this class's original, pre-2026-08-27
+        fitted), matching the original
         always-fit-everything behavior.
 
     priors : dict
@@ -49,12 +49,10 @@ class PhotometricParameters:
     This mechanism mirrors ``OrbitalElements.fit_flags`` (see
     that class) and exists specifically to replace the
     near-zero-width-bounds "pinning" workaround that
-    ``validation/benchmark_runner.py::run_alwardat_benchmark()``
-    used before 2026-08-27 for parameters the (then 4- or
+    ``validation/benchmark_runner.py::run_sed_benchmark()``
+    used previously for parameters the (4- or
     9-measurement) photometric data couldn't independently
-    constrain -- see docs/project_decisions.md, "PhotometricParameters
-    fit-flags/prior mechanism" for the full design rationale and
-    the radius-degeneracy evidence that motivated it. A HARD pin
+    constrain (the radius degeneracy motivated this mechanism). A HARD pin
     (fit_flags[name]=False) still fully replaces that old
     epsilon-bounds trick when no prior is warranted; a Gaussian
     prior lets a parameter move under the data's own evidence
@@ -162,8 +160,7 @@ class PhotometricParameters:
     ):
         """
         Return the names of the currently-fitted parameters, in
-        canonical order. Instance method (not a staticmethod, as
-        it was before 2026-08-27) because which parameters are
+        canonical order. Instance method (not a staticmethod) because which parameters are
         "fitted" is now per-instance state, not fixed for the
         whole class -- mirrors
         ``OrbitalElements.fitted_parameter_names()``.

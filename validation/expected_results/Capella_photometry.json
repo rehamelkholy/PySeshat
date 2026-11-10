@@ -5,16 +5,16 @@
     "HD 34029",
     "HIP 24608"
   ],
-  "fitting_path": "alwardat_sed",
+  "fitting_path": "binary_sed",
   "supported": true,
-  "reference": "Torres, Claret, Pavlovski & Dotter 2015, ApJ 807, 26, Table 3",
+  "reference": "Torres, Claret, Pavlovski & Dotter 2015, ApJ 807, 26, Table 3 (Teff, R, log g, [Fe/H]); photometry: Mermilliod 1991 (VizieR II/168); flux ratios: Torres, Claret & Young 2009, ApJ 700, 1349, Table 13",
   "evolutionary_track_source": {
     "grid": "Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126",
     "metallicity_used": 0.019,
     "overshoot_used": 1,
-    "metallicity_note": "Z=0.019 (Y=0.273) is the paper's own identified solar-composition value (Sect. 2: \"almost identical to the Z=0.01886 favoured by Anders & Grevesse 1989\"), appropriate for this Sun-like system.",
+    "metallicity_note": "Z=0.019 (Y=0.273) is the paper's own identified solar-composition value (Sect. 2: \"almost identical to the Z=0.01886 favoured by Anders & Grevesse 1989\"), the Girardi et al. (2000) grid closest to Capella's [Fe/H] = -0.04 +- 0.06 (Torres et al. 2015).",
     "status": "run",
-    "status_note": "[2026-08-29] Real Girardi (2000) evolutionary-track/isochrone data was obtained and run against this system: VizieR catalog J/A+AS/141/371 (tables mstracks, isochron), Z=0.019 (Y=0.273), Overshoot=1. Source data: Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126. Loader: pyseshat.evolution.parsers.girardi2000.load_girardi2000_vizier_tracks/_isochrones, wired as this project's default grid via pyseshat.evolution.grids.load_default_evolution_model(). Pipeline: pyseshat.evolution.benchmark_checks.run_system_evolutionary_check (nearest_track -> fit_track independently per component -> fit_common_age jointly), the same code scripts/run_evolutionary_checks.py and scripts/generate_benchmark_plots.py's generate_hrdiagrams() both use, so this recorded result, the numeric report, and the HR-diagram figure cannot silently drift apart. mass_source: derived from literature SB2 orbital elements (Torres et al. 2015 Table 1, P/e/i/K1/K2) via analysis.masses.component_masses_from_elements -- no separately-stated literature mass exists in this repository. M1=2.5688, M2=2.4828 Msun. primary: requested M=2.569 Msun -> nearest track M=2.5 Msun (2.68% off); independent best-fit age=7.676e+08 yr (0.77 Gyr), chi2=0.481, state=giant (log g < 3.0). secondary: requested M=2.483 Msun -> nearest track M=2.5 Msun (0.69% off); independent best-fit age=5.920e+08 yr (0.59 Gyr), chi2=4.106, state=subgiant (3.0 <= log g < 4.0). independent-fit age_difference: 1.756e+08 yr (0.18 Gyr) (22.9% of the older independent age). common-age (joint) fit: age=5.923e+08 yr (0.59 Gyr), chi2=45.229, primary log g=3.035 (subgiant (3.0 <= log g < 4.0)), secondary log g=3.035 (subgiant (3.0 <= log g < 4.0)). No prior age/mass/evolutionary-stage numbers for this system existed anywhere else in this project's documentation before this run -- there is nothing to compare against for a discrepancy; this is the first time such numbers have been computed here. (Separate comparison against the source paper's own stated age, if any, was not performed as part of this run.)",
+    "status_note": "Real Girardi (2000) evolutionary-track/isochrone data was run against this system: VizieR catalog J/A+AS/141/371 (tables mstracks, isochron), Z=0.019 (Y=0.273), Overshoot=1. Source data: Girardi et al. (2000), A&AS, 141, 371, doi:10.1051/aas:2000126. Loader: pyseshat.evolution.parsers.girardi2000.load_girardi2000_vizier_tracks/_isochrones, wired as the default grid via pyseshat.evolution.grids.load_default_evolution_model(). Pipeline: pyseshat.evolution.benchmark_checks.run_system_evolutionary_check (nearest_track -> fit_track independently per component -> fit_common_age jointly), the same code scripts/run_evolutionary_checks.py and scripts/generate_benchmark_plots.py's generate_hrdiagrams() both use, so this recorded result, the numeric report, and the HR-diagram figure cannot silently drift apart. mass_source: derived from literature SB2 orbital elements (Torres et al. 2015 Table 1, P/e/i/K1/K2) via analysis.masses.component_masses_from_elements -- no separately-stated literature mass exists in this repository. M1=2.5688, M2=2.4828 Msun. primary: requested M=2.569 Msun -> nearest track M=2.5 Msun (2.68% off); independent best-fit age=7.676e+08 yr (0.77 Gyr), chi2=0.481, state=giant (log g < 3.0). secondary: requested M=2.483 Msun -> nearest track M=2.5 Msun (0.69% off); independent best-fit age=5.920e+08 yr (0.59 Gyr), chi2=4.106, state=subgiant (3.0 <= log g < 4.0). independent-fit age_difference: 1.756e+08 yr (0.18 Gyr) (22.9% of the older independent age). common-age (joint) fit: age=5.923e+08 yr (0.59 Gyr), chi2=45.229, primary log g=3.035 (subgiant (3.0 <= log g < 4.0)), secondary log g=3.035 (subgiant (3.0 <= log g < 4.0)). No independent literature age/mass/evolutionary-stage values are recorded for this system, so no discrepancy comparison is made. (No comparison against the source paper's own stated age, if any, is performed.)",
     "data_provenance": "VizieR catalog J/A+AS/141/371 (tables mstracks, isochron), Z=0.019 (Y=0.273), Overshoot=1",
     "result_summary": {
       "mass_source": "derived from literature SB2 orbital elements (Torres et al. 2015 Table 1, P/e/i/K1/K2) via analysis.masses.component_masses_from_elements -- no separately-stated literature mass exists in this repository. M1=2.5688, M2=2.4828 Msun.",
@@ -48,94 +48,70 @@
     },
     "full_numeric_results": "validation/results/evolutionary_checks.json",
     "hrdiagram_figure": "validation/results/plots/Capella/hrdiagram.png",
-    "prior_grid": "None -- no evolutionary-track grid (Girardi, PARSEC, or otherwise) had ever been run against this system before this entry; PARSEC parsing infrastructure existed in the codebase but with zero bundled data and zero benchmark wiring."
+    "prior_grid": "None -- no other evolutionary-track grid (Girardi, PARSEC, or otherwise) has been run against this system; PARSEC parsing infrastructure exists in the codebase but with no bundled data and no benchmark wiring."
   },
-  "data_provenance": "SYNTHETIC measurements: combined-light magnitudes are generated from this file's own literature Teff/R/logg via PySeshat's own synthetic_binary_magnitudes(), plus Gaussian noise at an ASSUMED 0.03 mag representative precision -- a forward-model self-consistency check (does fit_photometry recover known input Teff/R/E(B-V) from data generated by PySeshat's own model), not a comparison to independently-observed sky photometry. See scripts/build_joint_benchmarks.py module docstring.",
+  "data_provenance": "REAL measurements (0.2.0): combined-light Johnson UBV from VizieR II/168/ubvmeans (V = 0.073 +- 0.014, B-V = 0.797 +- 0.012, U-B = 0.441 +- 0.010; catalogue standard deviations of 24/24/20 observations), and B and V component magnitude differences from the flux ratios of Torres et al. (2009) Table 13. Distance = 1/pi_orb from PySeshat's own orbit fit of the Torres et al. (2009) data (subset B, dataset weighting; scripts/build_real_sed_benchmarks.py, validation/results/real_sed_orbital_parallax.json). Replaces the synthetic photometry used before 0.2.0.",
   "distance_pc": {
-    "value": 13.159,
-    "source": "Torres et al. 2015"
+    "value": 13.04128,
+    "sigma": 0.03105,
+    "source": "orbital parallax of PySeshat's real-data orbit fit"
   },
   "metallicity": {
     "value": 0.0,
-    "source": "nearest available CK04 grid point (ckp00, [M/H]=0.0); literature [Fe/H]=-0.04 (Torres et al. 2015) is not itself used. Re-verified 2026-09-02 after the full 608-file CK04 grid (all 8 metallicity slices) was downloaded: this system's photometric measurements are SYNTHETIC, forward-modeled by this same pipeline's synthetic_binary_magnitudes() at metallicity=0.0 (scripts/build_joint_benchmarks.py) -- so fitting at 0.0 is the self-consistent choice for this benchmark's actual purpose (validating the fitting pipeline recovers the parameters used to generate its own synthetic input), not merely a data-availability fallback. Fitting at a metallicity closer to the true literature value (e.g. -0.04 is itself closer to 0.0 than to any other grid step, so this is moot for Capella specifically) would introduce a deliberate synthetic-data/fit-grid mismatch rather than remove one."
+    "source": "nearest CK04 grid point (ckp00) to [Fe/H] = -0.04 +- 0.06 (Torres et al. 2015)"
   },
   "primary_logg": {
     "value": 2.691,
-    "source": "Torres et al. 2015"
+    "source": "Torres et al. 2015 Table 3"
   },
   "secondary_logg": {
     "value": 2.941,
-    "source": "Torres et al. 2015"
+    "source": "Torres et al. 2015 Table 3"
   },
   "atmosphere_files": [
+    "ckp00/ckp00_4000.fits",
+    "ckp00/ckp00_4250.fits",
     "ckp00/ckp00_4500.fits",
     "ckp00/ckp00_4750.fits",
     "ckp00/ckp00_5000.fits",
     "ckp00/ckp00_5250.fits",
     "ckp00/ckp00_5500.fits",
     "ckp00/ckp00_5750.fits",
-    "ckp00/ckp00_6000.fits"
+    "ckp00/ckp00_6000.fits",
+    "ckp00/ckp00_6250.fits",
+    "ckp00/ckp00_6500.fits",
+    "ckp00/ckp00_6750.fits",
+    "ckp00/ckp00_7000.fits"
   ],
   "measurements": [
     {
       "passband": "Johnson U",
-      "magnitude": 1.0098,
-      "uncertainty": 0.03
+      "magnitude": 1.311,
+      "uncertainty": 0.021
     },
     {
       "passband": "Johnson B",
-      "magnitude": 0.9051,
-      "uncertainty": 0.03
+      "magnitude": 0.87,
+      "uncertainty": 0.0184
     },
     {
       "passband": "Johnson V",
-      "magnitude": 0.0088,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Johnson R",
-      "magnitude": -0.5469,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Stromgren v",
-      "magnitude": 1.0906,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Stromgren b",
-      "magnitude": 0.5245,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Stromgren y",
-      "magnitude": 0.0188,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Tycho BT",
-      "magnitude": 1.0086,
-      "uncertainty": 0.03
-    },
-    {
-      "passband": "Tycho VT",
-      "magnitude": 0.1021,
-      "uncertainty": 0.03
+      "magnitude": 0.073,
+      "uncertainty": 0.014
     }
   ],
   "initial_parameters": {
-    "primary_temperature": 4820.9,
-    "secondary_temperature": 5901.900000000001,
-    "primary_radius": 11.381,
-    "secondary_radius": 9.2715,
+    "primary_temperature": 5200.0,
+    "secondary_temperature": 5500.0,
+    "primary_radius": 11.98,
+    "secondary_radius": 8.83,
     "ebv": 0.0
   },
   "free_parameters": [
     "primary_temperature",
     "secondary_temperature",
     "primary_radius",
-    "secondary_radius",
-    "ebv"
+    "secondary_radius"
   ],
   "literature_component_parameters": {
     "primary": {
@@ -147,5 +123,40 @@
       "radius_Rsun": 8.83
     }
   },
-  "radius_prior_note": "10% relative sigma Gaussian prior on each component's radius, tied to the literature value -- same convention as the other four Al-Wardat systems."
+  "radius_prior_note": "10% relative sigma Gaussian prior on each component's radius, tied to the literature value -- same convention as the other four SED systems.",
+  "magnitude_differences": [
+    {
+      "passband": "Johnson B",
+      "value": -0.3642,
+      "uncertainty": 0.0881
+    },
+    {
+      "passband": "Johnson V",
+      "value": -0.129,
+      "uncertainty": 0.0134
+    }
+  ],
+  "excluded_measurements": [
+    {
+      "passband": "Stromgren u",
+      "magnitude": 2.62,
+      "note": "Hauck & Mermilliod (1998), VizieR II/215, one source, no errors; y taken as the catalogue V. Excluded: at the published parameters all four bands sit about 0.06 mag fainter than the II/168 UBV photometry (catalogue V 0.100 vs 0.073), which UBV alone does not show."
+    },
+    {
+      "passband": "Stromgren v",
+      "magnitude": 1.404,
+      "note": "Hauck & Mermilliod (1998), VizieR II/215, one source, no errors; y taken as the catalogue V. Excluded: at the published parameters all four bands sit about 0.06 mag fainter than the II/168 UBV photometry (catalogue V 0.100 vs 0.073), which UBV alone does not show."
+    },
+    {
+      "passband": "Stromgren b",
+      "magnitude": 0.613,
+      "note": "Hauck & Mermilliod (1998), VizieR II/215, one source, no errors; y taken as the catalogue V. Excluded: at the published parameters all four bands sit about 0.06 mag fainter than the II/168 UBV photometry (catalogue V 0.100 vs 0.073), which UBV alone does not show."
+    },
+    {
+      "passband": "Stromgren y",
+      "magnitude": 0.1,
+      "note": "Hauck & Mermilliod (1998), VizieR II/215, one source, no errors; y taken as the catalogue V. Excluded: at the published parameters all four bands sit about 0.06 mag fainter than the II/168 UBV photometry (catalogue V 0.100 vs 0.073), which UBV alone does not show."
+    }
+  ],
+  "ebv_note": "E(B-V) held at 0 (13 pc)."
 }

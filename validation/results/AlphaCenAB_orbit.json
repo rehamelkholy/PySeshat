@@ -4,60 +4,60 @@
   "fitting_path": "binary",
   "paper_table_row": null,
   "statistics": {
-    "chi2_visual": 55.62232083164425,
-    "chi2_total": 55.62232083164425,
-    "reduced_chi2": 1.0494777515404576,
-    "rms": 0.9628284792876685,
-    "chi_square": 55.62232083164425,
-    "reduced_chi_square": 1.0494777515404576,
+    "chi2_visual": 55.62232083165285,
+    "chi2_total": 55.62232083165285,
+    "reduced_chi2": 1.0494777515406197,
+    "rms": 0.9628284792877428,
+    "chi_square": 55.62232083165285,
+    "reduced_chi_square": 1.0494777515406197,
     "n_data": 60,
     "n_params": 7
   },
   "parameter_errors": {
     "P": {
       "expected": 79.762,
-      "fitted": 79.76194476192114,
-      "relative_error": 6.92536281157138e-07
+      "fitted": 79.76194476192946,
+      "relative_error": 6.925361769301876e-07
     },
     "T0": {
       "expected": 1955.564,
-      "fitted": 1955.564036946589,
-      "relative_error": 1.8893060536200554e-08
+      "fitted": 1955.5640369465898,
+      "relative_error": 1.8893060885010935e-08
     },
     "e": {
       "expected": 0.51947,
-      "fitted": 0.5194662732071503,
-      "relative_error": 7.1742215135743945e-06
+      "fitted": 0.5194662732073012,
+      "relative_error": 7.174221223125843e-06
     },
     "a": {
       "expected": 17.493,
-      "fitted": 17.49292859162057,
-      "relative_error": 4.082111669238122e-06
+      "fitted": 17.492928591620565,
+      "relative_error": 4.082111669441215e-06
     },
     "Omega": {
       "expected": 205.073,
-      "fitted": 205.07366117708108,
-      "relative_error": 3.6732060057905375e-06
+      "fitted": 205.07366117708042,
+      "relative_error": 3.673206002316773e-06
     },
     "omega": {
       "expected": 231.519,
-      "fitted": 231.5187148417264,
-      "relative_error": 1.5842126311819507e-06
+      "fitted": 231.5187148417374,
+      "relative_error": 1.5842125700752755e-06
     },
     "i": {
       "expected": 79.243,
-      "fitted": 79.24334250863961,
-      "relative_error": 4.322257355465525e-06
+      "fitted": 79.2433425086417,
+      "relative_error": 4.3222573818274195e-06
     }
   },
   "fitted_elements": {
-    "P": 79.76194476192114,
-    "T0": 1955.564036946589,
-    "e": 0.5194662732071503,
-    "a": 17.49292859162057,
-    "Omega": 205.07366117708108,
-    "omega": 231.5187148417264,
-    "i": 79.24334250863961
+    "P": 79.76194476192946,
+    "T0": 1955.5640369465898,
+    "e": 0.5194662732073012,
+    "a": 17.492928591620565,
+    "Omega": 205.07366117708042,
+    "omega": 231.5187148417374,
+    "i": 79.2433425086417
   },
   "optimizer_success": true,
   "optimizer_message": "Both `ftol` and `xtol` termination conditions are satisfied.",

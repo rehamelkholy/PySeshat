@@ -3,8 +3,7 @@ Regression guard for degrees-of-freedom handling.
 
 Background
 ----------
-An earlier audit (see docs/project_decisions.md, "Whole-codebase
-audit") flagged that `analysis.statistics.combined_fit_summary` and
+An earlier audit flagged that `analysis.statistics.combined_fit_summary` and
 `inference.covariance.estimate_covariance`'s `scale_by_reduced_chi2`
 branch both silently floored a degenerate/over-parameterized fit's
 degrees of freedom via `dof = max(n - n_params, 1)`, returning a

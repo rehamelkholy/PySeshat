@@ -1,10 +1,9 @@
 {
   "system": "HD191854",
-  "orbit_type": "alwardat_sed",
-  "fitting_path": "alwardat_sed",
+  "orbit_type": "binary_sed",
+  "fitting_path": "binary_sed",
   "paper_table_row": null,
   "free_parameters": [
-    "ebv",
     "primary_radius",
     "primary_temperature",
     "secondary_radius",
@@ -21,40 +20,40 @@
     }
   },
   "statistics": {
-    "chi_square": 0.42817796010183945,
-    "reduced_chi_square": 0.10704449002545986,
-    "rms": 0.21811769506439496,
-    "n_data": 9,
-    "n_params": 5
+    "chi_square": 0.0488032142568965,
+    "reduced_chi_square": 0.0069718877509852145,
+    "rms": 0.0666082265304823,
+    "n_data": 11,
+    "n_params": 4
   },
   "parameter_errors": {
     "primary_temperature": {
       "expected": 5930.0,
-      "fitted": 5632.734552524299,
-      "relative_error": 0.050129080518667955
+      "fitted": 5789.35763292851,
+      "relative_error": 0.02371709394122939
     },
     "secondary_temperature": {
       "expected": 5440.0,
-      "fitted": 5474.811560841289,
-      "relative_error": 0.006399183978178137
+      "fitted": 5280.699420009218,
+      "relative_error": 0.029283194851246756
     },
     "primary_radius": {
       "expected": 1.585,
-      "fitted": 1.5850264002597076,
-      "relative_error": 1.6656315272985352e-05
+      "fitted": 1.5686847493422809,
+      "relative_error": 0.010293533537993126
     },
     "secondary_radius": {
       "expected": 0.906,
-      "fitted": 0.9059874082070832,
-      "relative_error": 1.3898226177476843e-05
+      "fitted": 0.9042087395679984,
+      "relative_error": 0.0019771086445933973
     }
   },
   "fitted_elements": {
-    "primary_temperature": 5632.734552524299,
-    "secondary_temperature": 5474.811560841289,
-    "primary_radius": 1.5850264002597076,
-    "secondary_radius": 0.9059874082070832,
-    "ebv": 3.277761803790349e-19
+    "primary_temperature": 5789.35763292851,
+    "secondary_temperature": 5280.699420009218,
+    "primary_radius": 1.5686847493422809,
+    "secondary_radius": 0.9042087395679984,
+    "ebv": 0.0
   },
   "optimizer_success": true,
   "optimizer_message": "`ftol` termination condition is satisfied.",

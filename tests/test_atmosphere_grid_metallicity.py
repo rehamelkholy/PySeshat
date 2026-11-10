@@ -2,21 +2,17 @@
 Metallicity-grid-selection coverage for the CK04 atmosphere-loading
 machinery (``stellar/atmospheres.py``).
 
-Why this file exists (2026-09-02, CK04 grid-completeness audit)
+Why this file exists
 -----------------------------------------------------------------
-Before this pass, `stellar/atmospheres.py`'s per-model-parameter
-interpolation (Teff, log g) had test coverage only indirectly, through
+`stellar/atmospheres.py`'s per-model-parameter
+interpolation (Teff, log g) has test coverage only indirectly, through
 higher-level photometric-fit tests -- and metallicity SELECTION
 specifically (choosing the right one of several loaded metallicity
-slices, and rejecting a metallicity that was never loaded) had no
-dedicated test at all. This mattered in practice: every benchmark
-system was fit at solar metallicity for months, partly because only
-the solar slice was ever downloaded (see docs/project_decisions.md's
-"CK04 grid completion" and 2026-09-02 audit entries) -- but even after
-the full 8-metallicity grid was downloaded, nothing directly exercised
+slices, and rejecting a metallicity that was never loaded) has no
+other dedicated test. Without these tests, nothing directly exercises
 `AtmosphereGrid`/`load_ck04_grid` with more than one metallicity slice
 loaded at once, so a metallicity-selection bug in that code path could
-easily have gone unnoticed.
+easily go unnoticed.
 
 These tests use real CK04 FITS files already checked into
 `validation/atmosphere_models/` (not synthetic fixtures) at the same
@@ -152,7 +148,7 @@ def test_interpolate_rejects_a_metallicity_that_was_never_loaded():
     metallicity selection with no interpolation across the
     metallicity axis is a documented, deliberate design choice (see
     AtmosphereGrid.interpolate()'s docstring and
-    docs/guide/alwardat_sed.md's "CK04 grid coverage" section), and
+    docs/guide/binary_sed.md's "CK04 grid coverage" section), and
     "nearest available grid point" is a decision this codebase makes
     explicitly at the call site (see validation/expected_results/*.json
     "metallicity" fields), not something interpolate() should do

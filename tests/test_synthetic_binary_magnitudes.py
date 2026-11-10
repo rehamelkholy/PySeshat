@@ -174,9 +174,12 @@ magnitudes = synthetic_binary_magnitudes(
 # Previously validated reference values
 # ==========================================================
 
-expected_b = 7.130442389055
+# Regression values. Updated in 0.2.0 for the Maiz Apellaniz (2006)
+# photon-counting B and V curves (previously 7.130442389055 and
+# 6.296584811208877 with the old curves integrated in energy form).
+expected_b = 7.139368535769073
 
-expected_v = 6.296584811208877
+expected_v = 6.295428757417945
 
 
 # ==========================================================

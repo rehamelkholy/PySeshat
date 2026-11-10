@@ -1,7 +1,6 @@
 """
 Quantitative ORBITT2 (legacy) vs ORBIT3 (modern) formalism
-comparison for ZetaAqr and HIP111805, per
-docs/paper_reference_notes.md Section 2.3.
+comparison for ZetaAqr and HIP111805.
 
 This script invokes ONLY the existing, already-validated fitting
 entry points -- pyseshat.triple.triple_fit.fit_triple_orbit()
@@ -43,7 +42,7 @@ reuses the same swap (it is its own inverse, since it only
 exchanges two tag values) to additionally run HIP111805's native
 .in3 (ORBIT3-native) data through the legacy path -- something no
 existing test does, since HIP111805 was introduced specifically
-through ORBIT3 (see docs/project_decisions.md).
+through ORBIT3.
 
 Crucially, the outer/inner *physical* assignment on
 TripleOrbitalElements (``elements.outer`` = the wide pair,
@@ -98,8 +97,7 @@ Legacy ORBITT2's real architectural limitations (found here)
 2. B is bounded to [0, +inf) in triple_bounds.build_triple_bounds()
    -- a NEGATIVE reciprocal wobble factor (1/f with f<0) cannot be
    represented at all. HIP111805's published ORBIT3 solution has
-   f = -0.33 (a real, previously-documented finding -- see
-   docs/project_decisions.md's "`f` unbounded" entry), so if the
+   f = -0.33 (a negative f is a real property of that solution), so if the
    legacy fit's B is driven toward a negative value it will instead
    be pinned at the bound. This is checked and reported explicitly
    below, not assumed.
@@ -126,9 +124,8 @@ import numpy as np
 # own "from benchmark_runner import ..." style) -- add it to sys.path so
 # this script can cross-check its ZetaAqr ORBIT3 chi2 against the
 # canonical validation/benchmark_runner.py::run_orbit3_benchmark() path
-# every time it runs, per the 2026-08-30 fix documented at ZETA_EXPECTED
-# below (a stale/reintroduced divergence between the two paths would
-# otherwise go unnoticed again).
+# every time it runs (see the comment at ZETA_EXPECTED below; a
+# divergence between the two paths would otherwise go unnoticed).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "validation"))
 
 from pyseshat.analysis.masses import compute_component_masses
@@ -236,39 +233,24 @@ def _blank_fit_flags():
 #
 # Literature reference (Tokovinin 2016, ApJ, 831, 151, Table 5).
 #
-# [2026-08-30 fix] The ORBIT3 initial parameters below are read
-# directly from validation/expected_results/ZetaAqr.json --
-# the SAME single authoritative, literature-cited source
+# The ORBIT3 initial parameters below are read directly from
+# validation/expected_results/ZetaAqr.json -- the SAME single
+# authoritative, literature-cited source
 # validation/benchmark_runner.py::run_orbit3_benchmark() uses (via
 # its own _build_orbit3_elements()), and the same values
 # tests/test_zetaaqr_reproduce_orbit.py's LITERATURE dict /
-# make_literature_orbit3_elements() use. An earlier version of this
-# script instead took P/T0/e (inner) and the entire outer orbit from
-# parsed["elements"] -- i.e. straight from ZetaAqr.in2's own raw
-# file header -- rather than from this authoritative source. That
-# is a real, confirmed bug, not a meaningful alternative
-# initialization: the raw file header's outer T0 (1980.5) differs
-# from the literature/expected_results value (1981.50) by a full
-# year in this highly eccentric (e2=0.419), long-period (540 yr)
-# orbit, which was enough to send fit_orbit3()'s local (LM)
-# optimizer to a different, worse local minimum (chi2=699.48 instead
-# of the canonical benchmark's chi2=694.51 -- a ~5-point gap).
-# Confirmed by direct isolation: correcting ONLY outer T0 (leaving
-# every other input/setting from the old code path unchanged)
-# already reproduces chi2=694.505, matching run_orbit3_benchmark()'s
-# 694.508 to within optimizer noise; using the full authoritative
-# initial-parameter vector (this fix) reproduces it to 4 decimal
-# places (694.5076 both). Every other input -- the 331 observations
-# and their I1/I2 tags (verified identical, field-by-field, between
-# this script's swap_visual_labels() and benchmark_runner.py's
-# _convert_legacy_orbit3_observations()), the fitted_flags mask, and
-# fit_orbit3()'s optimizer settings (both call sites use the
-# function's defaults: method="lm", loss="linear", f_scale=1.0,
-# bounds=None) -- were already identical between the two code paths.
-# See docs/project_decisions.md's dated entry for the full
-# investigation. The canonical benchmark value (694.51, as already
-# cited in the paper) was NOT changed -- it was already correct;
-# only this script's own initialization was fixed to match it.
+# make_literature_orbit3_elements() use. They are deliberately NOT
+# taken from ZetaAqr.in2's own raw file header: that header's outer
+# T0 (1980.5) differs from the literature/expected_results value
+# (1981.50) by a full year in this highly eccentric (e2=0.419),
+# long-period (540 yr) orbit. (Note, 0.2.0: the chi2 values 699.48 and
+# 694.51 quoted in earlier versions came from the former default,
+# LM with the ORBIT3 forward-difference Jacobian, which stops before the
+# minimum; the default is now method="trf" with a numerical Jacobian,
+# see fit_orbit3() and scripts/orbit3_convergence_check.py.)
+# The 331 observations and their I1/I2 tags, the fitted_flags mask
+# and fit_orbit3()'s optimizer settings (defaults) are identical between
+# this script and the canonical benchmark path.
 
 with open(EXPECTED_DIR / "ZetaAqr.json", "r") as _f:
     ZETA_EXPECTED = json.load(_f)
@@ -413,8 +395,8 @@ def hip111805_legacy_fit():
     (.in3) data.
 
     No prior test in this repository does this -- HIP111805 was
-    introduced specifically through ORBIT3 (see
-    docs/project_decisions.md). Built here by: (1) swapping the
+    introduced specifically through ORBIT3.
+    Built here by: (1) swapping the
     visual I1/I2 labels to legacy convention (see module
     docstring), (2) reusing the SAME elements.outer/elements.inner
     OrbitalElements objects the ORBIT3 parse already built (the
@@ -501,14 +483,13 @@ def _angle_diff(a, b):
 
 def _canonical_zetaaqr_orbit3_chi2():
     """
-    The paper's Section 3.2-cited ORBIT3 chi2 for ZetaAqr (694.51),
+    The paper's Section 3.2-cited ORBIT3 chi2 for ZetaAqr,
     recomputed live via the canonical
     validation/benchmark_runner.py::run_orbit3_benchmark() path
     rather than hardcoded, so this script's own ORBIT3 fit
     (zetaaqr_orbit3_fit(), above) can be checked against it every
     run -- see the ZETA_EXPECTED loading block's comment for why
-    this check exists (a 2026-08-30 investigation found and fixed a
-    real divergence between the two paths).
+    this check exists.
     """
 
     config = {
@@ -540,9 +521,8 @@ def compare_zetaaqr():
             f"run_orbit3_benchmark() chi2 ({canonical_chi2:.4f}) "
             "within 0.5 -- this comparison script's ORBIT3 "
             "initialization has drifted from the paper's cited "
-            "benchmark path again (see the 2026-08-30 fix "
-            "documented at this module's ZETA_EXPECTED loading "
-            "block and in docs/project_decisions.md). Do not "
+            "benchmark path again (see the comment at this "
+            "module's ZETA_EXPECTED loading block). Do not "
             "silence this check -- fix the initialization instead."
         )
 
@@ -656,18 +636,14 @@ def compare_zetaaqr():
                 "zetaaqr_orbit3_fit(), not copied from "
                 "run_orbit3_benchmark(); canonical_benchmark_chi2 is "
                 "the live value from that canonical benchmark path "
-                "(the one docs/paper_reference_notes.md Section 3.3 "
-                "cites, 694.51), checked to agree within 0.5 every "
-                "time this script runs -- see the 2026-08-30 fix "
-                "note at this module's ZETA_EXPECTED loading block. "
-                "A 2026-08-30 investigation found and fixed a real "
-                "~5-point divergence between these two numbers, "
-                "traced to this script previously initializing the "
-                "outer orbit from ZetaAqr.in2's raw file header "
-                "(T02=1980.5) instead of from the literature/"
-                "expected_results value (T02=1981.50) -- see "
-                "docs/project_decisions.md's dated entry for the "
-                "full investigation."
+                "(the value cited in the paper), checked to "
+                "agree within 0.5 every time this script runs. The "
+                "ORBIT3 fit is initialized from the literature/"
+                "expected_results value (T02=1981.50), not from "
+                "ZetaAqr.in2's raw file header (T02=1980.5), which "
+                "converged to a worse point with the pre-0.2.0 default "
+                "fitter. See the comment at this module's "
+                "ZETA_EXPECTED loading block."
             ),
         },
         "comparison": {
@@ -823,7 +799,7 @@ def compare_hip111805():
             "own near-zero value, which is exactly the kind of "
             "ill-conditioning that produces spurious eigenvector "
             "mixing with unrelated parameters such as T0/P). The "
-            "defensible, honestly-reported claim is therefore: (1) "
+            "defensible claim is therefore: (1) "
             "a is pinned at its lower bound, (2) B is consequently "
             "left essentially unconstrained and explodes, and (3) "
             "the fit as a whole is formally degenerate "
@@ -945,8 +921,7 @@ def compare_hip111805():
                 ),
                 "note": (
                     "f_fitted is negative for this system (published "
-                    "f=-0.33; see docs/project_decisions.md's 'f "
-                    "unbounded' entry), so 1/f_fitted is negative -- "
+                    "f=-0.33), so 1/f_fitted is negative -- "
                     "but B is bounded to [0, +inf) in "
                     "triple_bounds.build_triple_bounds() and so "
                     "cannot reach that value directly. In practice "

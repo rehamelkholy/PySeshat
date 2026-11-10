@@ -3,7 +3,7 @@ Regression tests for the unresolved-binary photometric
 least-squares entry point (inference.photometric_optimizer).
 
 Before this fix, fit_photometry_from_problem() (and therefore
-fit_photometry(), the "canonical"/"legacy wrapper" Al-Wardat
+fit_photometry(), the "canonical"/"legacy wrapper" binary
 SED-fitting entry points) passed
 photometric_likelihood.photometric_residuals_from_problem
 directly to inference.optimizer_engine.run_least_squares() as
@@ -18,14 +18,13 @@ vector. Every call therefore raised
     positional argument but 2 were given
 
 immediately, before a single residual was ever evaluated. This
-was never caught because nothing exercised
+went unnoticed as long as nothing exercised
 fit_photometry_from_problem()/fit_photometry() end-to-end
-before the Al-Wardat validation work -- every existing
+-- every existing
 photometric test calls photometric_residuals_from_problem()
 directly with one fixed problem (a valid call, since it never
 goes through the optimizer), and residuals()/chi_square() are
-unit-tested independently of the optimizer entirely. See
-docs/project_decisions.md for the full write-up.
+unit-tested independently of the optimizer entirely.
 
 The fix adds _photometric_residuals_for_optimizer(values,
 problem), which rebuilds a trial PhotometricInferenceProblem at
@@ -266,10 +265,9 @@ def test_fit_photometry_converges_to_zero_residual_for_self_consistent_data():
 
     This test deliberately does NOT assert that the fitted
     temperatures equal the injected ones. With radius/ebv pinned
-    (via a bounds range tight enough to hold them fixed -- see
-    the "photometric model is under-determined with 4 passbands"
-    note in docs/project_decisions.md for why only 2 free
-    parameters are used at all here) and only two photometric
+    (via a bounds range tight enough to hold them fixed -- the
+    photometric model is under-determined with 4 passbands, so
+    only 2 free parameters are used here) and only two photometric
     bands (Johnson B, Johnson V) feeding two free temperatures,
     the problem is nominally "just constrained" (2 data, 2
     unknowns) -- but was found, while writing this test, to have

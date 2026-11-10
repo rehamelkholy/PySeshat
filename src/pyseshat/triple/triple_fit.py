@@ -116,11 +116,8 @@ def array_to_triple(
     unchanged in the returned object, not zeroed. Parameter
     ordering for ``p`` follows ``LEGACY_TRIPLE_PARAMETER_ORDER``
     in ``triple_elements.py`` (the single source of truth for this
-    ordering; see docs/project_decisions.md's "triple/ORBIT3
-    parameter-vector consolidation" entry for the real data-loss
-    bug this consolidation fixed -- multiple duplicate copies of
-    this ordering used to exist and had drifted out of sync,
-    silently resetting K1/K2/f/K3/K4/V0 to 0.0 on every call).
+    ordering; keeping a single copy avoids copies drifting out of
+    sync, which would silently reset K1/K2/f/K3/K4/V0 to 0.0).
 
     Parameters
     ----------

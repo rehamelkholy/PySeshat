@@ -3,11 +3,8 @@ Tests for the evolutionary-track/isochrone grid-loading layer:
 pyseshat.evolution.grids, pyseshat.evolution.parsers.parsec, and
 pyseshat.evolution.parsers.girardi2000.
 
-Before this file was added, none of this loading/lookup layer had
-direct test coverage (see docs/guide/evolutionary_checks.md's
-2026-08-29 entry and docs/project_decisions.md for the audit that
-found this gap -- and found that a previously-documented
-``tests/test_parsec.py`` did not actually exist).
+This file gives the loading/lookup layer direct test coverage (see
+docs/guide/evolutionary_checks.md).
 """
 
 from pathlib import Path
@@ -18,6 +15,7 @@ import pytest
 
 from pyseshat.evolution.grids import (
     DEFAULT_EVOLUTION_MODEL_NAME,
+    _default_data_dir,
     load_default_evolution_model,
     load_girardi2000,
     load_girardi2000_from_vizier,
@@ -209,7 +207,7 @@ def test_girardi2000_metadata_matches_the_published_paper():
     Regression guard on the citation/coverage constants quoted
     in docs and in the paper report -- these are transcribed
     directly from Girardi et al. 2000, A&AS, 141, 371, Sect. 2
-    and Table 1 (fetched and cross-checked 2026-08-29), not
+    and Table 1 (cross-checked against the paper), not
     independently re-derived, so this test exists to catch a
     future accidental edit rather than to validate the paper
     itself.
@@ -364,9 +362,8 @@ def test_load_parsec_mismatched_metadata_length_raises(tmp_path):
 def test_default_evolution_model_name_is_girardi2000():
     """
     This is the concrete, testable expression of the
-    2026-08-29 decision (docs/project_decisions.md) to
-    standardize this project's own evolutionary consistency
-    checks on the same grid the Al-Wardat SED-fitting
+    decision to standardize this project's own evolutionary consistency
+    checks on the same grid the binary SED-fitting
     literature uses. PARSEC remains fully supported (see the
     dispatch tests above) -- this only changes which grid is
     named "default".
@@ -379,12 +376,7 @@ def test_load_default_evolution_model_raises_when_no_data_present(
     tmp_path,
 ):
     """
-    No Girardi (2000) data ships with this repository (see
-    this module's docstring and
-    pyseshat.evolution.parsers.girardi2000's module docstring
-    for why, and docs/guide/evolutionary_checks.md's
-    2026-08-29 entry for the confirmed network blocker on
-    sourcing it from within this development environment).
+    With a data directory that holds no Girardi (2000) files,
     load_default_evolution_model() must fail loudly and
     informatively rather than silently returning an empty
     model, so that a caller cannot mistake "no grid found" for
@@ -400,25 +392,18 @@ def test_load_default_evolution_model_raises_when_no_data_present(
 
 def test_load_default_evolution_model_repo_state_today():
     """
-    [2026-08-29] As of this change, the repository's
-    data/evolution/girardi2000/ directory is populated with the
-    real VizieR J/A+AS/141/371 mstracks.tsv/isochrones.tsv
-    exports (see docs/project_decisions.md's "Girardi (2000)
-    blocker closed" dated entry) -- calling this with no
-    arguments (the real production code path) must therefore
-    now succeed and return real, non-empty, Z=0.019 data. This
-    replaces the previous "must raise FileNotFoundError"
-    assertion, which tested the pre-data repo state; the
-    FileNotFoundError path itself is still covered directly by
+    When the package's bundled evolution/data/girardi2000/ directory is
+    populated with the real VizieR J/A+AS/141/371
+    mstracks.tsv/isochrones.tsv exports, calling this with no
+    arguments (the real production code path) must succeed and
+    return real, non-empty, Z=0.019 data. The FileNotFoundError
+    path is covered separately by
     test_load_default_evolution_model_raises_when_no_data_present
-    above (via an explicitly empty tmp_path directory), so that
-    behavior is not lost.
+    above (via an explicitly empty tmp_path directory).
 
     Skipped, rather than failed, in an environment where these
-    two real data files genuinely are not present (e.g. a fresh
-    checkout without the external data downloaded) -- this grid
-    is deliberately not bundled with the repository (see
-    pyseshat.evolution.parsers.girardi2000's module docstring).
+    two real data files are not present (e.g. an incomplete
+    installation).
     """
 
     if not (
@@ -442,14 +427,11 @@ def test_load_default_evolution_model_repo_state_today():
 # Real VizieR J/A+AS/141/371 data (mstracks.tsv, isochrones.tsv)
 # ==========================================================
 #
-# These tests exercise the actual downloaded files this project's
-# default grid is built from -- not synthetic fixtures -- per the
-# explicit instruction that loading these specific files needed its
-# own coverage, not just the generic column_map-based parsing tests
-# above. Skipped (not failed) when the real files are absent, since
-# this external data is not bundled with the repository.
+# These tests exercise the real VizieR files the default grid is
+# built from (bundled with the package), not synthetic fixtures.
+# Skipped (not failed) when the files are absent.
 
-REAL_DATA_DIR = REPO_ROOT / "data" / "evolution" / "girardi2000"
+REAL_DATA_DIR = _default_data_dir()
 REAL_TRACKS_TSV = REAL_DATA_DIR / "mstracks.tsv"
 REAL_ISOCHRONES_TSV = REAL_DATA_DIR / "isochrones.tsv"
 
@@ -544,7 +526,7 @@ def test_load_girardi2000_from_vizier_real_files():
 def test_load_default_evolution_model_uses_real_repo_data():
     """
     End-to-end: load_default_evolution_model() with no arguments
-    against the real repo-root data/evolution/girardi2000/
+    against the real bundled evolution/data/girardi2000/
     files -- the actual production code path, not a tmp_path
     stand-in.
     """

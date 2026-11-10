@@ -1,0 +1,44 @@
+PySeshat reference fit: 119 astrometric epochs, 162 RV epochs per star
+   P           0.2847947 +- 0.0000021
+   T0       1989.0034588 +- 0.0000635
+   a           0.0564080 +- 0.0000308
+   i         137.1938126 +- 0.0544351
+   Omega      40.5127619 +- 0.0745175
+   K1         25.9718707 +- 0.0449257
+   K2         26.3078529 +- 0.0889703
+   V0         29.6039014 +- 0.0324770
+1. RadVel (circular, each component separately) vs PySeshat combined fit
+                  PySeshat          RadVel                % diff    d/sig  (d/sig: combined sigma)
+Discarding burn-in now that the chains are marginally well-mixed
+Chains are well-mixed after 116000 steps! MCMC completed in 9.8 seconds
+P (d)            104.02127       104.02488 +-  0.00965   +0.0035    +0.37   (star 1)
+K1                25.97187        25.96255 +-  0.04635   -0.0359    -0.14   (star 1)
+gamma             29.60390        29.65891 +-  0.03755   +0.1858    +1.11   (star 1)
+jitter                              0.0917
+Discarding burn-in now that the chains are marginally well-mixed
+Chains are well-mixed after 116000 steps! MCMC completed in 9.7 seconds
+P (d)            104.02127       104.05020 +-  0.01864   +0.0278    +1.55   (star 2)
+K2                26.30785        26.26266 +-  0.09377   -0.1718    -0.35   (star 2)
+gamma             29.60390        29.39275 +-  0.07625   -0.7133    -2.55   (star 2)
+jitter                              0.2390
+2. PyAstronomy Kepler solver + RV formula vs PySeshat compute_rv_orbit (CfA epochs)
+   e = 0.0: max |diff| = 0.00e+00 km/s, rms = 0.00e+00 km/s
+   e = 0.3: max |diff| = 2.13e-14 km/s, rms = 3.06e-15 km/s
+   e = 0.6: max |diff| = 4.97e-14 km/s, rms = 9.03e-15 km/s
+   e = 0.9: max |diff| = 1.14e-13 km/s, rms = 1.43e-14 km/s
+3. orbitize! 3.4.0: relative astrometry only, 119 epochs
+Converting ra/dec data points in data_table to sep/pa. Original data are stored in input_table.
+   OFTI: 0/200000 proposals accepted
+   init from Torres+2009 elements: chi2 = 210.7 for 238 residuals
+Starting Burn in
+Burn in complete. Sampling posterior now.
+Run complete
+              PySeshat     orbitize!                % diff    d/sig  (d/sig: combined sigma)
+P             0.284795      0.284797 +- 0.000003   +0.0007    +0.52
+a             0.056408      0.056408 +- 0.000030   -0.0008    -0.01
+i           137.193813    137.167607 +- 0.056064   -0.0191    -0.34
+Omega        40.512762     40.494852 +- 0.088176   -0.0442    -0.16
+   convergence (medians of 1st/2nd half): per1 0.284796/0.284797, ecc1 0.000732348/0.000694485, inc1 2.394/2.39406, aop1 1.40485/5.02251, pan1 0.706713/0.706829, tau1 0.193801/0.187266, plx 76.1849/76.2354, mtot 5.0054/4.99574
+   mtot: orbitize! 5.0002 (16-84: 4.9142-5.0868) | PySeshat a^3/P^2 (same parallax) 5.0014 (-0.03%) | PySeshat SB2 M1+M2 4.9084 (+1.87%)
+   e (orbitize!, free): median 0.0007, 16-84 % 0.0004-0.0010
+wrote validation/results/package_comparison_capella_real.json

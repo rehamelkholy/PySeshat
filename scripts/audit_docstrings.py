@@ -1,7 +1,6 @@
 """
-Docstring-coverage audit for src/pyseshat, per
-docs/development_plan_phase2.md Phase 3 item 3 ("an audit script
-is a fast way to find the actual gaps rather than guessing").
+Docstring-coverage audit for src/pyseshat. An audit script is a
+fast way to find the actual gaps rather than guessing.
 
 Walks every public (non-underscore-prefixed) function/method
 definition under src/pyseshat and flags any whose docstring has
@@ -11,10 +10,8 @@ many one-line-docstring hits are simple property-style getters
 docstring is already adequate and "strengthening" it would just
 be padding. The list is a starting point for a human (or a
 future documentation pass) to triage, not a checklist every line
-of which needs a rewrite -- see docs/project_decisions.md's Phase
-3/4 entry (2026-08-27) for which items from this list were judged
-worth strengthening this pass and which were deliberately left as
-future work.
+of which needs a rewrite. Some items on the list are deliberately
+left terse.
 
 Run
 

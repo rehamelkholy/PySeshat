@@ -1,14 +1,13 @@
 """
-Verify the paper's regenerated PDF figure set (item 5's precondition
+Verify the paper's regenerated PDF figure set (a precondition
 for deleting stale PNGs): confirm every expected PDF exists, is
 non-empty, is a well-formed PDF, rasterizes to a plausible non-blank
 image at a sane page size, and (via pypdf's page /MediaBox) has
 correct/consistent dimensions per figure type.
 
 Not a substitute for -- but a complement to -- the direct visual
-inspection done for a representative sample of each figure type
-(see docs/project_decisions.md's dated entry for that sampling and
-its grid-lines-absent confirmation): this script is the
+inspection of a representative sample of each figure type
+(including confirming grid lines are absent): this script is the
 programmatic, whole-set check across all twelve systems' figures.
 
 Run
@@ -160,7 +159,7 @@ def main():
         )
 
     # Any leftover PNGs in the plots tree at all -- the precondition
-    # for item 5's deletion step.
+    # for deleting stale PNGs.
     stale_pngs = sorted(
         str(p.relative_to(PLOTS_DIR)) for p in PLOTS_DIR.rglob("*.png")
     )

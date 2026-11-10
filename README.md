@@ -27,7 +27,7 @@ pip install -e .
 ```
 
 Requires Python >=3.10. Dependencies (numpy, scipy, astropy,
-matplotlib, pandas, emcee, corner, numba, astroquery, adjustText)
+matplotlib, pandas, emcee, corner, adjustText)
 install automatically via either install method.
 
 ## Quickstart
@@ -71,7 +71,7 @@ your own data.
   `python validation/benchmark_runner.py`.
 - **`docs/guide/`** -- user-facing guides: data formats, orbit
   fitting, triple systems, visualization conventions, evolutionary
-  consistency checks, and the Al-Wardat SED-fitting method.
+  consistency checks, and the binary SED-fitting method.
   `docs/architecture/` holds auto-generated package-structure
   snapshots (`architecture_snapshot.py`).
 
@@ -85,7 +85,7 @@ pytest tests/
 
 Fits real and named-synthetic systems (a mix of visual+RV
 binaries, hierarchical triples fit via the full ORBIT3 formalism,
-Al-Wardat-method unresolved-binary photometric SED systems, and
+unresolved-binary photometric SED systems, and
 joint orbit+photometry case studies) against their
 published/literature solutions, and writes one result file per
 system into `validation/results/`:
@@ -101,7 +101,7 @@ If you use PySeshat in your research or publications, please cite it using the f
 ```
 @misc{pyseshat2026,
   author = {{El-Kholy}, R.~I. and {Hayman}, Z.~M.},
-  title  = {PySeshat: A Validated Python Pipeline for Binary-Star Orbit Determination and Al-Wardat Stellar Atmosphere Modeling},
+  title  = {PySeshat: A Python Package for Binary- and Triple-Star Orbit Determination and Binary Spectral Energy Distribution Fitting},
   year   = {2026},
   doi    = {10.5281/zenodo.22543909},
   url    = {https://github.com/rehamelkholy/PySeshat},
@@ -111,3 +111,28 @@ If you use PySeshat in your research or publications, please cite it using the f
 ## License
 
 MIT -- see [`LICENSE`](LICENSE).
+
+### Third-party data
+
+The ORBIT example files (FIN 379, GL 765, Zeta Aqr) under
+`validation/benchmark_systems/` come from A. Tokovinin's ORBIT release
+(GPL-2.0-only, doi:10.5281/zenodo.61119); the HIP 111805 file comes from his
+ORBIT3 release (CC BY 4.0, doi:10.5281/zenodo.321854). See
+[`third_party/ORBIT/NOTICE.md`](third_party/ORBIT/NOTICE.md).
+
+### Data sources and acknowledgements
+
+* Real-data benchmarks: Torres, Claret & Young (2009, ApJ 700, 1349; VizieR J/ApJ/700/1349) for Capella,
+  with the astrometry compiled there from Hummel et al. (1994), Baldwin et al. (1996), Kraus et al. (2005)
+  and speckle/imaging sources; Akeson et al. (2021, AJ 162, 14; VizieR J/AJ/162/14) for alpha Cen AB;
+  Tokovinin (2016, ApJ 831, 151) and Tokovinin & Latham (2017, ApJ 838, 54) for the zeta Aqr and HIP 111805
+  published solutions; Balega et al. (2007, A&A 464, 635) for GL 765. The VizieR tables are not
+  redistributed; see the README.md in `validation/benchmark_systems/Capella_Torres2009/` and
+  `.../AlphaCenAB_Akeson2021/`.
+* "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France
+  (DOI: 10.26093/cds/vizier). The original description of the VizieR service was published in
+  Ochsenbein et al. (2000, A&AS 143, 23)."
+* Evolutionary tracks and isochrones: Girardi et al. (2000, A&AS 141, 371; VizieR J/A+AS/141/371),
+  bundled unchanged in `src/pyseshat/evolution/data/girardi2000/` (see the README there).
+* SED benchmark systems: Abushattal et al. (2025, arXiv:2512.23652); the SED-fitting approach follows
+  Al-Wardat (2002, 2012) and Abushattal et al. (2025).

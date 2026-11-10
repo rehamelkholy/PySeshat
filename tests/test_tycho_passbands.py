@@ -109,6 +109,9 @@ assert np.isclose(
 
 assert tycho_vt.name == "Tycho VT"
 
+# Maiz Apellaniz (2006) Table 1 curves are photon-counting.
+assert tycho_bt.photon_counting and tycho_vt.photon_counting
+
 assert np.all(
 
     np.diff(
@@ -127,11 +130,13 @@ assert np.isclose(
 
 )
 
+# Maiz Apellaniz (2006) Table 1 as printed ends at 6600 A with
+# P = 0.028 (no zero end point).
 assert np.isclose(
 
     tycho_vt.throughput[-1],
 
-    0.0
+    0.028
 
 )
 
@@ -360,7 +365,7 @@ print()
 
 print(
 
-    "VT boundaries are zero"
+    "VT boundaries: 0 at start, 0.028 at end (as published)"
 
 )
 
@@ -380,7 +385,7 @@ print(
 
         tycho_vt.throughput[-1],
 
-        0.0
+        0.028
 
     )
 

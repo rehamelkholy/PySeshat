@@ -21,10 +21,7 @@ from pyseshat.visualization.orbit_plot import (
 #
 # Correctness, not just "runs without raising": the actual
 # scatter/line data drawn on the axes must reproduce the
-# X_obs/Y_obs and orbit-model arrays passed in, per
-# docs/development_plan_phase2.md Phase 4 item 1
-# ("Strengthening these to assert on actual plotted data...
-# is real, missing test coverage").
+# X_obs/Y_obs and orbit-model arrays passed in, .
 
 def test_plot_visual_orbit():
 
@@ -58,8 +55,7 @@ def test_plot_visual_orbit_draws_the_actual_observations():
     # caught, not just "some points near the right place."
     #
     # X_obs/Y_obs are this codebase's internal North/East
-    # convention (X=North, Y=East -- settled 2026-08-27, see
-    # docs/project_decisions.md and plot_visual_orbit's own
+    # convention (X=North, Y=East -- see plot_visual_orbit's own
     # docstring). The standard North-up/East-left display swaps
     # them onto the screen axes: North (X) plotted vertically,
     # East (Y) plotted horizontally (with the axis inverted, but
@@ -125,8 +121,7 @@ def test_plot_visual_orbit_draws_the_actual_observations():
 
 def test_plot_visual_orbit_is_north_up_east_left():
 
-    # Literature-convention regression test (settled 2026-08-27,
-    # see docs/project_decisions.md): the plot must show North up
+    # Literature-convention regression test: the plot must show North up
     # (unmodified on the vertical axis) and East left (horizontal
     # axis inverted). A point at PA=90 deg (due East: X=North=0,
     # Y=East=rho) must render to the LEFT of the origin -- matching
@@ -345,8 +340,7 @@ def test_plot_rv_orbit_draws_the_actual_rv_observations():
 def test_plot_rv_orbit_phase_folded_model_is_centered_at_zero_phase():
 
     # Literature-convention check: phase-folded RV curves are
-    # conventionally zeroed at periastron passage (T0), per
-    # docs/development_plan_phase2.md Phase 4 item 2. Confirm
+    # conventionally zeroed at periastron passage (T0). Confirm
     # plot_rv_orbit's own phase=True model curve construction
     # does exactly this: at model-phase 0.0, its time argument
     # is elements.T0 (matching compute_rv_model's own T0-relative
@@ -423,9 +417,8 @@ def test_plot_rv_orbit_empty():
 # ==========================================================
 # show_grid / output_format / save_path
 #
-# Added 2026-08-30 alongside the show_grid/output_format/
-# save_path parameters themselves (docs/project_decisions.md).
-# Confirms (1) the new default (show_grid=True) is a true no-op
+# Tests for the show_grid/output_format/save_path parameters.
+# Confirms (1) the default (show_grid=True) is a true no-op
 # for existing callers, (2) show_grid=False actually disables
 # the grid, and (3) save_path + output_format actually write a
 # file in the requested format, for all three functions in this

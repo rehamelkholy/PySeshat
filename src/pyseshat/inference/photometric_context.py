@@ -37,6 +37,10 @@ class PhotometricContext:
 
     rv : float, default=3.1
         Ratio of total-to-selective extinction.
+    magnitude_differences : tuple, default=()
+        Observed component magnitude differences
+        (photometry.observations.MagnitudeDifference); each adds one
+        residual (model - observed) / sigma.
     """
 
     atmosphere_grid: object
@@ -56,3 +60,4 @@ class PhotometricContext:
     distance: float
 
     rv: float = 3.1
+    magnitude_differences: tuple = ()

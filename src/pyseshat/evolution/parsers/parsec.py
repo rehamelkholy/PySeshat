@@ -27,11 +27,8 @@ def _load_ascii_table(filename):
     the real header row (e.g. a descriptive
     "# Girardi et al. 2000 tracks" comment above a 21-column
     header) makes ``genfromtxt`` misdetect the number of
-    columns and raise on every data row. This was found and
-    fixed 2026-08-29 while adding the first direct tests for
-    this parser (see docs/guide/evolutionary_checks.md and
-    docs/project_decisions.md's dated entry) -- it had never
-    been exercised against a file with any comment line before.
+    columns and raise on every data row. This is handled
+    here (see docs/guide/evolutionary_checks.md).
 
     Returns
     -------

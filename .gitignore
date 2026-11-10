@@ -5,9 +5,7 @@ __pycache__/
 
 # Demo-script test files (test_ephemeris_result.py, test_fit_result_io.py,
 # test_fit_result_roundtrip.py, test_report_writer.py) regenerate their
-# FIN379 output here on every pytest collection -- see
-# docs/project_decisions.md, "FIN379 files stranded at repo root"
-# (2026-08-27).
+# FIN379 output here on every pytest collection.
 tests/artifacts/
 examples/output/
 
@@ -28,3 +26,12 @@ docs/acknowledgements_inventory.md
 docs/citation_todo.md
 CLAUDE.md
 claude/
+
+# VizieR/CDS catalogue tables used by the real-data benchmarks are NOT
+# redistributed (journal copyright / CDS terms): download them as described in
+# the README.md next to each benchmark folder.
+validation/benchmark_systems/Capella_Torres2009/*.dat
+validation/benchmark_systems/Capella_Torres2009/ReadMe
+validation/benchmark_systems/AlphaCenAB_Akeson2021/*.dat
+validation/benchmark_systems/AlphaCenAB_Akeson2021/ReadMe
+validation/benchmark_systems/SED_catalogs/*.tsv

@@ -127,8 +127,7 @@ def test_plot_triple_orbit_draws_correct_data_in_correct_panel():
 def test_plot_triple_orbit_is_north_up_east_left():
 
     # Same literature-convention regression test as
-    # test_plot_visual_orbit_is_north_up_east_left (settled
-    # 2026-08-27, see docs/project_decisions.md): North stays
+    # test_plot_visual_orbit_is_north_up_east_left: North stays
     # unmodified on the vertical axis, East is inverted on the
     # horizontal axis so East increases to the left.
 
@@ -212,8 +211,8 @@ def test_plot_triple_orbit_highlight_mask_splits_observations():
 # ==========================================================
 # show_grid / output_format / save_path
 #
-# Added 2026-08-30 alongside the new parameters themselves
-# (docs/project_decisions.md) -- both panels must respond to
+# Tests for the show_grid/output_format/save_path parameters --
+# both panels must respond to
 # show_grid identically, and save_path/output_format must
 # actually write the requested file.
 # ==========================================================

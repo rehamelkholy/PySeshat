@@ -1,0 +1,66 @@
+{
+ "HD214222": {
+  "residuals_mag": {
+   "Johnson U": 0.034,
+   "Johnson B": 0.009,
+   "Johnson V": -0.113,
+   "Cousins R": -0.065,
+   "Stromgren u": 0.043,
+   "Stromgren v": 0.04,
+   "Stromgren b": -0.009,
+   "Stromgren y": -0.043,
+   "Tycho BT": 0.031,
+   "Tycho VT": -0.039
+  },
+  "rms_fitted_bands": 0.051,
+  "max_abs_fitted_bands": 0.113
+ },
+ "HD191854": {
+  "residuals_mag": {
+   "Johnson U": 0.009,
+   "Johnson B": -0.0,
+   "Johnson V": -0.026,
+   "Cousins R": -0.036,
+   "Stromgren u": 0.031,
+   "Stromgren v": 0.019,
+   "Stromgren b": -0.004,
+   "Stromgren y": -0.027,
+   "Tycho BT": 0.002,
+   "Tycho VT": -0.019
+  },
+  "rms_fitted_bands": 0.021,
+  "max_abs_fitted_bands": 0.036
+ },
+ "HD130669": {
+  "residuals_mag": {
+   "Johnson U": 0.079,
+   "Johnson B": -0.009,
+   "Johnson V": -0.077,
+   "Cousins R": -0.1,
+   "Stromgren u": 0.083,
+   "Stromgren v": 0.05,
+   "Stromgren b": -0.047,
+   "Stromgren y": -0.087,
+   "Tycho BT": 0.008,
+   "Tycho VT": -0.066
+  },
+  "rms_fitted_bands": 0.068,
+  "max_abs_fitted_bands": 0.1
+ },
+ "HD184467": {
+  "residuals_mag": {
+   "Johnson U": 0.052,
+   "Johnson B": -0.007,
+   "Johnson V": -0.053,
+   "Cousins R": -0.067,
+   "Stromgren u": 0.048,
+   "Stromgren v": 0.045,
+   "Stromgren b": -0.026,
+   "Stromgren y": -0.063,
+   "Tycho BT": 0.012,
+   "Tycho VT": -0.045
+  },
+  "rms_fitted_bands": 0.046,
+  "max_abs_fitted_bands": 0.067
+ }
+}

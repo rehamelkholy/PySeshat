@@ -1,7 +1,8 @@
 import numpy as np
 
 from pyseshat.photometry.model import (
-    synthetic_binary_magnitudes
+    synthetic_binary_magnitudes,
+    synthetic_magnitude_differences
 )
 
 from pyseshat.photometry.residuals import (
@@ -62,7 +63,7 @@ def photometric_residuals_from_problem(
     # ``problem.parameters.fitted_parameters()``.
     #
     # ``fitted_parameters()`` returns only the currently-FITTED
-    # subset (as of the fit-flags mechanism added 2026-08-27,
+    # subset (because of the fit-flags mechanism,
     # see photometry/parameters.py) -- it exists purely to talk
     # to the optimizer/sampler (initial guess, trial-vector
     # shape), the same way OrbitalElements.fitted_parameters()
@@ -170,6 +171,28 @@ def photometric_residuals_from_problem(
             )
 
         )
+
+    # Component magnitude differences (e.g. speckle Delta m):
+    # one residual each, appended after the combined-light residuals.
+    differences = tuple(getattr(context, "magnitude_differences", ()) or ())
+    if differences:
+        missing = [d.passband for d in differences if d.passband not in context.passbands]
+        if missing:
+            raise ValueError(f"No passband loaded for magnitude difference(s): {missing}")
+        model_dm = synthetic_magnitude_differences(
+            atmosphere_grid=context.atmosphere_grid,
+            passbands={d.passband: context.passbands[d.passband] for d in differences},
+            primary_temperature=primary_temperature,
+            secondary_temperature=secondary_temperature,
+            primary_logg=context.primary_logg,
+            secondary_logg=context.secondary_logg,
+            metallicity=context.metallicity,
+            primary_radius=primary_radius,
+            secondary_radius=secondary_radius,
+            distance=context.distance,
+        )
+        for d in differences:
+            residuals.append((model_dm[d.passband] - d.value) / d.uncertainty)
 
     return np.asarray(
 

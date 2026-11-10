@@ -16,9 +16,7 @@ from pyseshat.ephemeris.ephemeris import (
 # code on collection). It used to write fin379_ephemeris.csv/.txt
 # with bare relative paths, which landed wherever pytest's cwd
 # happened to be (the repo root, in normal use) rather than
-# anywhere clearly marked as generated output -- see
-# docs/project_decisions.md, "FIN379 files stranded at repo root"
-# (2026-08-27). Anchored to this file's own location instead, so
+# anywhere clearly marked as generated output. Anchored to this file's own location instead, so
 # the output lands in the same place regardless of invocation cwd.
 
 ARTIFACTS_DIR = (

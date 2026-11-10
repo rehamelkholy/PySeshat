@@ -168,19 +168,22 @@ johnson_b = load_passband(
 
 assert johnson_b.name == "Johnson B"
 
+# Maiz Apellaniz (2006) Table 3 curve, photon-counting (file header).
+assert johnson_b.photon_counting is True
+
 
 assert len(
 
     johnson_b.wavelength
 
-) == 11
+) == 41
 
 
 assert np.isclose(
 
     johnson_b.minimum_wavelength,
 
-    3700.0
+    3600.0
 
 )
 
@@ -198,7 +201,7 @@ assert np.isclose(
 
     johnson_b.peak_wavelength,
 
-    4200.0
+    4050.0
 
 )
 

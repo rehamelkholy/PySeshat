@@ -1,6 +1,6 @@
 {
   "system": "HIP 111805",
-  "source": "Tokovinin & Latham (2017) full 20-parameter ORBIT3 solution, as encoded in validation/benchmark_systems/HIP111805/HIP111805.in3's header (see docs/project_decisions.md); historical outer-orbit-only SB2 orbit from Duquennoy (1987) and visual-orbit/parallax reference Horch (2015) are both retained as comments in the .in3 file itself.",
+  "source": "Tokovinin & Latham (2017) full 20-parameter ORBIT3 solution, as encoded in validation/benchmark_systems/HIP111805/HIP111805.in3's header; historical outer-orbit-only SB2 orbit from Duquennoy (1987) and visual-orbit/parallax reference Horch (2015) are both retained as comments in the .in3 file itself.",
   "file": "HIP111805.in3",
   "orbit_type": "hierarchical_triple",
   "fitting_path": "orbit3",
@@ -8,7 +8,7 @@
 
   "notes": [
     "Hierarchical triple system, fit through the modern 20-parameter ORBIT3 formalism (triple.orbit3_fit.fit_orbit3), like ZetaAqr -- but unlike ZetaAqr, HIP111805 has usable RV data for both the inner (K1,K2) and outer (K3,K4,V0) orbits, and all 20 parameters (including the wobble factor f and every spectroscopic amplitude) are fitted, not fixed.",
-    "Regression/reproduction benchmark for the ORBIT3 code path, not currently part of the paper's Benchmark Results v1 table (that table's hierarchical-triple row is ZetaAqr's outer orbit); paper_table_row is intentionally omitted here, so run_orbit3_benchmark() does not attempt a dynamical-mass computation for this system.",
+    "Benchmark for the ORBIT3 code path (Tokovinin & Latham 2017); paper_table_row is intentionally omitted here, so run_orbit3_benchmark() does not attempt a dynamical-mass computation for this system.",
     "f = -0.330 is the literature wobble factor for this system, and is the empirical justification (used elsewhere in this codebase, e.g. triple_bounds.py/orbit3_bounds.py) for NOT constraining ORBIT3's wobble factor f to the naively-expected [0, 1] range.",
     "The .in3 file's header format is a modern ORBIT3 file, not a legacy ORBITT2 file like ZetaAqr.in2 -- its I1/I2 astrometric observation tags already follow the ORBIT3 convention (I1 = inner, I2 = outer) used by orbit3_residuals() directly, with no swap required (contrast tests/test_zetaaqr_reproduce_orbit.py::convert_to_orbit3_observations, which IS required for ZetaAqr).",
     "The .in3 file's parameter block includes a third numeric column after P2 (0.0174) that is plausibly a formal period uncertainty, but the equivalent third columns after W2 (334.24) and w2 (264.6) are not plausible angular uncertainties (they exceed the 0-360 degree range entirely) and are not used here or anywhere else in this codebase -- only P2's is retained, as initial_parameters_sigma.P2, and even that is not independently re-verified against the original publication.",

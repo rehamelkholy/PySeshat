@@ -1,14 +1,10 @@
 """
-Tests for the Al-Wardat SED-fit plot (2026-09-02): the new
-``PhotometricPassband.pivot_wavelength`` property, the new
+Tests for the binary SED-fit plot: the
+``PhotometricPassband.pivot_wavelength`` property, the
 ``photometry.model.synthetic_binary_sed()`` curve function, and
 ``visualization.sed_plot.plot_sed_fit()`` itself.
 
-See docs/guide/visualization.md's "SED fit" section and
-docs/project_decisions.md's dated entry for why these exist -- no
-SED-fit plotting function existed anywhere in this package before this
-pass (confirmed by grep across ``visualization/`` and
-``validation/results/plots/`` before writing any of this).
+See docs/guide/visualization.md's "SED fit" section.
 """
 
 import sys
@@ -248,9 +244,8 @@ def test_plot_sed_fit_draws_the_data_it_is_given():
     """
     Asserts on actual plotted data, not just "runs without raising"
     -- matching this project's own established plot-testing
-    convention (see docs/paper_reference_notes.md future-work item
-    4: "tests/test_orbit_plot.py and tests/test_dynamics.py now
-    assert on actual plotted data").
+    convention (see tests/test_orbit_plot.py and
+    tests/test_dynamics.py).
     """
 
     wavelength = np.linspace(4000.0, 6000.0, 50)
@@ -337,16 +332,15 @@ def test_plot_sed_fit_shows_excluded_points_distinctly():
 
 def test_plot_sed_fit_avoids_overlapping_labels():
     """
-    Regression test for the label-collision fix (2026-09-02, second
-    pass): the first version of plot_sed_fit() drew each passband
-    label at a fixed (0, 8)-point offset, which collided for real in
-    the HD191854 figure (reported by the user) whenever two or more
+    Regression test for label collisions: drawing each passband
+    label at a fixed (0, 8)-point offset collides (as in the
+    HD191854 figure) whenever two or more
     observed points were close in both wavelength and flux -- e.g.
     "Stromgren b"/"Johnson B" (~4400-4670 A) and "Johnson
     V"/"Tycho VT"/"Stromgren y" (~5340-5500 A).
 
     This constructs a deliberately tight, 7-point cluster (modeled on
-    that real collision) and asserts on the actual rendered label
+    that collision) and asserts on the actual rendered label
     bounding boxes -- not just "it ran" -- that adjust_text() leaves
     zero pairwise overlaps, matching this project's own established
     plot-correctness-testing convention.

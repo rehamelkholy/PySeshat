@@ -90,7 +90,7 @@ actually stress-tests convergence from a non-trivial starting point. See
 `examples/03_hierarchical_triple_orbit3.py` for a runnable comparison of
 both systems side by side.
 
-## Orbit plots for triples [2026-08-30]
+## Orbit plots for triples
 
 `src/pyseshat/visualization/triple_orbit_plot.py`'s `plot_triple_orbit()`
 is the triple-aware orbit-plotting function. `TripleOrbitalElements.outer`

@@ -4,7 +4,7 @@ Run the evolutionary-track consistency check
 evolution/age.py, evolution/search.py) against the real Girardi
 (2000) grid (Z=0.019, Overshoot=1 -- see
 evolution/parsers/girardi2000.py's module docstring) for this
-project's six benchmark systems with an Al-Wardat SED or joint
+project's six benchmark systems with an binary SED or joint
 photometry component: HD214222, HD191854, HD130669, HD184467,
 Capella, alpha Cen AB.
 

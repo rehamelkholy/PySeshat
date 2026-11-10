@@ -1,6 +1,6 @@
 """
 Reusable evolutionary-consistency-check pipeline for this project's
-six Al-Wardat/joint-photometry benchmark systems: HD214222,
+six SED/joint-photometry benchmark systems: HD214222,
 HD191854, HD130669, HD184467, Capella, alpha Cen AB.
 
 This module exists so that the two scripts that need this exact
@@ -13,10 +13,7 @@ doesn't match the reported number because one script's nearest-track
 selection changed and the other's didn't).
 
 See ``pyseshat.evolution.parsers.girardi2000``'s module docstring
-for the Girardi (2000) real-data handling this builds on, and
-``docs/project_decisions.md``'s 2026-08-29 dated entry for the full
-narrative (why each system's mass comes from where it does, the
-exact numeric results, and what was flagged).
+for the Girardi (2000) real-data handling this builds on.
 """
 
 from __future__ import annotations
@@ -36,7 +33,11 @@ from pyseshat.evolution.age import (
     fit_track,
 )
 from pyseshat.evolution.binary import BinaryTrackFitResult, fit_binary_tracks
-from pyseshat.evolution.grids import load_default_evolution_model
+from pyseshat.evolution.grids import (
+    VIZIER_TRACKS_FILENAME,
+    _default_data_dir,
+    load_default_evolution_model,
+)
 from pyseshat.evolution.models import EvolutionModel, EvolutionTrack
 from pyseshat.evolution.observables import StellarObservables
 from pyseshat.evolution.parsers.girardi2000 import (
@@ -50,9 +51,7 @@ from pyseshat.orbit.orbital_elements import OrbitalElements
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXPECTED_RESULTS = REPO_ROOT / "validation" / "expected_results"
-TRACKS_TSV = (
-    REPO_ROOT / "data" / "evolution" / "girardi2000" / "mstracks.tsv"
-)
+TRACKS_TSV = _default_data_dir() / VIZIER_TRACKS_FILENAME
 
 MASS_MISMATCH_WARN_PCT = 5.0
 
@@ -133,7 +132,7 @@ def load_benchmark_component_inputs():
     Returns {system_name: {"components": {"primary": {...},
     "secondary": {...}}, "mass_source": str}} for all six systems,
     read from validation/expected_results/*.json (literature
-    Teff/R/mass directly for the four Al-Wardat systems and
+    Teff/R/mass directly for the four Abushattal et al. (2025) systems and
     AlphaCenAB; Capella's mass is derived from its literature SB2
     orbital elements -- see this module's docstring).
     """

@@ -55,11 +55,16 @@ from pyseshat.stellar.atmospheres import (
     load_ck04_grid
 )
 
+from pyseshat.photometry.calibration import (
+    vega_zero_points
+)
+
 from pyseshat.photometry.filters import (
     load_passband
 )
 
 from pyseshat.photometry.observations import (
+    MagnitudeDifference,
     PhotometricMeasurement
 )
 
@@ -304,7 +309,7 @@ def run_orbit3_benchmark(
     e.g. HIP111805) must actually be fit -- fitting the outer
     orbit alone, or fitting the inner residuals of a separate
     outer-only fit, are both explicitly wrong for a
-    hierarchical triple (see docs/project_decisions.md).
+    hierarchical triple.
     """
 
     # ------------------------------------------------------
@@ -533,6 +538,11 @@ def run_orbit3_benchmark(
             for name, value in fitted_flat.items()
         },
 
+        "parameter_uncertainties": {
+            name: float(value)
+            for name, value in fit_result.uncertainties.items()
+        },
+
         "optimizer_success": bool(
             fit_result.optimizer_result.success
         ),
@@ -550,27 +560,47 @@ def run_orbit3_benchmark(
 
 
 # ==========================================================
-# Al-Wardat SED helpers
+# binary SED helpers
 #
-# Unlike the binary and ORBIT3 paths, an Al-Wardat SED
+# Unlike the binary and ORBIT3 paths, an binary SED
 # benchmark has no orbit-observation data file at all: its
 # expected_results/*.json IS the input (fixed distance/logg/
 # metallicity, combined-system photometric measurements) as
 # well as the comparison target (literature component Teff/R/
-# L/M). See docs/project_decisions.md's "Al-Wardat SED
-# validation: first end-to-end run" section for the full
-# derivation of these systems and the two bugs this path's
-# first real run surfaced (both already fixed in
-# inference.photometric_optimizer/photometric_mcmc).
+# L/M).
 # ==========================================================
 
-# Vega zero points (erg s^-1 cm^-2 Angstrom^-1) for every
-# passband an alwardat_sed system's "measurements" may name,
-# matching the constants already established and used in
-# tests/test_ck04_photometric_chi_square.py and
-# tests/test_tycho_synthetic_photometry.py.
+_SED_PASSBAND_FILES = {
+    "Johnson U": "johnson_u.dat",
+    "Johnson B": "johnson_b.dat",
+    "Johnson V": "johnson_v.dat",
+    "Cousins R": "cousins_r.dat",
+    "Stromgren u": "stromgren_u.dat",
+    "Stromgren v": "stromgren_v.dat",
+    "Stromgren b": "stromgren_b.dat",
+    "Stromgren y": "stromgren_y.dat",
+    "Tycho BT": "tycho_bt.dat",
+    "Tycho VT": "tycho_vt.dat",
+}
 
-_ALWARDAT_ZERO_POINTS = {
+# Zero points (erg s^-1 cm^-2 Angstrom^-1) for every passband a
+# binary_sed system's "measurements" may name, following Maiz
+# Apellaniz (2006, 2007): the CALSPEC Vega spectrum alpha_lyr_stis_003
+# (Bohlin 2007) integrated through the SAME passband files as the
+# target, times 10**(0.4 * ZP_P), with ZP_P Vega's standard-system
+# magnitude (Maiz Apellaniz 2007, Table 4; see
+# pyseshat.photometry.calibration). The "Sun @ 10 pc" checks in
+# tests/test_synthetic_photometry_sun_calibration.py validate the whole
+# chain against literature solar magnitudes and Stromgren indices.
+#
+# Changed in 0.2.0: earlier versions used the SVO Filter Profile
+# Service "Vega system" values below directly (Vega = 0 in every band,
+# Vega integrated through SVO's curves). That made Stromgren u and v
+# about 1.43 and 0.18 mag too bright, forced Stromgren u to be excluded
+# from the benchmarks, and offset Johnson U and B by about +0.07 and
+# -0.07 mag, because the local U and B passband files are not the curves
+# those SVO values were computed for. Kept for reference only.
+_SVO_VEGA_ZERO_POINTS = {
     "Johnson U": 3.49719e-9,
     "Johnson B": 6.72553e-9,
     "Johnson V": 3.5833e-9,
@@ -582,29 +612,14 @@ _ALWARDAT_ZERO_POINTS = {
     "Tycho BT": 6.50910e-9,
     "Tycho VT": 3.99504e-9,
 }
-# All ten zero points are SVO Filter Profile Service "Vega system"
-# values (http://svo2.cab.inta-csic.es/theory/fps/), fetched
-# together with the matching transmission curve below for each
-# band, so calibrator (Vega) and target photometry are always
-# integrated through the identical passband shape SVO used to
-# derive the zero point -- see the "Sun @ 10 pc" pipeline check in
-# tests/test_synthetic_photometry_sun_calibration.py, which
-# validates this whole chain (grid interpolation -> (R/d)^2 scaling
-# -> passband integration -> zero point) against the well-known
-# literature value M_V(Sun) = 4.83.
 
-_ALWARDAT_PASSBAND_FILES = {
-    "Johnson U": "johnson_u.dat",
-    "Johnson B": "johnson_b.dat",
-    "Johnson V": "johnson_v.dat",
-    "Johnson R": "johnson_r.dat",
-    "Stromgren u": "stromgren_u.dat",
-    "Stromgren v": "stromgren_v.dat",
-    "Stromgren b": "stromgren_b.dat",
-    "Stromgren y": "stromgren_y.dat",
-    "Tycho BT": "tycho_bt.dat",
-    "Tycho VT": "tycho_vt.dat",
-}
+_SED_ZERO_POINTS = vega_zero_points({
+    name: load_passband(
+        filename=Path(__file__).resolve().parent / "photometry" / "passbands" / filename,
+        name=name,
+    )
+    for name, filename in _SED_PASSBAND_FILES.items()
+})
 
 _PHOTOMETRIC_PARAMETER_NAMES = (
     "primary_temperature",
@@ -616,11 +631,11 @@ _PHOTOMETRIC_PARAMETER_NAMES = (
 
 # Assumed relative uncertainty for each system's literature
 # radius (Table 5 of the source paper gives no formal
-# uncertainty on R for any of the four systems -- confirmed by
-# direct inspection of the paper, 2026-08-27). 10% is a
+# uncertainty on R for any of the four systems).
+# 10% is a
 # deliberately conservative (generous) choice: tight enough to
 # keep the fit on the physical branch of the (Teff, R)
-# degeneracy (see run_alwardat_benchmark()'s docstring), loose
+# degeneracy (see run_sed_benchmark()'s docstring), loose
 # enough that the real photometric data can still pull radius
 # away from its literature value if it genuinely disagrees,
 # rather than reproducing the old hard-pin's "trivially matches
@@ -632,27 +647,27 @@ _PHOTOMETRIC_PARAMETER_NAMES = (
 _RADIUS_PRIOR_RELATIVE_SIGMA = 0.10
 
 
-def run_alwardat_benchmark(
+def run_sed_benchmark(
     system_name,
     expected
 ):
     """
-    Execute an Al-Wardat unresolved-binary photometric SED fit
+    Execute an unresolved-binary photometric SED fit
     and compare the fitted parameters to the system's
     independently-published literature component parameters.
 
     ``expected["free_parameters"]`` are genuinely varied by the
     optimizer (via ``PhotometricParameters.fit_flags``); any
     OTHER photometric parameter is held fixed at its
-    ``initial_parameters`` value. As of 2026-08-27 all four
-    registered alwardat_sed systems free all five photometric
+    ``initial_parameters`` value. All four
+    registered binary_sed systems free all five photometric
     parameters (Teff1, Teff2, R1, R2, E(B-V)) -- including
     radius, which earlier testing confirmed is genuinely
     degenerate when fit against unresolved photometry ALONE, no
     matter how many bands are supplied (see
     ``expected["radius_prior_note"]`` and
-    docs/project_decisions.md, "PhotometricParameters fit-flags/
-    prior mechanism"). Radius is therefore freed WITH a Gaussian
+    the fit-flags/prior mechanism of
+    ``PhotometricParameters``). Radius is therefore freed WITH a Gaussian
     prior (``PhotometricParameters.priors``) tying it to this
     system's independently-published literature value
     (``expected["literature_component_parameters"]``) instead of
@@ -694,7 +709,7 @@ def run_alwardat_benchmark(
                 validation_dir
                 / "photometry"
                 / "passbands"
-                / _ALWARDAT_PASSBAND_FILES[name]
+                / _SED_PASSBAND_FILES[name]
             ),
             name=name,
         )
@@ -702,7 +717,7 @@ def run_alwardat_benchmark(
     }
 
     zero_points = {
-        name: _ALWARDAT_ZERO_POINTS[name]
+        name: _SED_ZERO_POINTS[name]
         for name in passband_names
     }
 
@@ -783,6 +798,11 @@ def run_alwardat_benchmark(
         metallicity=expected["metallicity"]["value"],
         distance=expected["distance_pc"]["value"],
         bounds=bounds,
+        magnitude_differences=[
+            MagnitudeDifference(passband=d["passband"], value=d["value"],
+                                uncertainty=d["uncertainty"])
+            for d in expected.get("magnitude_differences", [])
+        ],
     )
 
     fitted = fit_result.elements.parameters
@@ -875,10 +895,10 @@ def run_alwardat_benchmark(
 
         "orbit_type": expected.get(
             "orbit_type",
-            "alwardat_sed"
+            "binary_sed"
         ),
 
-        "fitting_path": "alwardat_sed",
+        "fitting_path": "binary_sed",
 
         "paper_table_row": expected.get(
             "paper_table_row"
@@ -954,9 +974,9 @@ def run_benchmark(
             expected
         )
 
-    if expected.get("fitting_path") == "alwardat_sed":
+    if expected.get("fitting_path") in ("binary_sed", "alwardat_sed"):  # "alwardat_sed" = legacy name, kept as an alias
 
-        return run_alwardat_benchmark(
+        return run_sed_benchmark(
             system_name,
             expected
         )
@@ -1164,7 +1184,7 @@ def run_benchmark(
 # ==========================================================
 #
 # The functions below implement the "writes validation/results/"
-# behavior CLAUDE.md documents for `python validation/benchmark_runner.py`:
+# behavior of `python validation/benchmark_runner.py`:
 # run every supported system listed in benchmark_registry.csv
 # through run_benchmark() (which itself dispatches each system
 # to either the plain binary path or, for hierarchical triples
@@ -1375,16 +1395,16 @@ def _print_summary(
     print()
 
     print(
-        f"{'System':<12}"
-        f"{'Path':<8}"
+        f"{'System':<22}"
+        f"{'Path':<12}"
         f"{'Success':<9}"
         f"{'RedChi2':>10}"
-        f"{'WorstParam':>14}"
+        f"{'WorstParam':>26}"
         f"{'WorstRelErr':>13}"
     )
 
     print(
-        "-" * 68
+        "-" * 94
     )
 
     for stem, result in results.items():
@@ -1392,8 +1412,8 @@ def _print_summary(
         if "error" in result:
 
             print(
-                f"{stem:<12}"
-                f"{'ERROR':<8}"
+                f"{stem:<22}"
+                f"{'ERROR':<12}"
                 f"{'':<9}"
                 f"{'':>10}"
                 f"{'':>14}"
@@ -1422,11 +1442,11 @@ def _print_summary(
                 worst_name = name
 
         print(
-            f"{stem:<12}"
-            f"{result.get('fitting_path', 'binary'):<8}"
+            f"{stem:<22}"
+            f"{result.get('fitting_path', 'binary'):<12}"
             f"{str(result['optimizer_success']):<9}"
             f"{result['statistics']['reduced_chi_square']:>10.4f}"
-            f"{worst_name:>14}"
+            f"{worst_name:>26}"
             f"{worst_value:>13.4%}"
         )
 

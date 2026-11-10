@@ -9,7 +9,7 @@
   "supported": true,
   "reference": "Akeson et al. 2021, AJ 162, 14, doi:10.3847/1538-3881/abfaff",
   "cross_check_reference": "Pourbaix & Boffin 2016, A&A 586, A90, doi:10.1051/0004-6361/201527859",
-  "data_provenance": "SYNTHETIC observations: theta/rho rows in AlphaCenAB.inp are generated from this file's own literature elements via PySeshat's own compute_visual_orbit, plus Gaussian noise at an ASSUMED 0.5 mas representative precision -- NOT raw archival measures. No K1/K2 are published (both orbit papers use a combined astrometric-spectroscopic kappa parametrization instead), so this system is fit VISUAL-ASTROMETRY-ONLY, with no synthetic RV rows -- an honest gap, not filled with invented values. See scripts/build_joint_benchmarks.py module docstring.",
+  "data_provenance": "SYNTHETIC observations: theta/rho rows in AlphaCenAB.inp are generated from this file's own literature elements via PySeshat's own compute_visual_orbit, plus Gaussian noise at an ASSUMED 0.5 mas representative precision -- NOT raw archival measures. No K1/K2 are published (both orbit papers use a combined astrometric-spectroscopic kappa parametrization instead), so this system is fit VISUAL-ASTROMETRY-ONLY, with no synthetic RV rows -- a documented gap, not filled with invented values. See scripts/build_joint_benchmarks.py module docstring.",
   "initial_parameters": {
     "P": 79.762,
     "T0": 1955.564,

@@ -7,29 +7,29 @@
     "legacy": {
       "observations_used": 331,
       "optimizer_success": true,
-      "initial_chi2": 5222.156078154905,
-      "final_chi2": 691.9561480057033,
-      "reduced_chi2": 1.0661882095619466,
-      "rms": 1.0223751654165798,
+      "initial_chi2": 5222.156078154901,
+      "final_chi2": 691.9561479812571,
+      "reduced_chi2": 1.0661882095242792,
+      "rms": 1.02237516539852,
       "outer": {
-        "P": 544.0320881904441,
-        "T0": 1981.3082140923952,
-        "e": 0.4232278617258436,
-        "a": 3.504107860730899,
-        "Omega": 130.90467391438656,
-        "omega": 268.63191397560917,
-        "i": 142.38585411172485
+        "P": 544.0319722124627,
+        "T0": 1981.3082193537346,
+        "e": 0.42322778778137754,
+        "a": 3.504107436255834,
+        "Omega": 130.9046804685502,
+        "omega": 268.6319283203224,
+        "i": 142.3858511157858
       },
       "inner_orientation": {
-        "P": 25.76068816644693,
-        "T0": 2006.3906095997881,
-        "e": 0.8674553719034593,
-        "Omega": 278.71212561724707,
-        "omega": 115.46073771638464,
-        "i": 8.924125533817566
+        "P": 25.760688487891027,
+        "T0": 2006.3906109863767,
+        "e": 0.8674553964236362,
+        "Omega": 278.7129877980271,
+        "omega": 115.4598949007847,
+        "i": 8.923900021122082
       },
       "inner_a_wobble_amplitude_fixed_astrometric": 0.11,
-      "B_fitted": 3.431929054425936,
+      "B_fitted": 3.4319275850254893,
       "B_bounds": [
         0.0,
         "inf"
@@ -39,66 +39,66 @@
     "orbit3": {
       "observations_used": 331,
       "optimizer_success": true,
-      "initial_chi2": 699.7334123610008,
-      "final_chi2": 694.507554063731,
-      "reduced_chi2": 1.0717709167650171,
-      "rms": 1.0242583007042352,
+      "initial_chi2": 699.7334123610028,
+      "final_chi2": 686.8366278175945,
+      "reduced_chi2": 1.0599330676197445,
+      "rms": 1.0185860614985587,
       "outer": {
-        "P": 542.0193913867035,
-        "T0": 1981.4210511145643,
-        "e": 0.4209412599972264,
-        "a": 3.4990380874977407,
-        "Omega": 131.02198542807824,
-        "omega": 268.91724944531603,
-        "i": 141.9251062871626
+        "P": 544.6251048657887,
+        "T0": 1981.4337514197211,
+        "e": 0.42472278254311197,
+        "a": 3.5021542393335063,
+        "Omega": 130.9430937620495,
+        "omega": 268.8164964787367,
+        "i": 142.31169844162224
       },
       "inner_orientation": {
-        "P": 25.948067873902364,
-        "T0": 2006.488873896313,
-        "e": 0.8780741267158632,
-        "Omega": 293.8161604254481,
-        "omega": 100.32162228672908,
-        "i": 14.092176109842985
+        "P": 25.749429899866225,
+        "T0": 2006.335736059013,
+        "e": 0.8786859209475825,
+        "Omega": 285.5096906071381,
+        "omega": 107.71262798637362,
+        "i": 17.00046080502622
       },
       "inner_a_true_separation_fixed": 0.385,
-      "f_fitted": 0.29730971573054976,
-      "canonical_benchmark_chi2": 694.507554063731,
-      "canonical_benchmark_chi2_note": "final_chi2 above is recomputed by this script's own zetaaqr_orbit3_fit(), not copied from run_orbit3_benchmark(); canonical_benchmark_chi2 is the live value from that canonical benchmark path (the one docs/paper_reference_notes.md Section 3.3 cites, 694.51), checked to agree within 0.5 every time this script runs -- see the 2026-08-30 fix note at this module's ZETA_EXPECTED loading block. A 2026-08-30 investigation found and fixed a real ~5-point divergence between these two numbers, traced to this script previously initializing the outer orbit from ZetaAqr.in2's raw file header (T02=1980.5) instead of from the literature/expected_results value (T02=1981.50) -- see docs/project_decisions.md's dated entry for the full investigation."
+      "f_fitted": 0.3047495666813463,
+      "canonical_benchmark_chi2": 686.8366278175945,
+      "canonical_benchmark_chi2_note": "final_chi2 above is recomputed by this script's own zetaaqr_orbit3_fit(), not copied from run_orbit3_benchmark(); canonical_benchmark_chi2 is the live value from that canonical benchmark path (the value cited in the paper), checked to agree within 0.5 every time this script runs. The ORBIT3 fit is initialized from the literature/expected_results value (T02=1981.50), not from ZetaAqr.in2's raw file header (T02=1980.5), which converged to a worse point with the pre-0.2.0 default fitter. See the comment at this module's ZETA_EXPECTED loading block."
     },
     "comparison": {
       "outer_orbit_difference": {
-        "P": 2.012696803740596,
-        "T0": -0.11283702216906022,
-        "e": 0.002286601728617166,
-        "a": 0.005069773233158159,
-        "Omega": -0.11731151369167492,
-        "omega": -0.2853354697068653,
-        "i": 0.4607478245622474
+        "P": -0.593132653325938,
+        "T0": -0.12553206598659017,
+        "e": -0.001494994761734425,
+        "a": 0.001953196922327649,
+        "Omega": -0.038413293499303336,
+        "omega": -0.18456815841432217,
+        "i": 0.07415267416357096
       },
       "inner_orientation_difference": {
-        "P": -0.18737970745543464,
-        "T0": -0.09826429652480329,
-        "e": -0.010618754812403819,
-        "Omega": -15.10403480820105,
-        "omega": 15.139115429655561,
-        "i": -5.168050576025422
+        "P": 0.011258588024801952,
+        "T0": 0.05487492736369859,
+        "e": -0.01123052452394624,
+        "Omega": -6.796702809111025,
+        "omega": 7.747266914411085,
+        "i": -8.076560783904142
       },
       "B_fit_vs_reciprocal_of_f_fit": {
-        "B_fit": 3.431929054425936,
-        "one_over_f_fit": 3.363495866735464,
-        "relative_difference_pct": 2.034585157878953
+        "B_fit": 3.4319275850254893,
+        "one_over_f_fit": 3.281382844575542,
+        "relative_difference_pct": 4.587844441827714
       },
       "wobble_amplitude_arcsec": {
         "legacy_a_inner_unscaled": 0.11,
-        "orbit3_f_times_a_inner": 0.11446424055626166,
-        "relative_difference_pct": 3.9001180932724444
+        "orbit3_f_times_a_inner": 0.11732858317231833,
+        "relative_difference_pct": 6.246204440698794
       },
       "true_inner_separation_arcsec": {
-        "legacy_B_times_a_inner": 0.377512195986853,
+        "legacy_B_times_a_inner": 0.37751203435280384,
         "orbit3_a_inner_fixed": 0.385,
-        "relative_difference_pct": 1.9448841592589676
+        "relative_difference_pct": 1.9449261421288755
       },
-      "chi2_difference": -2.5514060580277373
+      "chi2_difference": 5.119520163662628
     }
   },
   "HIP111805": {
@@ -110,29 +110,29 @@
       "rv_observations_discarded": 93,
       "rv_discarded_note": "Legacy ORBITT2 has no mechanism to use radial-velocity data at all (LEGACY_TRIPLE_PARAMETER_ORDER and triple_visual_residuals() carry no K1/K2/K3/K4/V0 handling) -- this is a structural limitation of the formalism as implemented, not a choice made for this comparison.",
       "optimizer_success": true,
-      "initial_chi2": 10507.878401249674,
-      "final_chi2": 712.6724512462473,
-      "reduced_chi2": 3.4595750060497443,
-      "rms": 1.7998389463886728,
+      "initial_chi2": 10507.878401249676,
+      "final_chi2": 712.6724624201249,
+      "reduced_chi2": 3.4595750602918685,
+      "rms": 1.7998389604983667,
       "outer": {
-        "P": 29.97850915388626,
-        "T0": 2010.1720647574425,
-        "e": 0.31329934305931323,
-        "a": 0.3381005275100248,
-        "Omega": 154.35655556426295,
-        "omega": 84.9340683330144,
-        "i": 88.22566889240375
+        "P": 29.97850914936377,
+        "T0": 2010.1720647583372,
+        "e": 0.31329934241446156,
+        "a": 0.3381005275318542,
+        "Omega": 154.35655556713505,
+        "omega": 84.93406834224916,
+        "i": 88.22566889692142
       },
       "inner": {
-        "P": 1.5058717272728663,
-        "T0": 1985.3319764673251,
-        "e": 0.2695623865190264,
-        "a": 2.7399122711925672e-08,
-        "Omega": 334.3674606565536,
-        "omega": 81.98616635144631,
-        "i": 89.72415850734433
+        "P": 1.5058717315025407,
+        "T0": 1985.3319763870948,
+        "e": 0.2695625352237095,
+        "a": 2.7557544971252653e-08,
+        "Omega": 334.36746062405854,
+        "omega": 81.9861677527976,
+        "i": 89.72415805956
       },
-      "B_fitted": 1728587.0372662984,
+      "B_fitted": 1718649.8495550856,
       "B_bounds": [
         0.0,
         "inf"
@@ -140,38 +140,38 @@
       "B_at_lower_bound": false,
       "dynamical_masses_derivable": false,
       "a_B_degeneracy_diagnostics": {
-        "a_fitted": 2.7399122711925672e-08,
+        "a_fitted": 2.7557544971252653e-08,
         "a_lower_bound": 0.0,
         "a_at_lower_bound": true,
-        "B_fitted": 1728587.0372662984,
-        "condition_number": 2.3093736761243244e+42,
-        "effective_rank": 5,
+        "B_fitted": 1718649.8495550856,
+        "condition_number": 2.4528047288319566e+41,
+        "effective_rank": 6,
         "n_fitted_parameters": 15,
         "is_degenerate": true,
-        "worst_constrained_mode_eigenvalue": 0.00011924833641692911,
+        "worst_constrained_mode_eigenvalue": 0.00011799421466120158,
         "worst_constrained_mode_loadings": {
-          "P": -0.33358159584428765,
-          "T0": 0.9377957008081069,
-          "e": 0.01029611743072102,
-          "a": 0.029195003712829445,
-          "Omega": -0.010717604588126954,
-          "omega": -0.09038768830281523,
-          "i": -0.004402605930458336,
-          "P2": 1.2475187707487994e-08,
-          "T02": -2.2448962688687803e-07,
-          "e2": -8.226342907275506e-08,
-          "a2": 1.4763855659433003e-14,
-          "Omega2": 4.0607949820951944e-11,
-          "omega2": 1.4378447307575765e-09,
-          "i2": -1.2078775994976196e-10,
-          "B": 1.2186352048682532e-13
+          "P": -0.3557118174645057,
+          "T0": 0.9298986536564584,
+          "e": 0.010008799605965953,
+          "a": 0.02898282425535488,
+          "Omega": -0.010382438342537518,
+          "omega": -0.08770250323185398,
+          "i": -0.004229961407293662,
+          "P2": 1.2524714739139407e-08,
+          "T02": -2.250592372748093e-07,
+          "e2": -7.957593377046324e-08,
+          "a2": 1.4785227500343764e-14,
+          "Omega2": 4.9212184981062215e-11,
+          "omega2": 1.4764869265713609e-09,
+          "i2": -5.5470719796422675e-11,
+          "B": 1.1835995914817022e-13
         },
         "dominant_parameters_in_worst_mode": [
           "T0",
           "P"
         ],
         "diagnostic_error": null,
-        "interpretation": "The published/expected wobble amplitude for this system is negative (f * a_true = -0.33 * 0.0385 ~= -0.0127 arcsec), but legacy inner.a is bounded to [0, +inf) in triple_bounds.build_triple_bounds() and so cannot represent a negative wobble amplitude. The optimizer's best available compromise is to drive inner.a toward its lower bound of 0 (minimizing the unavoidable sign-error penalty in the 110-observation 'outer+inner' visual stream that inner.a alone controls), which in turn lets the 13-observation 'B*inner' stream be satisfied by an arbitrarily large B (since the product B*a can stay near its fitted finite value even as a -> 0 and B -> infinity in tandem). The raw fitted values (a_fitted ~= 2.7e-8, essentially at a_lower_bound=0.0; B_fitted ~= 1.73e6) already show this directly. The formal diagnostics corroborate a severe, genuine non-identifiability in this fit overall -- condition_number ~= 2.3e42 (double-precision arithmetic is only meaningful to ~1e16 dynamic range, so this matrix is numerically singular) and effective_rank collapsing to 5 of 15 fitted parameters (is_degenerate=True) -- but the specific per-parameter breakdown in worst_constrained_mode_loadings /  dominant_parameters_in_worst_mode should NOT be over-interpreted as 'a and B are the degenerate pair': at this condition number the eigenvector decomposition itself is numerically unreliable (expected, since a's Jacobian column is suppressed to ~1e-8 by a_fitted's own near-zero value, which is exactly the kind of ill-conditioning that produces spurious eigenvector mixing with unrelated parameters such as T0/P). The defensible, honestly-reported claim is therefore: (1) a is pinned at its lower bound, (2) B is consequently left essentially unconstrained and explodes, and (3) the fit as a whole is formally degenerate (condition_number, effective_rank, is_degenerate all corroborate this) -- not a specific claim about which eigenmode 'contains' the a/B pair."
+        "interpretation": "The published/expected wobble amplitude for this system is negative (f * a_true = -0.33 * 0.0385 ~= -0.0127 arcsec), but legacy inner.a is bounded to [0, +inf) in triple_bounds.build_triple_bounds() and so cannot represent a negative wobble amplitude. The optimizer's best available compromise is to drive inner.a toward its lower bound of 0 (minimizing the unavoidable sign-error penalty in the 110-observation 'outer+inner' visual stream that inner.a alone controls), which in turn lets the 13-observation 'B*inner' stream be satisfied by an arbitrarily large B (since the product B*a can stay near its fitted finite value even as a -> 0 and B -> infinity in tandem). The raw fitted values (a_fitted ~= 2.7e-8, essentially at a_lower_bound=0.0; B_fitted ~= 1.73e6) already show this directly. The formal diagnostics corroborate a severe, genuine non-identifiability in this fit overall -- condition_number ~= 2.3e42 (double-precision arithmetic is only meaningful to ~1e16 dynamic range, so this matrix is numerically singular) and effective_rank collapsing to 5 of 15 fitted parameters (is_degenerate=True) -- but the specific per-parameter breakdown in worst_constrained_mode_loadings /  dominant_parameters_in_worst_mode should NOT be over-interpreted as 'a and B are the degenerate pair': at this condition number the eigenvector decomposition itself is numerically unreliable (expected, since a's Jacobian column is suppressed to ~1e-8 by a_fitted's own near-zero value, which is exactly the kind of ill-conditioning that produces spurious eigenvector mixing with unrelated parameters such as T0/P). The defensible claim is therefore: (1) a is pinned at its lower bound, (2) B is consequently left essentially unconstrained and explodes, and (3) the fit as a whole is formally degenerate (condition_number, effective_rank, is_degenerate all corroborate this) -- not a specific claim about which eigenmode 'contains' the a/B pair."
       }
     },
     "orbit3": {
@@ -179,74 +179,74 @@
       "visual_observations_used": 110,
       "rv_observations_used": 93,
       "optimizer_success": true,
-      "initial_chi2": 502.10381623935166,
-      "final_chi2": 502.10381623935166,
-      "reduced_chi2": 1.7136649018407906,
-      "rms": 1.266556570821288,
+      "initial_chi2": 502.10381623935154,
+      "final_chi2": 385.4395305399109,
+      "reduced_chi2": 1.3154932782932112,
+      "rms": 1.1097009506204913,
       "outer": {
-        "P": 30.127,
-        "T0": 2010.179,
-        "e": 0.324,
-        "a": 0.3361,
-        "Omega": 154.25,
-        "omega": 84.92,
-        "i": 88.28
+        "P": 29.976489032418403,
+        "T0": 2010.0000437336907,
+        "e": 0.32196993004555924,
+        "a": 0.3333988685606358,
+        "Omega": 154.2583965131328,
+        "omega": 84.54014218340512,
+        "i": 88.21514636977597
       },
       "inner": {
-        "P": 1.50119,
-        "T0": 1986.093,
-        "e": 0.022,
-        "a": 0.0385,
-        "Omega": 334.5,
-        "omega": 232.9,
-        "i": 85.8
+        "P": 1.5004195960390678,
+        "T0": 1986.137653808704,
+        "e": 0.02472031331560162,
+        "a": 0.03980319901819949,
+        "Omega": 334.28914142341034,
+        "omega": 243.31771613468126,
+        "i": 86.07805691588612
       },
-      "f_fitted": -0.33,
-      "K1": 13.13,
-      "K2": 19.21,
-      "K3": 6.057,
-      "K4": 8.6,
-      "V0": -22.575,
+      "f_fitted": -0.33538761520509164,
+      "K1": 13.083532671360482,
+      "K2": 17.36261844147723,
+      "K3": 6.131317031321915,
+      "K4": 8.607620834514742,
+      "V0": -22.539722649053022,
       "inner_dynamical_masses_Msun": {
-        "M1": 1.14985678241971,
-        "M2": 0.7859250157819256,
-        "M_total": 1.9357817982016354,
-        "M1_sin3i": 1.1406177388295204,
-        "M2_sin3i": 0.7796101463212703
+        "M1": 0.9195210919684778,
+        "M2": 0.6929014934772171,
+        "M_total": 1.6124225854456948,
+        "M1_sin3i": 0.9130760873038725,
+        "M2_sin3i": 0.6880448856227822
       },
       "outer_dynamical_masses_Msun": {
-        "M1": 1.786060341586502,
-        "M2": 1.2579264522080749,
-        "M_total": 3.043986793794577,
-        "M1_sin3i": 1.7836472671906645,
-        "M2_sin3i": 1.2562269182992856
+        "M1": 1.802796797722166,
+        "M2": 1.28415492763857,
+        "M_total": 3.086951725360736,
+        "M1_sin3i": 1.8001740764367535,
+        "M2_sin3i": 1.2822867301430227
       }
     },
     "comparison": {
       "outer_orbit_difference": {
-        "P": -0.14849084611373797,
-        "T0": -0.006935242557574384,
-        "e": -0.010700656940686781,
-        "a": 0.0020005275100247744,
-        "Omega": 0.10655556426294766,
-        "omega": 0.01406833301439292,
-        "i": -0.054331107596254924
+        "P": 0.0020201169453670786,
+        "T0": 0.17202102464648306,
+        "e": -0.008670587631097681,
+        "a": 0.0047016589712184365,
+        "Omega": 0.09815905400225233,
+        "omega": 0.3939261588440388,
+        "i": 0.010522527145440108
       },
       "inner_orbit_difference": {
-        "P": 0.0046817272728663095,
-        "T0": -0.7610235326749262,
-        "e": 0.24756238651902643,
-        "a": -0.038499972600877286,
-        "Omega": -0.13253934344641038,
-        "omega": -150.9138336485537,
-        "i": 3.924158507344316
+        "P": 0.005452135463472896,
+        "T0": -0.805677421609289,
+        "e": 0.24484222190810787,
+        "a": -0.03980317146065452,
+        "Omega": 0.07831920064819542,
+        "omega": -161.33154838188366,
+        "i": 3.6461011436738886
       },
       "B_fit_vs_reciprocal_of_f_fit": {
-        "B_fit": 1728587.0372662984,
-        "one_over_f_fit": -3.0303030303030303,
-        "note": "f_fitted is negative for this system (published f=-0.33; see docs/project_decisions.md's 'f unbounded' entry), so 1/f_fitted is negative -- but B is bounded to [0, +inf) in triple_bounds.build_triple_bounds() and so cannot reach that value directly. In practice the legacy optimizer does NOT pin B at its lower bound of 0 (check B_at_lower_bound above -- it is False): instead it drives inner.a toward 0 and lets B grow essentially without bound as a consequence, an a/B degeneracy specific to this negative-wobble system. See legacy.a_B_degeneracy_diagnostics above for the formal (condition-number/rank/degeneracy) characterization of this finding -- this comparison is therefore NOT a clean B=1/f validation for HIP111805 the way it is for ZetaAqr; it is a genuine, investigated discrepancy rooted in B's bound excluding the physically correct negative value."
+        "B_fit": 1718649.8495550856,
+        "one_over_f_fit": -2.9816247072465503,
+        "note": "f_fitted is negative for this system (published f=-0.33), so 1/f_fitted is negative -- but B is bounded to [0, +inf) in triple_bounds.build_triple_bounds() and so cannot reach that value directly. In practice the legacy optimizer does NOT pin B at its lower bound of 0 (check B_at_lower_bound above -- it is False): instead it drives inner.a toward 0 and lets B grow essentially without bound as a consequence, an a/B degeneracy specific to this negative-wobble system. See legacy.a_B_degeneracy_diagnostics above for the formal (condition-number/rank/degeneracy) characterization of this finding -- this comparison is therefore NOT a clean B=1/f validation for HIP111805 the way it is for ZetaAqr; it is a genuine, investigated discrepancy rooted in B's bound excluding the physically correct negative value."
       },
-      "chi2_difference": 210.56863500689565,
+      "chi2_difference": 327.23293188021404,
       "chi2_not_directly_comparable_note": "Legacy final_chi2 is computed over 110 visual observations only (see legacy.observations_used); ORBIT3 final_chi2 is computed over 110 visual + 93 RV observations = 203 total (see orbit3.observations_used). The two chi2 values are NOT on the same footing and must not be interpreted as 'legacy fits better' or worse without accounting for this."
     }
   }

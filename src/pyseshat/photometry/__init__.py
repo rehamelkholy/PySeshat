@@ -8,6 +8,12 @@ from pyseshat.photometry.synthetic import (
     synthetic_band_flux
 )
 
+from pyseshat.photometry.calibration import (
+    VEGA_STANDARD_MAGNITUDES,
+    standard_system_zero_point,
+    standard_system_zero_points
+)
+
 from pyseshat.photometry.extinction import (
     apply_extinction,
     ccm89_optical_extinction
@@ -34,6 +40,8 @@ from pyseshat.photometry.parameters import (
 
 __all__ = [
 
+    "VEGA_STANDARD_MAGNITUDES",
+
     "PhotometricMeasurement",
 
     "PhotometricPassband",
@@ -57,6 +65,10 @@ __all__ = [
     "binary_photometric_chi_square",
 
     "synthetic_binary_magnitudes",
+
+    "standard_system_zero_point",
+
+    "standard_system_zero_points",
 
     "update_parameters",
 

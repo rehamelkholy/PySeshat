@@ -1,10 +1,9 @@
 {
   "system": "HD184467",
-  "orbit_type": "alwardat_sed",
-  "fitting_path": "alwardat_sed",
+  "orbit_type": "binary_sed",
+  "fitting_path": "binary_sed",
   "paper_table_row": null,
   "free_parameters": [
-    "ebv",
     "primary_radius",
     "primary_temperature",
     "secondary_radius",
@@ -21,40 +20,40 @@
     }
   },
   "statistics": {
-    "chi_square": 0.44672361771675273,
-    "reduced_chi_square": 0.11168090442918818,
-    "rms": 0.2227912869124007,
-    "n_data": 9,
-    "n_params": 5
+    "chi_square": 0.23542744273905034,
+    "reduced_chi_square": 0.03363249181986434,
+    "rms": 0.1462959151666892,
+    "n_data": 11,
+    "n_params": 4
   },
   "parameter_errors": {
     "primary_temperature": {
       "expected": 5340.0,
-      "fitted": 5000.000413309919,
-      "relative_error": 0.06367033458615746
+      "fitted": 5154.716806784056,
+      "relative_error": 0.03469722719399705
     },
     "secondary_temperature": {
       "expected": 5185.0,
-      "fitted": 5035.851632498536,
-      "relative_error": 0.028765355352259256
+      "fitted": 4983.509498377895,
+      "relative_error": 0.03886027032248884
     },
     "primary_radius": {
       "expected": 0.832,
-      "fitted": 0.8257282262093144,
-      "relative_error": 0.00753818965226629
+      "fitted": 0.8181935732332407,
+      "relative_error": 0.016594262940816406
     },
     "secondary_radius": {
       "expected": 0.783,
-      "fitted": 0.7777668817187762,
-      "relative_error": 0.006683420537961505
+      "fitted": 0.7763040480835414,
+      "relative_error": 0.008551662728555127
     }
   },
   "fitted_elements": {
-    "primary_temperature": 5000.000413309919,
-    "secondary_temperature": 5035.851632498536,
-    "primary_radius": 0.8257282262093144,
-    "secondary_radius": 0.7777668817187762,
-    "ebv": 6.076307303174012e-13
+    "primary_temperature": 5154.716806784056,
+    "secondary_temperature": 4983.509498377895,
+    "primary_radius": 0.8181935732332407,
+    "secondary_radius": 0.7763040480835414,
+    "ebv": 0.0
   },
   "optimizer_success": true,
   "optimizer_message": "`ftol` termination condition is satisfied.",

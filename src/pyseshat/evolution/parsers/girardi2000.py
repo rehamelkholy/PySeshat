@@ -9,7 +9,7 @@ stars: From 0.15 to 7 Msun, and from Z=0.0004 to 0.03",
 doi:10.1051/aas:2000126.
 
 This grid is the evolutionary-track/isochrone source consistently used
-by the Al-Wardat SED-fitting literature this project benchmarks against
+by the binary SED-fitting literature this project benchmarks against
 (the HD25811, HIP70973/HIP72479, and HIP102029 papers, and by extension
 Abushattal et al. 2025, arXiv:2512.23652, whose four SB2 systems --
 HD214222, HD191854, HD130669, HD184467 -- are this project's own SED
@@ -30,16 +30,16 @@ appropriate metallicity choice for all of them.
 
 Data source
 -----------
-The tabulated tracks/isochrones themselves are external data, not
-bundled with this repository (the same "bring your own files" pattern
-already used by the pre-existing PARSEC parser --
-:mod:`pyseshat.evolution.parsers.parsec` -- see that module and
-``docs/guide/evolutionary_checks.md`` for why no track data ships in
-the repo). They are available either via the Padova group's legacy CMD
+The VizieR J/A+AS/141/371 ``mstracks`` and ``isochron`` tables are
+bundled with the package in ``pyseshat/evolution/data/girardi2000/``
+(see the README there) and are loaded by
+:func:`pyseshat.evolution.grids.load_default_evolution_model`. PARSEC
+grids are not bundled (:mod:`pyseshat.evolution.parsers.parsec`). The
+Girardi tables are also available either via the Padova group's legacy CMD
 2.7 web interface (https://stev.oapd.inaf.it/cgi-bin/cmd_2.7, which
 still lists "Girardi et al. (2000) + simplified TP-AGB (for M<=7 Msun)
 + Bertelli et al. 1994" as a selectable track/isochrone set -- verified
-present in that form as of 2026-08-29) or via the original VizieR
+present in that form when this module was written) or via the original VizieR
 catalog, J/A+AS/141/371, at the CDS archive.
 
 Like :mod:`pyseshat.evolution.parsers.parsec`, this module makes no
@@ -55,11 +55,10 @@ for a file that already holds exactly one track or one isochrone.
 Real VizieR exports: ``load_girardi2000_vizier_tracks()`` /
 ``load_girardi2000_vizier_isochrones()``
 ------------------------------------------------------------------
-As of 2026-08-29, real data was obtained: VizieR catalog
+This module also handles real data from VizieR catalog
 J/A+AS/141/371's two ASU-TSV tables, ``mstracks`` (13,723 rows, "main
 sequence [tracks], from ZAMS on") and ``isochron`` (64,381 rows,
-"Isochrones") -- see ``docs/project_decisions.md``'s matching dated
-entry for the exact provenance and query. Inspecting these directly
+"Isochrones"). Inspecting these directly
 (rather than assuming they matched the schema above) found several
 real-data quirks the single-track ``column_map`` functions above do
 not handle, so two dedicated functions were added instead of forcing
@@ -129,9 +128,7 @@ these files through them:
 Both real-data quirks above were found and handled by direct
 inspection of the actual downloaded files (row counts, per-track
 monotonicity, per-age-slice duplicate checks) before writing the
-loaders, not assumed from the paper text -- see
-``docs/project_decisions.md``'s 2026-08-29 entry for the full
-diagnostic trail.
+loaders, not assumed from the paper text.
 """
 
 from io import StringIO
@@ -189,7 +186,7 @@ def _load_ascii_table(filename):
     :func:`pyseshat.evolution.parsers.parsec._load_ascii_table`
     exactly, since Girardi (2000) tables are distributed in the
     same general whitespace-delimited, commented-header ASCII
-    format as PARSEC's -- including the fix (2026-08-29) for
+    format as PARSEC's -- including a fix for
     ``numpy.genfromtxt(..., comments="#")`` only stripping the
     "#" character rather than the whole comment line, which
     otherwise misdetects the column count whenever a comment
@@ -446,7 +443,7 @@ def _read_vizier_asu_tsv(filename):
     units row, and a dashes/field-width row (whose first field is a
     literal ``-``) -- followed by the actual tab-separated data.
     This is what both ``mstracks`` and ``isochron`` (VizieR catalog
-    J/A+AS/141/371) look like as downloaded 2026-08-29; the dashes
+    J/A+AS/141/371) look like as downloaded; the dashes
     row's distinctive first field is used to locate the header
     reliably rather than assuming a fixed line count, since the
     metadata block's length depends on the query's requested

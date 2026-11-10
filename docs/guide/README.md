@@ -8,13 +8,13 @@ examples that back up its claims.
 Pages, roughly in the order a new user would want them:
 
 1. [`data_formats.md`](data_formats.md) — the `.inp`/`.in2`/`.in3` file
-   formats, the Al-Wardat SED JSON format, and Gaia DR3 NSS
+   formats, the binary SED JSON format, and Gaia DR3 NSS
    `nss_two_body_orbit` rows; what each parser returns.
 2. [`orbit_fitting.md`](orbit_fitting.md) — fitting a visual+RV binary
    orbit, least-squares and MCMC.
 3. [`triple_systems.md`](triple_systems.md) — hierarchical triples, and
    the legacy ORBITT2 vs. modern ORBIT3 formalism split.
-4. [`alwardat_sed.md`](alwardat_sed.md) — Al-Wardat unresolved-binary SED
+4. [`binary_sed.md`](binary_sed.md) — unresolved-binary SED
    fitting, and its current, real limitations.
 5. [`evolutionary_checks.md`](evolutionary_checks.md) — evolutionary-track
    consistency checks.

@@ -15,13 +15,9 @@ Run
 
 Uses validation/benchmark_systems/ZetaAqr/ZetaAqr.in2 (checked into
 this repo) and validation/expected_results/ZetaAqr.json for the
-literature starting solution and fit mask -- see
-docs/project_decisions.md for the full ZetaAqr validation history
-(including a residual-decomposition run showing PySeshat's fit
-*improves* on the literature chi-square) and CLAUDE.md's "Orbit vs.
-triple vs. joint" section for the legacy-vs-ORBIT3 formalism split
-this example's data file sits on the wrong side of (see "A legacy
-data-format wrinkle" below).
+literature starting solution and fit mask. See "A legacy
+data-format wrinkle" below for the legacy-vs-ORBIT3 formalism split
+this example's data file sits on the wrong side of.
 """
 
 from __future__ import annotations
@@ -282,9 +278,8 @@ def main():
         f"Wobble factor f = {fitted.f:.4f} "
         "(the fractional astrometric amplitude of the inner "
         "pair's motion around the outer pair's photocenter -- "
-        "deliberately fit unbounded, not restricted to [0,1]; "
-        "see docs/project_decisions.md for why, established via "
-        "HIP111805's own literature f=-0.330)."
+        "deliberately fit unbounded, not restricted to [0,1], since "
+        "HIP111805's own literature value is f=-0.330)."
     )
 
 
